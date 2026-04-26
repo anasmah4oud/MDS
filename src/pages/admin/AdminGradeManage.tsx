@@ -11,12 +11,7 @@ import {
   Package, Calendar, BookOpen, Layers, Save, X, Eye, 
   Settings, Database, Image as ImageIcon, Link as LinkIcon
 } from 'lucide-react';
-import { 
-  collection, query, where, getDocs, 
-  doc, setDoc, deleteDoc, updateDoc, 
-  orderBy, limit
-} from 'firebase/firestore';
-import { db } from '../../lib/firebase';
+import { supabase } from '../../lib/supabase';
 import { Package as PackageType, Week, Lesson } from '../../types';
 
 export default function AdminGradeManage({ grade }: { grade: 1 | 2 | 3 }) {
@@ -39,18 +34,24 @@ export default function AdminGradeManage({ grade }: { grade: 1 | 2 | 3 }) {
     setLoading(true);
     try {
       if (activeTab === 'packages') {
-        const q = query(collection(db, 'packages'), where('gradeId', '==', grade));
-        const snap = await getDocs(q);
-        setPackages(snap.docs.map(d => ({ id: Number(d.id), ...d.data() } as PackageType)));
+        const { data, error } = await supabase
+          .from('packages')
+          .select('*')
+          .eq('grade_id', grade);
+        if (error) throw error;
+        setPackages(data as PackageType[]);
       } else if (activeTab === 'weeks') {
-        const q = query(collection(db, 'weeks'));
-        const snap = await getDocs(q);
-        // We might need to filter weeks by packages assigned to this grade
-        setWeeks(snap.docs.map(d => ({ id: Number(d.id), ...d.data() } as Week)));
+        const { data, error } = await supabase
+          .from('weeks')
+          .select('*');
+        if (error) throw error;
+        setWeeks(data as Week[]);
       } else if (activeTab === 'lessons') {
-        const q = query(collection(db, 'lessons'));
-        const snap = await getDocs(q);
-        setLessons(snap.docs.map(d => ({ id: Number(d.id), ...d.data() } as Lesson)));
+        const { data, error } = await supabase
+          .from('lessons')
+          .select('*');
+        if (error) throw error;
+        setLessons(data as Lesson[]);
       }
     } catch (err) {
       console.error(err);
@@ -62,7 +63,11 @@ export default function AdminGradeManage({ grade }: { grade: 1 | 2 | 3 }) {
   const handleDelete = async (coll: string, id: number) => {
     if (!window.confirm('هل أنت متأكد من الحذف؟ لا يمكن التراجع عن ذلك.')) return;
     try {
-      await deleteDoc(doc(db, coll, id.toString()));
+      const { error } = await supabase
+        .from(coll)
+        .delete()
+        .eq('id', id);
+      if (error) throw error;
       fetchData();
     } catch (err) {
       console.error(err);
@@ -80,57 +85,56 @@ export default function AdminGradeManage({ grade }: { grade: 1 | 2 | 3 }) {
 
       if (activeTab === 'packages') {
         coll = 'packages';
-        if (!finalId) {
-          // Get next ID starting from 5000
-          const q = query(collection(db, coll), orderBy('id', 'desc'), limit(1));
-          const snap = await getDocs(q);
-          const lastId = snap.docs[0]?.data().id || 4999;
-          finalId = Number(lastId) + 1;
-        }
-        await setDoc(doc(db, coll, finalId.toString()), {
-          id: finalId,
-          gradeId: grade,
+        const payload = {
+          grade_id: grade,
           name: data.name,
           description: data.description,
           type: data.type,
           price: Number(data.price),
-          oldPrice: Number(data.oldPrice || 0),
-          imageUrl: data.imageUrl,
-          isFree: data.isFree === 'on',
-          createdAt: currentEdit?.createdAt || new Date()
-        });
+          old_price: Number(data.old_price || 0),
+          image_url: data.image_url,
+          is_free: data.is_free === 'on'
+        };
+
+        if (finalId) {
+          const { error } = await supabase.from(coll).update(payload).eq('id', finalId);
+          if (error) throw error;
+        } else {
+          const { error } = await supabase.from(coll).insert(payload);
+          if (error) throw error;
+        }
       } else if (activeTab === 'weeks') {
         coll = 'weeks';
-        if (!finalId) {
-          const q = query(collection(db, coll), orderBy('id', 'desc'), limit(1));
-          const snap = await getDocs(q);
-          const lastId = snap.docs[0]?.data().id || 0;
-          finalId = Number(lastId) + 1;
-        }
-        await setDoc(doc(db, coll, finalId.toString()), {
-          id: finalId,
-          packageId: Number(data.packageId),
+        const payload = {
+          package_id: Number(data.package_id),
           name: data.name,
-          description: data.description,
-          createdAt: currentEdit?.createdAt || new Date()
-        });
+          description: data.description
+        };
+
+        if (finalId) {
+          const { error } = await supabase.from(coll).update(payload).eq('id', finalId);
+          if (error) throw error;
+        } else {
+          const { error } = await supabase.from(coll).insert(payload);
+          if (error) throw error;
+        }
       } else if (activeTab === 'lessons') {
         coll = 'lessons';
-        if (!finalId) {
-          const q = query(collection(db, coll), orderBy('id', 'desc'), limit(1));
-          const snap = await getDocs(q);
-          const lastId = snap.docs[0]?.data().id || 99;
-          finalId = Number(lastId) + 1;
-        }
-        await setDoc(doc(db, coll, finalId.toString()), {
-          id: finalId,
-          weekId: Number(data.weekId),
+        const payload = {
+          week_id: Number(data.week_id),
           name: data.name,
           description: data.description,
           type: data.type,
-          url: data.url,
-          createdAt: currentEdit?.createdAt || new Date()
-        });
+          url: data.url
+        };
+
+        if (finalId) {
+          const { error } = await supabase.from(coll).update(payload).eq('id', finalId);
+          if (error) throw error;
+        } else {
+          const { error } = await supabase.from(coll).insert(payload);
+          if (error) throw error;
+        }
       }
 
       setIsModalOpen(false);
@@ -202,7 +206,7 @@ export default function AdminGradeManage({ grade }: { grade: 1 | 2 | 3 }) {
                       <td className="p-6 font-bold text-slate-500 max-w-xs truncate">{p.description}</td>
                       <td className="p-6">
                          <span className="bg-slate-100 text-slate-900 px-3 py-1 rounded-full text-xs font-black">{p.price} ج.م</span>
-                         {p.isFree && <span className="mr-2 bg-green-100 text-green-600 px-3 py-1 rounded-full text-xs font-black italic">مجاني</span>}
+                         {p.is_free && <span className="mr-2 bg-green-100 text-green-600 px-3 py-1 rounded-full text-xs font-black italic">مجاني</span>}
                       </td>
                       <td className="p-6 flex items-center gap-3">
                         <button onClick={() => { setCurrentEdit(p); setIsModalOpen(true); }} className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"><Edit size={18}/></button>
@@ -214,7 +218,7 @@ export default function AdminGradeManage({ grade }: { grade: 1 | 2 | 3 }) {
                     <tr key={w.id} className="hover:bg-slate-50 transition-colors group">
                       <td className="p-6 font-mono font-black text-emerald-600">#{w.id}</td>
                       <td className="p-6 font-black text-slate-900">{w.name}</td>
-                      <td className="p-6 font-bold text-slate-500">من باقة #{w.packageId}</td>
+                      <td className="p-6 font-bold text-slate-500">من باقة #{w.package_id}</td>
                       <td className="p-6"><span className="bg-emerald-100 text-emerald-600 px-3 py-1 rounded-full text-xs font-black italic">أسبوع جديد</span></td>
                       <td className="p-6 flex items-center gap-3">
                          <button onClick={() => { setCurrentEdit(w); setIsModalOpen(true); }} className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"><Edit size={18}/></button>
@@ -226,7 +230,7 @@ export default function AdminGradeManage({ grade }: { grade: 1 | 2 | 3 }) {
                     <tr key={l.id} className="hover:bg-slate-50 transition-colors group">
                       <td className="p-6 font-mono font-black text-orange-600">#{l.id}</td>
                       <td className="p-6 font-black text-slate-900">{l.name}</td>
-                      <td className="p-6 font-bold text-slate-500">لأسبوع #{l.weekId}</td>
+                      <td className="p-6 font-bold text-slate-500">لأسبوع #{l.week_id}</td>
                       <td className="p-6"><span className="bg-orange-100 text-orange-600 px-3 py-1 rounded-full text-xs font-black italic">{l.type}</span></td>
                       <td className="p-6 flex items-center gap-3">
                          <button onClick={() => { setCurrentEdit(l); setIsModalOpen(true); }} className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"><Edit size={18}/></button>
@@ -299,7 +303,7 @@ export default function AdminGradeManage({ grade }: { grade: 1 | 2 | 3 }) {
                               <label className="text-sm font-black text-slate-700 underline decoration-blue-600 decoration-2">رابط الصورة (Drive/URL)</label>
                               <div className="relative">
                                 <ImageIcon className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400" size={18}/>
-                                <input name="imageUrl" defaultValue={currentEdit?.imageUrl} className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl py-4 pr-12 pl-4 font-bold outline-none focus:border-blue-600 transition-all" placeholder="رابط صورة الباقة..." />
+                                <input name="image_url" defaultValue={currentEdit?.image_url} className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl py-4 pr-12 pl-4 font-bold outline-none focus:border-blue-600 transition-all" placeholder="رابط صورة الباقة..." />
                               </div>
                            </div>
                            <div className="space-y-2">
@@ -319,11 +323,11 @@ export default function AdminGradeManage({ grade }: { grade: 1 | 2 | 3 }) {
                            </div>
                            <div className="space-y-2">
                               <label className="text-sm font-black text-slate-700">السعر قبل الخصم (اختياري)</label>
-                              <input name="oldPrice" type="number" defaultValue={currentEdit?.oldPrice} className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl py-4 px-6 font-black italic outline-none focus:border-blue-600 transition-all" placeholder="0" />
+                              <input name="old_price" type="number" defaultValue={currentEdit?.old_price} className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl py-4 px-6 font-black italic outline-none focus:border-blue-600 transition-all" placeholder="0" />
                            </div>
                         </div>
                         <label className="flex items-center gap-3 cursor-pointer p-4 bg-green-50 border-2 border-dashed border-green-200 rounded-2xl">
-                           <input type="checkbox" name="isFree" defaultChecked={currentEdit?.isFree} className="w-5 h-5 rounded border-green-300 text-green-600 focus:ring-green-500" />
+                           <input type="checkbox" name="is_free" defaultChecked={currentEdit?.is_free} className="w-5 h-5 rounded border-green-300 text-green-600 focus:ring-green-500" />
                            <span className="text-green-800 font-black italic">باقة مجانية (تظهر في قسم المحاضرات المجانية)</span>
                         </label>
                       </div>
@@ -333,7 +337,7 @@ export default function AdminGradeManage({ grade }: { grade: 1 | 2 | 3 }) {
                     {activeTab === 'weeks' && (
                       <div className="space-y-2">
                          <label className="text-sm font-black text-slate-700">تبع باقة ID (الرقم)</label>
-                         <input required name="packageId" type="number" defaultValue={currentEdit?.packageId} className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl py-4 px-6 font-black italic outline-none focus:border-blue-600 transition-all" placeholder="مثلاً: 5000" />
+                         <input required name="package_id" type="number" defaultValue={currentEdit?.package_id} className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl py-4 px-6 font-black italic outline-none focus:border-blue-600 transition-all" placeholder="مثلاً: 5000" />
                       </div>
                     )}
 
@@ -343,7 +347,7 @@ export default function AdminGradeManage({ grade }: { grade: 1 | 2 | 3 }) {
                         <div className="grid grid-cols-2 gap-4">
                            <div className="space-y-2">
                               <label className="text-sm font-black text-slate-700">تبع أسبوع ID</label>
-                              <input required name="weekId" type="number" defaultValue={currentEdit?.weekId} className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl py-4 px-6 font-black italic outline-none focus:border-blue-600 transition-all" placeholder="مثلاً: 1" />
+                              <input required name="week_id" type="number" defaultValue={currentEdit?.week_id} className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl py-4 px-6 font-black italic outline-none focus:border-blue-600 transition-all" placeholder="مثلاً: 1" />
                            </div>
                            <div className="space-y-2">
                               <label className="text-sm font-black text-slate-700">نوع المحتوى</label>

@@ -39,8 +39,8 @@ export default function PackageDetails() {
       const { data: subData, error: subError } = await supabase
         .from('subscriptions')
         .select('*')
-        .eq('userId', profile.id)
-        .eq('packageId', id)
+        .eq('user_id', profile.id)
+        .eq('package_id', id)
         .maybeSingle();
 
       if (subError || !subData) {

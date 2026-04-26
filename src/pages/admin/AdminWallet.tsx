@@ -160,10 +160,10 @@ export default function AdminWallet() {
                   className="bg-blue-50 p-8 rounded-3xl border-2 border-blue-100 space-y-6"
                 >
                    <div className="flex items-center gap-6">
-                      <img src={foundUser.photoUrl} className="w-20 h-20 rounded-full border-4 border-white" alt="Found User" />
+                      <img src={foundUser.photo_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${foundUser.id}`} className="w-20 h-20 rounded-full border-4 border-white" alt="Found User" />
                       <div>
-                         <h4 className="text-2xl font-black text-slate-900">{foundUser.firstName} {foundUser.lastName}</h4>
-                         <p className="text-blue-600 font-bold italic">رصيده الحالي: {foundUser.walletBalance} ج.م</p>
+                         <h4 className="text-2xl font-black text-slate-900">{foundUser.first_name} {foundUser.last_name}</h4>
+                         <p className="text-blue-600 font-bold italic">رصيده الحالي: {foundUser.wallet_balance} ج.م</p>
                       </div>
                    </div>
 

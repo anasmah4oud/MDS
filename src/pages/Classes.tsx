@@ -39,7 +39,7 @@ export default function Classes() {
       const { data: packList, error: packError } = await supabase
         .from('packages')
         .select('*')
-        .eq('gradeId', profile.grade);
+        .eq('grade_id', profile.grade);
       
       if (packError) throw packError;
       setPackages(packList as Package[]);
@@ -47,11 +47,11 @@ export default function Classes() {
       // 2. Fetch User Subscriptions
       const { data: subData, error: subError } = await supabase
         .from('subscriptions')
-        .select('packageId')
-        .eq('userId', profile.id);
+        .select('package_id')
+        .eq('user_id', profile.id);
       
       if (subError) throw subError;
-      const subList = subData.map(d => d.packageId);
+      const subList = subData.map(d => d.package_id);
       setSubscriptions(subList);
     } catch (err) {
       console.error(err);
@@ -99,16 +99,16 @@ export default function Classes() {
       const { error: subError } = await supabase
         .from('subscriptions')
         .insert({
-          userId: profile.id,
-          packageId: selectedPackage.id,
-          paymentMethod: 'wallet'
+          user_id: profile.id,
+          package_id: selectedPackage.id,
+          payment_method: 'wallet'
         });
 
       if (subError) throw subError;
 
       // 4. Create transaction log
       await supabase.from('transactions').insert({
-        userId: profile.id,
+        user_id: profile.id,
         amount: selectedPackage.price,
         type: 'purchase',
         description: `شراء باقة: ${selectedPackage.name}`
@@ -135,8 +135,8 @@ export default function Classes() {
         .from('codes')
         .select('*')
         .eq('code', activationCode)
-        .eq('packageId', selectedPackage.id)
-        .eq('isUsed', false)
+        .eq('package_id', selectedPackage.id)
+        .eq('is_used', false)
         .single();
 
       if (codeError || !codeData) {
@@ -147,9 +147,9 @@ export default function Classes() {
       const { error: updateError } = await supabase
         .from('codes')
         .update({
-          isUsed: true,
-          usedBy: profile.id,
-          usedAt: new Date().toISOString()
+          is_used: true,
+          used_by: profile.id,
+          used_at: new Date().toISOString()
         })
         .eq('id', codeData.id);
 
@@ -159,9 +159,9 @@ export default function Classes() {
       const { error: subError } = await supabase
         .from('subscriptions')
         .insert({
-          userId: profile.id,
-          packageId: selectedPackage.id,
-          paymentMethod: 'code'
+          user_id: profile.id,
+          package_id: selectedPackage.id,
+          payment_method: 'code'
         });
 
       if (subError) throw subError;
@@ -397,7 +397,7 @@ const PackageCard: React.FC<{ pkg: Package, isSubscribed: boolean, onBuy: () => 
     >
       <div className="relative h-56 overflow-hidden">
         <img 
-          src={pkg.imageUrl || "https://placehold.co/600x400/3b82f6/white?text=البارع"} 
+          src={pkg.image_url || "https://placehold.co/600x400/3b82f6/white?text=البارع"} 
           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
           alt={pkg.name}
         />
@@ -409,7 +409,7 @@ const PackageCard: React.FC<{ pkg: Package, isSubscribed: boolean, onBuy: () => 
           </div>
         )}
         
-        {pkg.oldPrice && pkg.oldPrice > pkg.price && (
+        {pkg.old_price && pkg.old_price > pkg.price && (
           <div className="absolute top-4 left-4 bg-orange-500 text-white px-4 py-2 rounded-full font-black text-xs shadow-lg shadow-orange-500/40">
              عرض محدود!
           </div>
@@ -426,8 +426,8 @@ const PackageCard: React.FC<{ pkg: Package, isSubscribed: boolean, onBuy: () => 
         
         <div className="pt-6 border-t border-slate-50 flex items-center justify-between gap-4">
           <div className="flex flex-col">
-             {pkg.oldPrice && (
-               <span className="text-xs font-bold text-slate-400 line-through mb-1">{pkg.oldPrice} ج.م</span>
+             {pkg.old_price && (
+               <span className="text-xs font-bold text-slate-400 line-through mb-1">{pkg.old_price} ج.م</span>
              )}
              <span className="text-2xl font-black text-slate-900">{pkg.price} <span className="text-sm font-bold text-slate-500">ج.م</span></span>
           </div>

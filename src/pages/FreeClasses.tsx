@@ -39,11 +39,11 @@ export default function FreeClasses() {
 
       const { data: subData, error: subError } = await supabase
         .from('subscriptions')
-        .select('packageId')
-        .eq('userId', profile.id);
+        .select('package_id')
+        .eq('user_id', profile.id);
       
       if (subError) throw subError;
-      setSubscriptions(subData.map(d => d.packageId));
+      setSubscriptions(subData.map(d => d.package_id));
     } catch (err) {
       console.error(err);
     } finally {
@@ -57,9 +57,9 @@ export default function FreeClasses() {
       const { error: subError } = await supabase
         .from('subscriptions')
         .insert({
-          userId: profile.id,
-          packageId: pId,
-          paymentMethod: 'free'
+          user_id: profile.id,
+          package_id: pId,
+          payment_method: 'free'
         });
 
       if (subError) throw subError;
