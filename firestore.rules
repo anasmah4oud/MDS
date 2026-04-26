@@ -1,0 +1,123 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 0. Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // 3. Primitives
+    function isValidId(id) { return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); }
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+    function isSignedIn() { return request.auth != null; }
+    function isVerified() { return isSignedIn() && request.auth.token.email_verified == true; }
+    
+    // Admin check: Hardcoded for initial setup as requested
+    function isAdmin() { 
+      return isSignedIn() && (
+        request.auth.token.email.lower() == 'anasmd2026@gmail.com' ||
+        request.auth.token.email.lower() == 'anasmah4oud@gmail.com' ||
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    // 1. Users Collection
+    match /users/{userId} {
+      function isValidUser(data) {
+        return data.firstName is string && data.firstName.size() <= 64 &&
+               data.lastName is string && data.lastName.size() <= 64 &&
+               data.phone is string && data.phone.size() <= 20 &&
+               data.email is string && data.email.size() <= 128 &&
+               data.walletBalance is number &&
+               data.role in ['student', 'admin'] &&
+               data.grade is number &&
+               data.isBlocked is bool &&
+               data.studentCode is number;
+      }
+
+      function isPhoneCheckQuery() {
+        // Allows the query used in Register.tsx to check for existing phone
+        return request.query.limit <= 1;
+      }
+
+      function isMasterAdmin() {
+        return isSignedIn() && (
+          request.auth.token.email.lower() == 'anasmd2026@gmail.com' ||
+          request.auth.token.email.lower() == 'anasmah4oud@gmail.com'
+        );
+      }
+
+      allow get: if isOwner(userId) || isAdmin();
+      allow list: if isAdmin() || isPhoneCheckQuery();
+      
+      allow create: if isOwner(userId) && 
+                    isValidUser(incoming()) && 
+                    incoming().walletBalance == 0 &&
+                    (incoming().role == 'student' || (incoming().role == 'admin' && isMasterAdmin())) &&
+                    incoming().isBlocked == false;
+      
+      allow update: if (isAdmin()) || (
+        isOwner(userId) && 
+        isValidUser(incoming()) && 
+        incoming().diff(existing()).affectedKeys().hasOnly(['firstName', 'lastName', 'birthDate', 'photoUrl', 'city', 'governorate', 'track', 'parentPhone'])
+      );
+    }
+
+    // 2. Packages
+    match /packages/{packageId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    // 3. Weeks
+    match /weeks/{weekId} {
+      allow read: if isSignedIn(); // Add subscription check later if needed
+      allow write: if isAdmin();
+    }
+
+    // 4. Lessons
+    match /lessons/{lessonId} {
+      allow read: if isSignedIn(); // Add subscription check later
+      allow write: if isAdmin();
+    }
+
+    // 5. Subscriptions
+    match /subscriptions/{subscriptionId} {
+      allow read: if isAdmin() || (isSignedIn() && (resource == null || resource.data.userId == request.auth.uid));
+      allow create: if isSignedIn() && incoming().userId == request.auth.uid;
+      allow update, delete: if isAdmin();
+    }
+
+    // 6. Transactions
+    match /transactions/{transactionId} {
+      allow read: if isAdmin() || (isSignedIn() && (resource == null || resource.data.userId == request.auth.uid));
+      allow create: if isAdmin(); // Transactions are created by system/admin
+    }
+
+    // 7. Codes
+    match /codes/{codeId} {
+      // Allow searching for a code by its value
+      allow read: if isAdmin() || (isSignedIn());
+      // Allow marking as used
+      allow update: if isSignedIn() && (
+        incoming().diff(existing()).affectedKeys().hasOnly(['isUsed', 'usedBy', 'usedAt'])
+      );
+      allow create, delete: if isAdmin();
+    }
+
+    // 8. Admin Metadata
+    match /admins/{adminId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && (
+        request.auth.token.email == 'anasmd2026@gmail.com' ||
+        request.auth.token.email == 'anasmah4oud@gmail.com'
+      );
+      allow update, delete: if false; 
+    }
+  }
+}

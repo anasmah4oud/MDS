@@ -1,0 +1,117 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "Platform users (students and admins)",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "studentCode": { "type": "integer", "description": "Starts from 5000" },
+        "firstName": { "type": "string" },
+        "lastName": { "type": "string" },
+        "governorate": { "type": "string" },
+        "city": { "type": "string" },
+        "phone": { "type": "string" },
+        "parentPhone": { "type": "string" },
+        "email": { "type": "string" },
+        "grade": { "type": "integer", "enum": [1, 2, 3] },
+        "track": { "type": "string", "enum": ["scientific", "literary"] },
+        "birthDate": { "type": "string", "format": "date" },
+        "gender": { "type": "string", "enum": ["male", "female"] },
+        "photoUrl": { "type": "string" },
+        "walletBalance": { "type": "number", "default": 0 },
+        "role": { "type": "string", "enum": ["student", "admin"] },
+        "isBlocked": { "type": "boolean", "default": false },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["firstName", "lastName", "phone", "email", "grade"]
+    },
+    "Package": {
+      "title": "Package",
+      "description": "Educational course packages",
+      "type": "object",
+      "properties": {
+        "id": { "type": "integer", "description": "Starts from 5000" },
+        "gradeId": { "type": "integer" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "type": { "type": "string", "enum": ["offer", "monthly", "weekly", "quarterly"] },
+        "price": { "type": "number" },
+        "oldPrice": { "type": "number" },
+        "imageUrl": { "type": "string" },
+        "isFree": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      }
+    },
+    "Week": {
+      "title": "Week",
+      "description": "Weekly modules within packages",
+      "type": "object",
+      "properties": {
+        "id": { "type": "integer", "description": "Starts from 1" },
+        "packageId": { "type": "integer" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      }
+    },
+    "Lesson": {
+      "title": "Lesson",
+      "description": "Individual lessons (video, pdf, exam)",
+      "type": "object",
+      "properties": {
+        "id": { "type": "integer", "description": "Starts from 100" },
+        "weekId": { "type": "integer" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "type": { "type": "string", "enum": ["video_exp", "video_hw", "pdf", "exam_mcq", "hw_mcq"] },
+        "url": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      }
+    },
+    "Subscription": {
+      "title": "Subscription",
+      "description": "Student enrollment in packages",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "packageId": { "type": "integer" },
+        "activatedAt": { "type": "string", "format": "date-time" }
+      }
+    },
+    "Transaction": {
+      "title": "Transaction",
+      "description": "Wallet history",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "amount": { "type": "number" },
+        "type": { "type": "string", "enum": ["deposit", "purchase"] },
+        "description": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      }
+    },
+    "Code": {
+      "title": "Code",
+      "description": "Prepaid codes for packages",
+      "type": "object",
+      "properties": {
+        "id": { "type": "integer" },
+        "code": { "type": "string", "description": "MD-2026-XXXXXXXX" },
+        "packageId": { "type": "integer" },
+        "isUsed": { "type": "boolean" },
+        "usedBy": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      }
+    }
+  },
+  "firestore": {
+    "users": { "schema": "User", "description": "Student profiles" },
+    "packages": { "schema": "Package", "description": "Available course packages" },
+    "weeks": { "schema": "Week", "description": "Weekly modules" },
+    "lessons": { "schema": "Lesson", "description": "Lesson content" },
+    "subscriptions": { "schema": "Subscription", "description": "User enrollments" },
+    "transactions": { "schema": "Transaction", "description": "Wallet transactions" },
+    "codes": { "schema": "Code", "description": "Activation codes" }
+  }
+}

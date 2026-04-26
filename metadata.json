@@ -1,0 +1,14 @@
+{
+  "name": "منصة البارع محمود الديب",
+  "description": "المنصة التعليمية الشاملة للغة العربية للثانوية العامة - أستاذ محمود الديب",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ],
+  "majorCapabilities": [
+    "course_management",
+    "student_dashboard",
+    "admin_control_panel",
+    "wallet_system"
+  ]
+}

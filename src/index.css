@@ -1,0 +1,24 @@
+@import "tailwindcss";
+
+@layer utilities {
+  @keyframes loading {
+    0% { width: 0%; }
+    50% { width: 70%; }
+    100% { width: 100%; }
+  }
+
+  @keyframes marquee {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(100%); }
+  }
+}
+
+:root {
+  --primary: #3b82f6;
+  --primary-foreground: #ffffff;
+}
+
+[data-theme='dark'] {
+  --primary: #60a5fa;
+  --primary-foreground: #0f172a;
+}
