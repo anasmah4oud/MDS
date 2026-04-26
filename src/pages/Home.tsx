@@ -209,9 +209,9 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <GradeCard grade={1} title="الصف الأول الثانوي" img="https://placehold.co/600x400/3b82f6/white?text=1st+Sec" />
-            <GradeCard grade={2} title="الصف الثاني الثانوي" img="https://placehold.co/600x400/3b82f6/white?text=2nd+Sec" />
-            <GradeCard grade={3} title="الصف الثالث الثانوي" img="https://placehold.co/600x400/3b82f6/white?text=3rd+Sec" />
+            <GradeCard grade={1} title="الصف الأول الثانوي" img="/grade1.png" />
+            <GradeCard grade={2} title="الصف الثاني الثانوي" img="/grade2.png" />
+            <GradeCard grade={3} title="الصف الثالث الثانوي" img="/grade3.png" />
           </div>
         </div>
       </section>
