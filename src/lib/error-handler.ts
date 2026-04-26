@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { auth } from './firebase';
+import { supabase } from './supabase';
 
 export enum OperationType {
   CREATE = 'create',
@@ -14,41 +14,29 @@ export enum OperationType {
   WRITE = 'write',
 }
 
-export interface FirestoreErrorInfo {
+export interface DatabaseErrorInfo {
   error: string;
   operationType: OperationType;
   path: string | null;
   authInfo: {
     userId?: string | null;
     email?: string | null;
-    emailVerified?: boolean | null;
-    isAnonymous?: boolean | null;
-    tenantId?: string | null;
-    providerInfo?: {
-      providerId?: string | null;
-      email?: string | null;
-    }[];
   };
 }
 
-export function handleFirestoreError(error: unknown, operationType: OperationType, path: string | null, customUser?: any) {
-  const currentUser = customUser || auth.currentUser;
-  const errInfo: FirestoreErrorInfo = {
+export async function handleDatabaseError(error: unknown, operationType: OperationType, path: string | null) {
+  const { data: { session } } = await supabase.auth.getSession();
+  const currentUser = session?.user;
+  
+  const errInfo: DatabaseErrorInfo = {
     error: error instanceof Error ? error.message : String(error),
     authInfo: {
-      userId: currentUser?.uid,
+      userId: currentUser?.id,
       email: currentUser?.email,
-      emailVerified: currentUser?.emailVerified,
-      isAnonymous: currentUser?.isAnonymous,
-      tenantId: currentUser?.tenantId,
-      providerInfo: currentUser?.providerData?.map((provider: any) => ({
-        providerId: provider.providerId,
-        email: provider.email,
-      })) || []
     },
     operationType,
     path
   }
-  console.error('Firestore Error: ', JSON.stringify(errInfo));
+  console.error('Database Error: ', JSON.stringify(errInfo));
   throw new Error(JSON.stringify(errInfo));
 }
