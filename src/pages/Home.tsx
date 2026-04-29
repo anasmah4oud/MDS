@@ -26,6 +26,18 @@ export default function Home() {
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
+  // Show loading while checking auth
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="relative">
+          <img src="/logo.png" alt="Logo" className="w-20 h-20 rounded-full animate-pulse" />
+          <div className="absolute inset-0 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      </div>
+    );
+  }
+
   useEffect(() => {
     // Wait for auth to finish loading before redirecting
     if (!loading && user && profile) {
