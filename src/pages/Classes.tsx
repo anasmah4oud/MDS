@@ -428,7 +428,6 @@ const PackageCard: React.FC<{ pkg: Package, isSubscribed: boolean, onBuy: () => 
         )}
 
         <div className="absolute bottom-8 right-8">
-           <span className="text-blue-400 text-xs font-black block mb-2 uppercase tracking-[0.2em]">Package 2026</span>
            <h4 className="text-white text-3xl font-black font-display tracking-tight leading-tight">{pkg.name}</h4>
         </div>
       </div>
