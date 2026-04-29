@@ -22,19 +22,20 @@ export default function Home() {
     restDelta: 0.001
   });
 
-  const { user, profile, isAdmin } = useAuth();
+  const { user, profile, isAdmin, loading } = useAuth();
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   useEffect(() => {
-    if (user && profile) {
+    // Wait for auth to finish loading before redirecting
+    if (!loading && user && profile) {
       if (isAdmin) {
-        navigate('/anas/md/200/9');
+        navigate('/anas/md/200/9', { replace: true });
       } else {
-        navigate('/dashboard');
+        navigate('/dashboard', { replace: true });
       }
     }
-  }, [user, profile, isAdmin, navigate]);
+  }, [user, profile, isAdmin, navigate, loading]);
 
   return (
     <div className="min-h-screen bg-slate-50 overflow-x-hidden" dir="rtl">
@@ -140,14 +141,24 @@ export default function Home() {
         </div>
       </section>
 
-       {/* Marquee Section */}
-      <div className="bg-blue-600 py-6 overflow-hidden rotate-[-2deg] scale-[1.05] my-10 border-y-4 border-white">
-        <div className="flex whitespace-nowrap animate-[marquee_15s_linear_infinite] gap-12">
-          {Array(10).fill("( وما توفيقي إلا بالله )").map((text, i) => (
-            <span key={i} className="text-white text-3xl font-black tracking-widest">{text}</span>
-          ))}
-        </div>
-      </div>
+<div className="bg-blue-600 py-6 overflow-hidden rotate-[-2deg] scale-[1.05] my-10 border-y-4 border-white">
+  <div className="flex whitespace-nowrap gap-12 animate-[marquee_15s_linear_infinite]">
+    
+    {/* تكرار مرتين علشان الحركة تبقى seamless */}
+    {[...Array(2)].map((_, j) =>
+      Array(10).fill("( وما توفيقي إلا بالله )").map((text, i) => (
+        <span
+          key={j + "-" + i}
+          className="text-white text-3xl font-black tracking-widest"
+        >
+          {text}
+        </span>
+      ))
+    )}
+
+  </div>
+</div>
+
 
       {/* Features Section */}
       <section className="py-24 bg-white relative">
