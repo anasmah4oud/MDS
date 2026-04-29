@@ -21,20 +21,7 @@
 }
 
 .plyr--video {
-  @apply rounded-xl overflow-hidden w-full h-full;
-}
-
-.plyr--video .plyr__video-wrapper {
-  @apply w-full h-full;
-}
-
-.plyr--video iframe {
-  @apply w-full h-full;
-}
-
-/* Full width video container */
-.plyr {
-  @apply w-full h-full;
+  @apply rounded-xl overflow-hidden;
 }
 
 .plyr--full-ui.plyr--video .plyr__control--overlaid {
@@ -43,4 +30,20 @@
 
 .plyr--full-ui.plyr--video .plyr__control:hover {
   @apply bg-blue-600;
+}
+
+/* Ensure player fills container precisely */
+.plyr {
+  @apply w-full h-full;
+}
+
+.plyr--video .plyr__video-wrapper {
+  @apply bg-black rounded-xl;
+}
+
+/* Improve fullscreen experience on mobile */
+@media (max-width: 768px) {
+  .plyr--fullscreen-active .plyr__video-wrapper {
+    @apply rounded-none;
+  }
 }
