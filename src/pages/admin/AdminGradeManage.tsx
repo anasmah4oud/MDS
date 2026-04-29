@@ -15,12 +15,6 @@ import { supabase } from '../../lib/supabase';
 import { Package as PackageType, Week, Lesson } from '../../types';
 
 export default function AdminGradeManage({ grade }: { grade: 1 | 2 | 3 }) {
-  // ألوان متدرجة جديدة
-  const gradeColors = {
-    1: 'from-blue-500 to-blue-300',
-    2: 'from-emerald-500 to-emerald-300',
-    3: 'from-orange-500 to-orange-300',
-  };
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'packages' | 'weeks' | 'lessons'>('packages');
   const [loading, setLoading] = useState(true);
@@ -153,19 +147,18 @@ export default function AdminGradeManage({ grade }: { grade: 1 | 2 | 3 }) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100" dir="rtl">
+    <div className="min-h-screen bg-slate-50" dir="rtl">
       {/* Admin Header */}
-      <header className={`bg-gradient-to-l ${gradeColors[grade]} border-b border-slate-200 h-24 px-4 md:px-12 flex items-center justify-between sticky top-0 z-50 shadow-lg shadow-blue-100/20` }>
+      <header className="bg-white border-b border-slate-200 h-20 px-4 md:px-12 flex items-center justify-between sticky top-0 z-50">
         <div className="flex items-center gap-4">
-           <img src="/logo.png" className="w-16 h-16 rounded-full border-4 border-white shadow-lg" alt="Master" />
+           <img src="/logo.png" className="w-12 h-12 rounded-full" alt="Master" />
            <div>
-             <h1 className="text-2xl md:text-3xl font-black text-white drop-shadow">إدارة الصف {grade === 1 ? 'الأول' : grade === 2 ? 'الثاني' : 'الثالث'} الثانوى</h1>
-             <span className="text-white/80 font-bold text-sm">لوحة تحكم احترافية لإدارة الباقات والمحتوى</span>
+             <h1 className="text-xl font-black text-slate-900">إدارة الصف {grade === 1 ? 'الأول' : grade === 2 ? 'الثاني' : 'الثالث'} الثانوى</h1>
            </div>
         </div>
         <button 
           onClick={() => navigate('/anas/md/200/9')}
-          className="flex items-center gap-2 bg-white/20 text-white font-black px-6 py-3 rounded-xl hover:bg-white/40 transition-all shadow-md backdrop-blur"
+          className="flex items-center gap-2 text-slate-600 font-bold hover:text-blue-600 transition-colors"
         >
           <ChevronRight />
           العودة للمسؤول
@@ -173,13 +166,8 @@ export default function AdminGradeManage({ grade }: { grade: 1 | 2 | 3 }) {
       </header>
 
       <main className="max-w-7xl mx-auto p-4 md:p-12 space-y-8">
-        {/* شريط ترحيبي */}
-        <div className={`rounded-2xl p-6 mb-4 bg-gradient-to-l ${gradeColors[grade]} text-white font-black text-lg shadow-md flex items-center gap-4`}>
-          <LayoutDashboard size={28} className="drop-shadow" />
-          أهلاً بك في لوحة تحكم الصف {grade === 1 ? 'الأول' : grade === 2 ? 'الثاني' : 'الثالث'} - يمكنك إدارة الباقات والأسابيع والمحتوى بسهولة واحترافية.
-        </div>
         {/* Tabs */}
-        <div className="flex flex-wrap gap-2 md:gap-4 bg-white p-3 md:p-4 rounded-[20px] md:rounded-[28px] border border-slate-200 shadow-lg shadow-blue-100/10 items-center">
+        <div className="flex flex-wrap gap-2 md:gap-4 bg-white p-3 md:p-4 rounded-[20px] md:rounded-[28px] border border-slate-200 shadow-sm items-center">
             <TabButton active={activeTab === 'packages'} onClick={() => setActiveTab('packages')} icon={<Package size={18} />}>الباقات</TabButton>
             <TabButton active={activeTab === 'weeks'} onClick={() => setActiveTab('weeks')} icon={<Calendar size={18} />}>الأسابيع</TabButton>
             <TabButton active={activeTab === 'lessons'} onClick={() => setActiveTab('lessons')} icon={<BookOpen size={18} />}>المحتوى</TabButton>
@@ -195,14 +183,14 @@ export default function AdminGradeManage({ grade }: { grade: 1 | 2 | 3 }) {
         </div>
 
         {/* Content Table Container */}
-        <div className="bg-white rounded-[24px] md:rounded-[32px] border border-slate-100 shadow-xl shadow-blue-100/10 overflow-hidden">
+        <div className="bg-white rounded-[24px] md:rounded-[32px] border border-slate-100 shadow-sm overflow-hidden">
            <div className="overflow-x-auto">
              {loading ? (
                <div className="p-20 text-center font-bold text-slate-400 animate-pulse italic">جاري تحميل البيانات...</div>
              ) : (
-               <table className="w-full text-right min-w-[800px] font-cairo">
+               <table className="w-full text-right min-w-[800px]">
                   <thead>
-                    <tr className="bg-gradient-to-l from-blue-50 to-white border-b border-slate-100 text-blue-700 text-xs font-black uppercase tracking-widest">
+                    <tr className="bg-slate-50 border-b border-slate-100 text-slate-400 text-xs font-black uppercase tracking-widest">
                       <th className="p-6 text-right">ID</th>
                     <th className="p-6">الاسـم</th>
                     <th className="p-6">التفاصيل</th>
@@ -212,7 +200,7 @@ export default function AdminGradeManage({ grade }: { grade: 1 | 2 | 3 }) {
                 </thead>
                 <tbody className="divide-y divide-slate-50">
                   {activeTab === 'packages' && packages.map(p => (
-                    <tr key={p.id} className="hover:bg-blue-50/40 transition-colors group">
+                    <tr key={p.id} className="hover:bg-slate-50 transition-colors group">
                       <td className="p-6 font-mono font-black text-blue-600">#{p.id}</td>
                       <td className="p-6 font-black text-slate-900">{p.name}</td>
                       <td className="p-6 font-bold text-slate-500 max-w-xs truncate">{p.description}</td>
@@ -227,7 +215,7 @@ export default function AdminGradeManage({ grade }: { grade: 1 | 2 | 3 }) {
                     </tr>
                   ))}
                   {activeTab === 'weeks' && weeks.map(w => (
-                    <tr key={w.id} className="hover:bg-emerald-50/40 transition-colors group">
+                    <tr key={w.id} className="hover:bg-slate-50 transition-colors group">
                       <td className="p-6 font-mono font-black text-emerald-600">#{w.id}</td>
                       <td className="p-6 font-black text-slate-900">{w.name}</td>
                       <td className="p-6 font-bold text-slate-500">من باقة #{w.package_id}</td>
@@ -239,7 +227,7 @@ export default function AdminGradeManage({ grade }: { grade: 1 | 2 | 3 }) {
                     </tr>
                   ))}
                    {activeTab === 'lessons' && lessons.map(l => (
-                    <tr key={l.id} className="hover:bg-orange-50/40 transition-colors group">
+                    <tr key={l.id} className="hover:bg-slate-50 transition-colors group">
                       <td className="p-6 font-mono font-black text-orange-600">#{l.id}</td>
                       <td className="p-6 font-black text-slate-900">{l.name}</td>
                       <td className="p-6 font-bold text-slate-500">لأسبوع #{l.week_id}</td>
@@ -255,7 +243,7 @@ export default function AdminGradeManage({ grade }: { grade: 1 | 2 | 3 }) {
                     (activeTab === 'weeks' && weeks.length === 0) || 
                     (activeTab === 'lessons' && lessons.length === 0)) && !loading && (
                     <tr>
-                      <td colSpan={5} className="p-20 text-center text-slate-400 font-black italic">لا يوجد بيانات لعرضها. أضف جديداً الآن!</td>
+                      <td colSpan={5} className="p-20 text-center text-slate-300 font-black italic">لا يوجد بيانات لعرضها. أضف جديداً الآن!</td>
                     </tr>
                   )}
                 </tbody>
@@ -402,7 +390,7 @@ function TabButton({ children, active, onClick, icon }: { children: React.ReactN
   return (
     <button 
       onClick={onClick}
-      className={`flex items-center gap-3 px-8 py-3.5 rounded-2xl font-black text-sm transition-all border-2 ${active ? 'bg-gradient-to-l from-blue-600 to-blue-400 text-white shadow-xl border-blue-400' : 'text-blue-700 border-blue-100 hover:bg-blue-50/30'} font-cairo`}
+      className={`flex items-center gap-3 px-8 py-3.5 rounded-2xl font-black text-sm transition-all ${active ? 'bg-slate-900 text-white shadow-xl shadow-slate-900/10' : 'text-slate-500 hover:bg-slate-50'}`}
     >
       {icon}
       {children}

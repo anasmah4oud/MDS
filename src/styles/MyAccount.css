@@ -1,0 +1,16 @@
+@reference "../index.css";
+
+/**
+ * My Account Page Styles
+ */
+.account-card {
+  @apply bg-white rounded-[2.5rem] p-10 border border-slate-100 shadow-soft;
+}
+
+.profile-img-container {
+  @apply relative w-32 h-32 md:w-48 md:h-48 mx-auto -mt-24 md:-mt-32 mb-8;
+}
+
+.profile-img {
+  @apply w-full h-full rounded-full border-8 border-white shadow-2xl object-cover;
+}

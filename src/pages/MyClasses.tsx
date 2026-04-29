@@ -13,6 +13,7 @@ import {
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { Package } from '../types';
+import '../styles/MyClasses.css';
 
 export default function MyClasses() {
   const { profile } = useAuth();
@@ -30,12 +31,12 @@ export default function MyClasses() {
       // 1. Get sub package IDs first
       const { data: subData, error: subError } = await supabase
         .from('subscriptions')
-        .select('packageId')
-        .eq('userId', profile.id);
+        .select('package_id')
+        .eq('user_id', profile.id);
       
       if (subError) throw subError;
 
-      const subIds = subData.map(d => d.packageId);
+      const subIds = subData.map(d => d.package_id);
 
       if (subIds.length === 0) {
         setPackages([]);
@@ -107,8 +108,8 @@ export default function MyClasses() {
                     whileHover={{ y: -8 }}
                     className="bg-white rounded-[32px] overflow-hidden border border-slate-100 shadow-sm hover:shadow-xl transition-all h-full flex flex-col group"
                   >
-                     <div className="relative h-52">
-                        <img src={p.image_url} alt={p.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                     <div className="relative aspect-video overflow-hidden bg-slate-200">
+                        <img src={p.image_url} alt={p.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
                         <div className="absolute inset-0 bg-slate-900/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                            <div className="bg-white text-blue-600 p-4 rounded-full shadow-2xl">
                               <PlayCircle size={32} />

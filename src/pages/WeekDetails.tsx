@@ -84,7 +84,12 @@ export default function WeekDetails() {
                          <p className="text-xs font-bold text-slate-400 capitalize">{lesson.type}</p>
                       </div>
                    </div>
-                   <button className="bg-slate-900 text-white px-6 py-3 rounded-xl font-black text-sm hover:bg-blue-600 transition-all">دخول</button>
+                   <Link 
+                    to={lesson.type.startsWith('video') ? `/video/${lesson.id}` : '#'} 
+                    className="bg-slate-900 text-white px-6 py-3 rounded-xl font-black text-sm hover:bg-blue-600 transition-all text-center min-w-[100px]"
+                   >
+                     دخول
+                   </Link>
                 </div>
              ))}
              {lessons.length === 0 && (

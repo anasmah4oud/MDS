@@ -182,7 +182,13 @@ export default function PackageDetails() {
                       {(lessonsMap[week.id] || []).map((lesson) => (
                         <button 
                           key={lesson.id}
-                          onClick={() => setSelectedLesson(lesson)}
+                          onClick={() => {
+                            if (lesson.type.startsWith('video')) {
+                              navigate(`/video/${lesson.id}`);
+                            } else {
+                              setSelectedLesson(lesson);
+                            }
+                          }}
                           className="w-full flex items-center justify-between p-4 md:p-6 bg-white hover:bg-white rounded-[18px] md:rounded-2xl transition-all group border border-slate-100/50 shadow-sm hover:shadow-md hover:-translate-y-0.5"
                         >
                           <div className="flex items-center gap-3 md:gap-4">
@@ -454,6 +460,7 @@ function VideoPlayer({ url }: { url: string }) {
 }
 
 function PdfViewer({ url }: { url: string }) {
+  // Convert Google Drive link to direct viewer embed if possible
   let embedUrl = url;
   if (url.includes('drive.google.com/file/d/')) {
     const id = url.split('/d/')[1].split('/')[0];

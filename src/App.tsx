@@ -23,6 +23,7 @@ const PackageDetails = React.lazy(() => import('./pages/PackageDetails'));
 const WeekDetails = React.lazy(() => import('./pages/WeekDetails'));
 const Wallet = React.lazy(() => import('./pages/Wallet'));
 const MyAccount = React.lazy(() => import('./pages/MyAccount'));
+const VideoView = React.lazy(() => import('./pages/VideoView'));
 
 // Admin specific pages
 const AdminPasswords = React.lazy(() => import('./pages/admin/AdminPasswords'));
@@ -77,6 +78,7 @@ export default function App() {
             <Route path="/free" element={<ProtectedRoute><FreeClasses /></ProtectedRoute>} />
             <Route path="/package/:id" element={<ProtectedRoute><PackageDetails /></ProtectedRoute>} />
             <Route path="/week/:id" element={<ProtectedRoute><WeekDetails /></ProtectedRoute>} />
+            <Route path="/video/:lessonId" element={<ProtectedRoute><VideoView /></ProtectedRoute>} />
             <Route path="/charge" element={<ProtectedRoute><Wallet /></ProtectedRoute>} />
             <Route path="/my" element={<ProtectedRoute><MyAccount /></ProtectedRoute>} />
 

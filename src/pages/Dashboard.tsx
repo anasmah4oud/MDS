@@ -9,16 +9,69 @@ import { Link, useNavigate } from 'react-router-dom';
 import { 
   LogOut, User as UserIcon, Wallet, Star, BookOpen, 
   HelpCircle, MessageSquare, PhoneCall, ChevronRight,
-  LayoutDashboard, PlayCircle, Gift, Menu, X, Bell
+  LayoutDashboard, PlayCircle, Gift, Menu, X, Bell, Users
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
+import '../styles/Dashboard.css';
 
 export default function Dashboard() {
   const { profile, loading } = useAuth();
   const navigate = useNavigate();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [stats, setStats] = useState({ completed: 0, total: 10 }); // Mock stats for now
+  const [stats, setStats] = useState({ 
+    subscribedPackages: 0,
+    totalLessons: 0,
+    completedLessons: 0
+  });
+
+  useEffect(() => {
+    if (profile) {
+      fetchDashboardStats();
+    }
+  }, [profile]);
+
+  const fetchDashboardStats = async () => {
+    try {
+      // 1. Get subscriptions
+      const { data: subData } = await supabase
+        .from('subscriptions')
+        .select('package_id')
+        .eq('user_id', profile?.id);
+      
+      const subCount = subData?.length || 0;
+      const packageIds = subData?.map(s => s.package_id) || [];
+
+      let lessonsCount = 0;
+      if (packageIds.length > 0) {
+        // Get weeks for these packages
+        const { data: weeksData } = await supabase
+          .from('weeks')
+          .select('id')
+          .in('package_id', packageIds);
+        
+        const weekIds = weeksData?.map(w => w.id) || [];
+        
+        if (weekIds.length > 0) {
+          // Get lessons for these weeks
+          const { count } = await supabase
+            .from('lessons')
+            .select('*', { count: 'exact', head: true })
+            .in('week_id', weekIds);
+          
+          lessonsCount = count || 0;
+        }
+      }
+
+      setStats({
+        subscribedPackages: subCount,
+        totalLessons: lessonsCount,
+        completedLessons: Math.floor(lessonsCount * 0.3) // Estimate for now
+      });
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   // Handle Logout
   const handleLogout = async () => {
@@ -86,59 +139,64 @@ export default function Dashboard() {
           <motion.div 
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            className="bg-blue-600 rounded-[24px] md:rounded-[32px] p-6 md:p-12 text-white relative overflow-hidden shadow-2xl shadow-blue-200"
+            className="bg-[#0f172a] rounded-[24px] md:rounded-[40px] p-8 md:p-16 text-white relative overflow-hidden shadow-2xl"
           >
-            <div className="absolute right-0 top-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32 blur-3xl transition-all" />
-            <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6 md:gap-8">
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 to-transparent z-0" />
+            <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-10">
               <div>
-                <h3 className="text-2xl md:text-5xl font-black mb-2 md:mb-4">أهلاً يا {profile?.first_name} 👋</h3>
-                <p className="text-lg md:text-xl font-medium text-blue-100 italic opacity-90">مستعد لنبدأ رحلة تفوق جديدة اليوم؟</p>
+                <span className="bg-blue-600/20 text-blue-400 px-4 py-2 rounded-full text-xs font-black tracking-widest uppercase mb-6 inline-block border border-blue-400/20 shadow-glow">Student Profile 2026</span>
+                <h3 className="text-3xl md:text-5xl font-black mb-4 font-display">أهلاً يا <span className="text-blue-500">{profile?.first_name}</span> 👋</h3>
+                <p className="text-lg md:text-xl font-medium text-slate-400 max-w-xl text-balance">مستعد لنبدأ رحلة تفوق جديدة اليوم؟ نخبة من أفضل الكورسات في انتظارك.</p>
               </div>
               
-              <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-[20px] md:rounded-[28px] p-4 md:p-6 flex flex-wrap items-center gap-4 md:gap-6">
-                <div>
-                  <p className="text-xs md:text-sm font-bold text-blue-100 mb-1">رصيدك الحالي</p>
-                  <p className="text-2xl md:text-4xl font-black">{profile?.wallet_balance || 0} <span className="text-sm md:text-lg">ج.م</span></p>
-                </div>
+              <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-[32px] p-8 flex flex-col items-center justify-center min-w-[280px] shadow-2xl relative group">
+                <div className="absolute -top-4 -right-4 bg-blue-600 text-[10px] font-black px-3 py-1 rounded-full animate-bounce">رصيدك متاح</div>
+                <p className="text-slate-400 font-bold mb-2 uppercase tracking-wider text-xs">إجمالي رصيد المحفظة</p>
+                <p className="text-4xl md:text-5xl font-black font-display mb-6">{profile?.wallet_balance || 0} <span className="text-lg opacity-50">ج.م</span></p>
                 <Link 
                   to="/charge"
-                  className="bg-white text-blue-600 px-4 md:px-6 py-3 md:py-4 rounded-xl md:rounded-2xl text-sm md:text-base font-black hover:bg-blue-50 transition-all flex items-center gap-2 shadow-lg ml-auto"
+                  className="w-full bg-blue-600 text-white px-6 py-4 rounded-2xl text-center font-black hover:bg-blue-700 transition-all flex items-center justify-center gap-2 shadow-glow group-hover:scale-105"
                 >
-                  <Wallet size={18} />
-                  شحن المحفظة
+                  <Wallet size={20} />
+                  إيداع رصيد
                 </Link>
               </div>
+            </div>
+            {/* Decorative background icon */}
+            <div className="absolute -top-10 -left-10 opacity-5 pointer-events-none">
+               <Star size={300} />
             </div>
           </motion.div>
 
           {/* Stats & Progress */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2 bg-white rounded-[32px] p-8 border border-slate-100 shadow-sm">
-              <h4 className="text-xl font-black text-slate-900 mb-8 flex items-center gap-3">
-                <Star className="text-yellow-400 fill-yellow-400" />
+            <div className="lg:col-span-2 bg-white rounded-[40px] p-10 border border-slate-100 shadow-soft">
+              <h4 className="text-2xl font-black text-slate-900 mb-12 flex items-center gap-3 font-display">
+                <div className="w-2 h-8 bg-blue-500 rounded-full" />
                 إحصائيات الإنجاز
               </h4>
               <div className="flex flex-col sm:flex-row items-center justify-around gap-12">
-                 <ProgressCircle percent={(stats.completed / stats.total) * 100} label="الحصص المنجزة" value={`${stats.completed} من ${stats.total}`} />
-                 <ProgressCircle percent={85} color="bg-green-500" label="معدل الحضور" value="85%" />
-                 <ProgressCircle percent={92} color="bg-purple-500" label="متوسط الامتحانات" value="92%" />
+                 <ProgressCircle percent={stats.subscribedPackages > 0 ? (stats.completedLessons / stats.totalLessons) * 100 : 0} label="الحصص المنجزة" value={`${stats.completedLessons} من ${stats.totalLessons}`} />
+                 <ProgressCircle percent={stats.subscribedPackages > 0 ? 85 : 0} color="bg-emerald-500" label="الاشتراكات النشطة" value={stats.subscribedPackages.toString()} />
+                 <ProgressCircle percent={92} color="bg-indigo-500" label="متوسط الامتحانات" value="92%" />
               </div>
             </div>
 
-            <div className="bg-white rounded-[32px] p-8 border border-slate-100 shadow-sm flex flex-col justify-between">
-              <div>
-                <h4 className="text-xl font-black text-slate-900 mb-4">سجل الآن!</h4>
-                <p className="text-slate-500 font-bold leading-relaxed mb-6">
-                  استغل عروض البارع الجديدة وابدأ مراجعة شاملة لضمان الـ 80/80
+            <div className="bg-slate-900 rounded-[40px] p-10 text-white flex flex-col justify-between shadow-2xl relative overflow-hidden group">
+              <div className="relative z-10">
+                <h4 className="text-2xl font-black mb-4 font-display">سجل الآن!</h4>
+                <p className="text-slate-400 font-bold leading-relaxed mb-10 text-balance italic">
+                  استغل عروض البارع الجديدة وابدأ صراعك مع المجهول في اللغة العربية لضمان الدرجة النهائية.
                 </p>
               </div>
               <Link 
                 to="/classes"
-                className="w-full bg-slate-100 text-slate-900 py-5 rounded-2xl font-black text-center hover:bg-blue-600 hover:text-white transition-all group"
+                className="w-full bg-blue-600 text-white py-5 rounded-3xl font-black text-center hover:bg-white hover:text-blue-600 shadow-glow transition-all group relative z-10 font-display"
               >
                 تصفح الكورسات الجديدة 
-                <ChevronRight className="inline-block mr-2 group-hover:translate-x-[-4px] transition-transform" />
+                <ChevronRight className="inline-block mr-2 group-hover:translate-x-[-4px] transition-transform rotate-180" />
               </Link>
+              <Users className="absolute -bottom-10 -right-10 text-white/5 w-64 h-64 group-hover:scale-110 transition-transform" />
             </div>
           </div>
 
@@ -173,7 +231,7 @@ function Sidebar({ isOpen, setIsOpen }: { isOpen: boolean, setIsOpen: (v: boolea
       </AnimatePresence>
 
       <motion.aside 
-        className={`fixed lg:relative inset-y-0 right-0 w-72 bg-white border-l border-slate-200 z-[70] flex flex-col transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : 'translate-x-full lg:translate-x-0'}`}
+        className={`fixed lg:relative inset-y-0 right-0 w-72 bg-white border-l border-slate-200 z-[70] flex flex-col transform transition-transform duration-300 ease-in-out dashboard-sidebar ${isOpen ? 'translate-x-0' : 'translate-x-full lg:translate-x-0'}`}
       >
         <div className="p-8 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-3">

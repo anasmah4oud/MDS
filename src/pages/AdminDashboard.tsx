@@ -14,10 +14,51 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
+import '../styles/AdminDashboard.css';
 
 export default function AdminDashboard() {
   const { profile } = useAuth();
   const navigate = useNavigate();
+  const [stats, setStats] = React.useState({
+    totalStudents: 0,
+    totalSales: 0,
+    activeToday: 0,
+    newSubs: 0
+  });
+
+  React.useEffect(() => {
+    fetchAdminStats();
+  }, []);
+
+  const fetchAdminStats = async () => {
+    try {
+      // 1. Total Students
+      const { count: usersCount } = await supabase
+        .from('profiles')
+        .select('*', { count: 'exact', head: true });
+      
+      // 2. Total Sales
+      const { data: salesData } = await supabase
+        .from('transactions')
+        .select('amount')
+        .eq('type', 'purchase');
+      const salesTotal = salesData?.reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0) || 0;
+
+      // 3. Total Subscriptions
+      const { count: subsCount } = await supabase
+        .from('subscriptions')
+        .select('*', { count: 'exact', head: true });
+
+      setStats({
+        totalStudents: usersCount || 0,
+        totalSales: salesTotal,
+        activeToday: Math.floor((usersCount || 0) * 0.15), // Estimated active
+        newSubs: subsCount || 0
+      });
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -107,10 +148,10 @@ export default function AdminDashboard() {
 
         {/* Quick Stats Grid */}
         <div className="mt-12 md:mt-20 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-           <StatCard label="إجمالي الطلاب" value="5,240" icon={<Users className="text-blue-500" />} />
-           <StatCard label="إجمالي الإيرادات" value="120,500 ج.م" icon={<Wallet className="text-green-500" />} />
-           <StatCard label="الطلاب النشطين اليوم" value="284" icon={<UserCheck className="text-purple-500" />} />
-           <StatCard label="الاشتراكات الجديدة" value="48" icon={<FileText className="text-orange-500" />} />
+           <StatCard label="إجمالي الطلاب" value={stats.totalStudents.toLocaleString()} icon={<Users className="text-blue-500" />} />
+           <StatCard label="إجمالي الإيرادات" value={`${stats.totalSales.toLocaleString()} ج.م`} icon={<Wallet className="text-green-500" />} />
+           <StatCard label="التفاعل المتوقع" value={stats.activeToday.toString()} icon={<UserCheck className="text-purple-500" />} />
+           <StatCard label="إجمالي الاشتراكات" value={stats.newSubs.toString()} icon={<FileText className="text-orange-500" />} />
         </div>
       </main>
     </div>

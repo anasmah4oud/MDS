@@ -14,6 +14,7 @@ import {
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { Package } from '../types';
+import '../styles/Classes.css';
 
 export default function Classes() {
   const { profile, user } = useAuth();
@@ -137,9 +138,13 @@ export default function Classes() {
         .eq('code', activationCode)
         .eq('package_id', selectedPackage.id)
         .eq('is_used', false)
-        .single();
+        .maybeSingle();
 
-      if (codeError || !codeData) {
+      if (codeError) {
+        throw new Error('حدث خطأ أثناء التحقق من الكود');
+      }
+
+      if (!codeData) {
         throw new Error('كود غير صحيح أو مستخدم مسبقاً لهذا النوع من الباقات');
       }
 
@@ -177,48 +182,55 @@ export default function Classes() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50" dir="rtl">
-      {/* Search/Header */}
-      <div className="bg-blue-600 pt-8 pb-16 md:pt-12 md:pb-24 px-4 md:px-12 text-white relative overflow-hidden">
-        <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]" />
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6 md:gap-8 relative z-10">
-          <div className="text-center md:text-right">
-            <Link to="/dashboard" className="text-blue-100 font-bold flex items-center justify-center md:justify-start gap-2 mb-4 md:mb-6 hover:underline">
-              <ChevronRight size={18} />
+    <div className="min-h-screen bg-white font-sans" dir="rtl">
+      {/* Sleek Dark Hero Section */}
+      <div className="bg-[#0f172a] pt-10 pb-20 md:pt-16 md:pb-32 px-6 md:px-12 text-white relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-900/40 via-transparent to-transparent z-0" />
+        <div className="absolute -top-24 -left-24 w-96 h-96 bg-blue-600/5 rounded-full blur-[100px] pointer-events-none" />
+        
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-10 relative z-10">
+          <div className="text-center md:text-right max-w-2xl">
+            <Link to="/dashboard" className="inline-flex items-center gap-2 bg-white/5 border border-white/10 px-5 py-2.5 rounded-2xl text-blue-300 font-bold mb-8 hover:bg-white/10 transition-all group">
+              <ChevronRight size={18} className="group-hover:-translate-x-1 transition-transform" />
               العودة للوحة التحكم
             </Link>
-            <h1 className="text-3xl md:text-6xl font-black mb-3 md:mb-4 tracking-tighter italic">البارع محمود الديب</h1>
-            <p className="text-lg md:text-2xl font-bold text-blue-100 opacity-90">ابدأ الآن طريقك إلى التفوق في اللغة العربية</p>
+            <h1 className="text-4xl md:text-7xl font-black mb-6 tracking-tight font-display text-white">
+               منهج <span className="text-blue-500">البارع</span> التعليمي
+            </h1>
+            <p className="text-lg md:text-2xl font-medium text-slate-400 max-w-xl mx-auto md:mr-0 text-balance">نخبة مختارة من أفضل الكورسات التعليمية لمساعدتك على التفوق مع م/ محمود الديب</p>
           </div>
           <div className="w-full max-w-md">
-            <div className="bg-white/10 backdrop-blur-md rounded-[20px] md:rounded-3xl p-1 md:p-2 flex border border-white/20">
+            <div className="bg-white/10 backdrop-blur-xl rounded-3xl p-2 flex border border-white/10 shadow-2xl">
               <input 
                 type="text" 
-                placeholder="ابحث عن باقة معينة..."
-                className="bg-transparent border-none outline-none flex-1 px-3 md:px-4 text-base md:text-lg font-bold placeholder:text-blue-200"
+                placeholder="ابحث عن كورس معين..."
+                className="bg-transparent border-none outline-none flex-1 px-5 text-lg font-medium placeholder:text-slate-500"
               />
-              <button className="bg-white text-blue-600 p-3 md:p-4 rounded-xl md:rounded-2xl shadow-xl">
-                 <Search size={20} />
+              <button className="bg-blue-600 text-white p-4 rounded-2xl shadow-glow hover:bg-blue-700 transition-all active:scale-95">
+                 <Search size={22} />
               </button>
             </div>
           </div>
         </div>
       </div>
 
-      <main className="max-w-7xl mx-auto px-4 -mt-12 pb-24 space-y-12">
+      <main className="max-w-7xl mx-auto px-6 -mt-12 pb-32 space-y-16">
         {/* Filters */}
-        <div className="bg-white p-3 md:p-4 rounded-[20px] md:rounded-3xl border border-slate-100 shadow-xl shadow-slate-200/50 flex flex-wrap gap-2 md:gap-4 items-center justify-center">
-          <FilterItem active={activeFilter === 'all'} onClick={() => setActiveFilter('all')}>الكل</FilterItem>
-          <FilterItem active={activeFilter === 'offer'} onClick={() => setActiveFilter('offer')}>العروض</FilterItem>
-          <FilterItem active={activeFilter === 'monthly'} onClick={() => setActiveFilter('monthly')}>الباقات الشهرية</FilterItem>
-          <FilterItem active={activeFilter === 'weekly'} onClick={() => setActiveFilter('weekly')}>الأسبوعية</FilterItem>
-          <FilterItem active={activeFilter === 'quarterly'} onClick={() => setActiveFilter('quarterly')}>باقات الـ 3 شهور</FilterItem>
+        <div className="bg-white/80 backdrop-blur-xl p-3 md:p-4 rounded-3xl border border-slate-100 shadow-soft flex flex-wrap gap-2 md:gap-4 items-center justify-center sticky top-20 z-30">
+          <FilterItem active={activeFilter === 'all'} onClick={() => setActiveFilter('all')}>الجميع</FilterItem>
+          <FilterItem active={activeFilter === 'offer'} onClick={() => setActiveFilter('offer')}>🎁 العروض الخاصة</FilterItem>
+          <FilterItem active={activeFilter === 'monthly'} onClick={() => setActiveFilter('monthly')}>📅 الحصص الشهرية</FilterItem>
+          <FilterItem active={activeFilter === 'weekly'} onClick={() => setActiveFilter('weekly')}>🕒 المراجعات الأسبوعية</FilterItem>
         </div>
 
         {loading ? (
-          <div className="py-20 text-center text-slate-400 font-bold animate-pulse">جاري تحميل الباقات...</div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+            {[1, 2, 3].map(i => (
+              <div key={i} className="bg-slate-50 rounded-[2.5rem] h-96 animate-pulse border border-slate-100"></div>
+            ))}
+          </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
             {filteredPackages.map((p) => (
               <PackageCard 
                 key={p.id} 
@@ -392,59 +404,59 @@ function FilterItem({ active, onClick, children }: { active: boolean, onClick: (
 const PackageCard: React.FC<{ pkg: Package, isSubscribed: boolean, onBuy: () => void }> = ({ pkg, isSubscribed, onBuy }) => {
   return (
     <motion.div 
-      whileHover={{ y: -8 }}
-      className="bg-white rounded-[32px] overflow-hidden border border-slate-100 shadow-sm hover:shadow-2xl hover:shadow-blue-500/10 flex flex-col group h-full"
+      whileHover={{ y: -12 }}
+      className="bg-white rounded-[2.5rem] overflow-hidden border border-slate-100 shadow-soft hover:shadow-2xl hover:shadow-blue-500/10 flex flex-col group h-full transition-all duration-500"
     >
-      <div className="relative h-56 overflow-hidden">
+      <div className="relative aspect-video overflow-hidden bg-slate-900">
         <img 
-          src={pkg.image_url || "https://placehold.co/600x400/3b82f6/white?text=البارع"} 
-          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
+          src={pkg.image_url || "https://placehold.co/1920x1080/0f172a/3b82f6?text=البارع"} 
+          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000" 
           alt={pkg.name}
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/20 to-transparent" />
         
         {isSubscribed && (
-          <div className="absolute top-4 right-4 bg-green-500 text-white px-4 py-2 rounded-full font-black text-xs shadow-lg shadow-green-500/40 flex items-center gap-1">
-             <CheckCircle2 size={14} /> مشترك بالفعل
+          <div className="absolute top-6 right-6 bg-emerald-500 text-white px-5 py-2 rounded-full font-black text-xs shadow-glow flex items-center gap-2">
+             <CheckCircle2 size={16} /> مشترك
           </div>
         )}
         
         {pkg.old_price && pkg.old_price > pkg.price && (
-          <div className="absolute top-4 left-4 bg-orange-500 text-white px-4 py-2 rounded-full font-black text-xs shadow-lg shadow-orange-500/40">
-             عرض محدود!
+          <div className="absolute top-6 left-6 bg-red-600 text-white px-5 py-2 rounded-full font-black text-xs shadow-lg animate-pulse">
+             وفر {Math.round(((pkg.old_price - pkg.price) / pkg.old_price) * 100)}%
           </div>
         )}
 
-        <div className="absolute bottom-6 right-6">
-           <span className="text-white/80 text-xs font-bold block mb-1">الدفعة الجديدة 2026</span>
-           <h4 className="text-white text-2xl font-black">{pkg.name}</h4>
+        <div className="absolute bottom-8 right-8">
+           <span className="text-blue-400 text-xs font-black block mb-2 uppercase tracking-[0.2em]">Package 2026</span>
+           <h4 className="text-white text-3xl font-black font-display tracking-tight leading-tight">{pkg.name}</h4>
         </div>
       </div>
 
-      <div className="p-6 flex-1 flex flex-col justify-between space-y-6">
-        <p className="text-slate-500 font-bold text-sm leading-relaxed line-clamp-2">{pkg.description}</p>
+      <div className="p-10 flex-1 flex flex-col justify-between space-y-8 text-right">
+        <p className="text-slate-500 font-bold text-base leading-relaxed line-clamp-2">{pkg.description}</p>
         
-        <div className="pt-6 border-t border-slate-50 flex items-center justify-between gap-4">
-          <div className="flex flex-col">
+        <div className="pt-8 border-t border-slate-100 flex items-center justify-between gap-6">
+          <div className="flex flex-col items-end">
              {pkg.old_price && (
-               <span className="text-xs font-bold text-slate-400 line-through mb-1">{pkg.old_price} ج.م</span>
+               <span className="text-xs font-bold text-slate-400 line-through mb-1 italic">{pkg.old_price} ج.م</span>
              )}
-             <span className="text-2xl font-black text-slate-900">{pkg.price} <span className="text-sm font-bold text-slate-500">ج.م</span></span>
+             <span className="text-3xl font-black text-slate-900 font-display">{pkg.price} <span className="text-sm font-bold text-slate-400">ج.م</span></span>
           </div>
 
           {isSubscribed ? (
             <Link 
               to={`/package/${pkg.id}`}
-              className="bg-blue-600 text-white px-6 py-3.5 rounded-2xl font-black flex items-center gap-2 hover:bg-blue-700 transition-all"
+              className="bg-blue-600 text-white px-8 py-4 rounded-2xl font-black flex items-center gap-2 hover:bg-blue-700 transition-all shadow-glow"
             >
-              دخول المحتوي <ChevronRight size={18} />
+              دخول الحصص <ChevronRight size={20} className="rotate-180" />
             </Link>
           ) : (
             <button 
               onClick={onBuy}
-              className="bg-slate-100 text-slate-900 px-6 py-3.5 rounded-2xl font-black flex items-center gap-2 hover:bg-blue-600 hover:text-white transition-all"
+              className="bg-slate-900 text-white px-8 py-4 rounded-2xl font-black flex items-center gap-2 hover:bg-blue-600 transition-all shadow-xl active:scale-95"
             >
-              شراء الآن <ArrowRight size={18} />
+              شراء الآن <ShoppingCart size={20} />
             </button>
           )}
         </div>

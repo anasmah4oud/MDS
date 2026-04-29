@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
+import '../styles/MyAccount.css';
 
 export default function MyAccount() {
   const { profile, loading } = useAuth();

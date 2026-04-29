@@ -1,0 +1,16 @@
+@reference "../index.css";
+
+/**
+ * Dashboard Styles
+ */
+.dashboard-card {
+  @apply bg-white rounded-[2.5rem] p-8 border border-slate-100 shadow-soft transition-all duration-300;
+}
+
+.dashboard-hero {
+  @apply relative overflow-hidden bg-slate-900 rounded-[3rem] p-12 text-white shadow-2xl;
+}
+
+.stat-glow {
+  @apply shadow-[0_0_20px_rgba(59,130,246,0.2)];
+}

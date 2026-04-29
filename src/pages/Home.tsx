@@ -12,6 +12,7 @@ import {
   Globe, LayoutDashboard, LogIn, UserPlus
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import '../styles/Home.css';
 
 export default function Home() {
   const { scrollYProgress } = useScroll();
@@ -209,9 +210,9 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <GradeCard grade={1} title="الصف الأول الثانوي" img="/grade1.png" />
-            <GradeCard grade={2} title="الصف الثاني الثانوي" img="/grade2.png" />
-            <GradeCard grade={3} title="الصف الثالث الثانوي" img="/grade3.png" />
+            <GradeCard grade={1} title="الصف الأول الثانوي" img="https://placehold.co/600x400/3b82f6/white?text=1st+Sec" />
+            <GradeCard grade={2} title="الصف الثاني الثانوي" img="https://placehold.co/600x400/3b82f6/white?text=2nd+Sec" />
+            <GradeCard grade={3} title="الصف الثالث الثانوي" img="https://placehold.co/600x400/3b82f6/white?text=3rd+Sec" />
           </div>
         </div>
       </section>
@@ -336,9 +337,9 @@ function GradeCard({ grade, title, img }: { grade: number, title: string, img: s
         whileHover={{ y: -10 }}
         className="bg-white rounded-3xl overflow-hidden border border-slate-100 shadow-lg shadow-slate-200/50"
       >
-        <div className="relative h-64 overflow-hidden">
-          <img src={img} alt={title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
-          <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 to-transparent" />
+        <div className="relative aspect-video overflow-hidden bg-slate-200">
+          <img src={img} alt={title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent" />
           <div className="absolute bottom-6 right-6 text-white">
             <span className="bg-blue-600 text-xs font-black px-3 py-1 rounded-full uppercase tracking-widest mb-2 block w-fit">المرحلة الثانوية</span>
             <h4 className="text-2xl font-black">{title}</h4>

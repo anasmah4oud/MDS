@@ -8,6 +8,7 @@ import { motion } from 'framer-motion';
 import { useNavigate, Link } from 'react-router-dom';
 import { Phone, Lock, LogIn, AlertCircle, ChevronRight, HelpCircle } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import '../styles/Login.css';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -31,9 +32,11 @@ export default function Login() {
         .from('profiles')
         .select('email, role, is_blocked')
         .eq('phone', formData.phone)
-        .single();
+        .maybeSingle();
 
-      if (profileError || !profile) {
+      if (profileError) throw profileError;
+      
+      if (!profile) {
         throw new Error('رقم الهاتف غير مسجل');
       }
 

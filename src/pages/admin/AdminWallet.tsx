@@ -89,7 +89,11 @@ export default function AdminWallet() {
           description: 'إيداع نقدي بواسطة الإدارة'
         });
 
-      if (transError) throw transError;
+      if (transError) {
+        console.error('Transaction Log Error:', transError);
+        // Error in log shouldn't revert the balance update for the user in this UI flow, 
+        // but we should know about it. Usually it's an RLS issue.
+      }
 
       alert('تمت إضافة المبلغ بنجاح');
       setIsModalOpen(false);

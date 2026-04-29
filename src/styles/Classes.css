@@ -1,0 +1,20 @@
+@reference "../index.css";
+
+/**
+ * Classes Page Styles
+ */
+.package-grid {
+  @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10;
+}
+
+.filter-btn {
+  @apply px-6 py-3 rounded-2xl font-bold transition-all active:scale-95;
+}
+
+.filter-btn-active {
+  @apply bg-blue-600 text-white shadow-glow;
+}
+
+.filter-btn-inactive {
+  @apply bg-slate-50 text-slate-500 hover:bg-slate-100;
+}
