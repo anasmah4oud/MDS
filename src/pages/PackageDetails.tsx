@@ -454,7 +454,6 @@ function VideoPlayer({ url }: { url: string }) {
 }
 
 function PdfViewer({ url }: { url: string }) {
-  // Convert Google Drive link to direct viewer embed if possible
   let embedUrl = url;
   if (url.includes('drive.google.com/file/d/')) {
     const id = url.split('/d/')[1].split('/')[0];
