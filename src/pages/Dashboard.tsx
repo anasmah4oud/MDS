@@ -178,7 +178,6 @@ export default function Dashboard() {
               <div className="flex flex-col sm:flex-row items-center justify-around gap-12">
                  <ProgressCircle percent={stats.subscribedPackages > 0 ? (stats.completedLessons / stats.totalLessons) * 100 : 0} label="الحصص المنجزة" value={`${stats.completedLessons} من ${stats.totalLessons}`} />
                  <ProgressCircle percent={stats.subscribedPackages > 0 ? 85 : 0} color="bg-emerald-500" label="الاشتراكات النشطة" value={stats.subscribedPackages.toString()} />
-                 <ProgressCircle percent={92} color="bg-indigo-500" label="متوسط الامتحانات" value="92%" />
               </div>
             </div>
 

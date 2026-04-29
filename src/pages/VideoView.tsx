@@ -126,10 +126,10 @@ export default function VideoView() {
 
       <main className="flex flex-col lg:flex-row h-auto lg:h-[calc(100vh-5rem)]">
         {/* Player Container */}
-        <div className="flex-1 bg-slate-900 flex items-center justify-center overflow-hidden relative group min-h-[300px] md:min-h-[500px]">
+        <div className="flex-1 bg-slate-900 flex items-center justify-center overflow-hidden relative group min-h-[300px] md:min-h-[500px] lg:min-h-0">
            <div className="w-full h-full flex items-center justify-center bg-black">
-              <div className="w-full aspect-video max-w-5xl mx-auto shadow-2xl">
-                 <Plyr source={plyrSource} options={plyrOptions} />
+              <div className="w-full h-full max-w-full max-h-full">
+                 <Plyr source={plyrSource} options={plyrOptions} className="w-full h-full" />
               </div>
            </div>
            

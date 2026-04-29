@@ -21,7 +21,20 @@
 }
 
 .plyr--video {
-  @apply rounded-xl overflow-hidden;
+  @apply rounded-xl overflow-hidden w-full h-full;
+}
+
+.plyr--video .plyr__video-wrapper {
+  @apply w-full h-full;
+}
+
+.plyr--video iframe {
+  @apply w-full h-full;
+}
+
+/* Full width video container */
+.plyr {
+  @apply w-full h-full;
 }
 
 .plyr--full-ui.plyr--video .plyr__control--overlaid {

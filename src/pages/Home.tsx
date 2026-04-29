@@ -141,7 +141,7 @@ export default function Home() {
       </section>
 
       {/* Marquee Section - Fixed */}
-      <div className="fixed top-16 md:top-20 left-0 right-0 bg-blue-600 py-3 overflow-hidden rotate-[-2deg] scale-[1.05] z-[90] border-y-2 border-white">
+      <div className="fixed top-16 md:top-20 left-0 right-0 bg-blue-600 py-3 overflow-hidden z-[90] border-y-2 border-white">
         <div className="flex whitespace-nowrap animate-[marquee_20s_linear_infinite] gap-12">
           {Array(10).fill("( وما توفيقي إلا بالله )").map((text, i) => (
             <span key={i} className="text-white text-xl md:text-2xl font-bold tracking-widest">{text}</span>
