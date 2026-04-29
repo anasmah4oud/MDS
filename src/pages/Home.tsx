@@ -310,8 +310,7 @@ export default function Home() {
             <div className="text-center md:text-left">
               <h5 className="text-xl font-bold mb-8">تواصل مباشر</h5>
               <div className="flex flex-col gap-4 text-slate-400">
-                <p>واتساب: 01023958772</p>
-                <p>البريد: support@mahmoud-eldeeb.com</p>
+                <p>واتساب: 01006984012</p>
               </div>
             </div>
           </div>
@@ -352,12 +351,11 @@ function GradeCard({ grade, title, img }: { grade: number, title: string, img: s
           <img src={img} alt={title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
           <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent" />
           <div className="absolute bottom-6 right-6 text-white">
-            <span className="bg-blue-600 text-xs font-black px-3 py-1 rounded-full uppercase tracking-widest mb-2 block w-fit">المرحلة الثانوية</span>
             <h4 className="text-2xl font-black">{title}</h4>
           </div>
         </div>
         <div className="p-6 flex justify-between items-center group-hover:bg-blue-600 transition-colors">
-          <span className="text-slate-900 font-bold group-hover:text-white">تفاصيل الصف</span>
+          <span className="text-slate-900 font-bold group-hover:text-white">استكشف الآن</span>
           <ChevronRight className="text-blue-600 group-hover:text-white group-hover:translate-x-[-4px] transition-all" />
         </div>
       </motion.div>
