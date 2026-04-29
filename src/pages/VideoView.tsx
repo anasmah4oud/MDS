@@ -61,7 +61,7 @@ export default function VideoView() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
         <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
@@ -69,24 +69,29 @@ export default function VideoView() {
 
   if (!lesson) {
     return (
-      <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center p-8 text-center" dir="rtl">
+      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-8 text-center" dir="rtl">
         <AlertCircle size={64} className="text-red-500 mb-6" />
-        <h2 className="text-3xl font-black text-white mb-4">عفواً، الدرس غير موجود</h2>
+        <h2 className="text-3xl font-black text-slate-900 mb-4">عفواً، الدرس غير موجود</h2>
         <button onClick={() => navigate(-1)} className="bg-blue-600 text-white px-8 py-3 rounded-xl font-bold">العودة للخلف</button>
       </div>
     );
   }
 
-  // Determine video source
-  const videoId = lesson.url.includes('v=') ? lesson.url.split('v=')[1]?.split('&')[0] : 
-                  lesson.url.includes('youtu.be/') ? lesson.url.split('youtu.be/')[1] : lesson.url;
+  // Robust video ID extraction
+  const getYouTubeId = (url: string) => {
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+    const match = url.match(regExp);
+    return (match && match[2].length === 11) ? match[2] : url;
+  };
 
-  const plyrSource = {
-    type: 'video' as const,
+  const videoId = getYouTubeId(lesson.url);
+
+  const plyrSource: any = {
+    type: 'video',
     sources: [
       {
         src: videoId,
-        provider: 'youtube' as const,
+        provider: 'youtube',
       },
     ],
   };
@@ -100,75 +105,75 @@ export default function VideoView() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white overflow-x-hidden font-sans" dir="rtl">
+    <div className="min-h-screen bg-slate-50 text-slate-900 overflow-x-hidden font-sans" dir="rtl">
       {/* Header */}
-      <header className="h-16 md:h-20 bg-slate-900/80 backdrop-blur-xl border-b border-white/10 flex items-center justify-between px-4 md:px-12 sticky top-0 z-50 shadow-2xl">
+      <header className="h-16 md:h-20 bg-white/80 backdrop-blur-xl border-b border-slate-200 flex items-center justify-between px-4 md:px-12 sticky top-0 z-50 shadow-sm">
         <div className="flex items-center gap-5">
-          <button onClick={() => navigate(-1)} className="p-2.5 hover:bg-white/10 rounded-2xl transition-all active:scale-95 border border-white/5 bg-white/5">
-            <ChevronRight className="text-blue-400" />
+          <button onClick={() => navigate(-1)} className="p-2.5 hover:bg-slate-100 rounded-2xl transition-all active:scale-95 border border-slate-200 bg-white shadow-sm">
+            <ChevronRight className="text-blue-600" />
           </button>
-          <div>
-            <h1 className="text-sm md:text-xl font-black tracking-tight text-white/90 line-clamp-1 font-display">{lesson.name}</h1>
-            <p className="text-[10px] md:text-xs font-bold text-blue-500/80 tracking-widest uppercase">البارع التعليمية • م/ محمود الديب</p>
+          <div className="text-right">
+            <h1 className="text-sm md:text-xl font-black tracking-tight text-slate-900 line-clamp-1 font-display">{lesson.name}</h1>
+            <p className="text-[10px] md:text-xs font-bold text-blue-600 tracking-widest uppercase">البارع التعليمية • م/ محمود الديب</p>
           </div>
         </div>
         <div className="hidden md:flex items-center gap-4">
-           <div className="flex items-center gap-2 bg-blue-500/20 text-blue-400 px-4 py-2 rounded-full text-[10px] font-black border border-blue-400/30 shadow-glow">
+           <div className="flex items-center gap-2 bg-blue-50 text-blue-600 px-4 py-2 rounded-full text-[10px] font-black border border-blue-100">
               <Shield size={14} /> محتوى محمي برمجياً
            </div>
         </div>
       </header>
 
-      <main className="flex flex-col lg:flex-row h-[calc(100vh-4rem)] md:h-[calc(100vh-5rem)]">
+      <main className="flex flex-col lg:flex-row h-auto lg:h-[calc(100vh-5rem)]">
         {/* Player Container */}
-        <div className="flex-1 bg-black flex items-center justify-center overflow-hidden relative group">
-           <div className="w-full h-full flex items-center justify-center">
-              <div className="w-full aspect-video shadow-4xl shadow-black/50">
-                 <Plyr source={plyrSource} options={plyrSource.type === 'video' ? plyrOptions : undefined} />
+        <div className="flex-1 bg-slate-900 flex items-center justify-center overflow-hidden relative group min-h-[300px] md:min-h-[500px]">
+           <div className="w-full h-full flex items-center justify-center bg-black">
+              <div className="w-full aspect-video max-w-5xl mx-auto shadow-2xl">
+                 <Plyr source={plyrSource} options={plyrOptions} />
               </div>
            </div>
            
            {/* Privacy Overlay Watermark */}
-           <div className="absolute top-1/4 right-1/4 opacity-10 pointer-events-none select-none text-2xl font-black italic tracking-tighter text-white">
+           <div className="absolute top-1/4 right-1/4 opacity-10 pointer-events-none select-none text-xl md:text-2xl font-black italic tracking-tighter text-white">
               البارع - {profile?.first_name} {profile?.last_name}
            </div>
         </div>
 
         {/* Lesson Info Sidebar */}
-        <div className="w-full lg:w-[420px] bg-slate-900/90 backdrop-blur-md border-r border-white/10 p-6 md:p-10 flex flex-col overflow-y-auto shadow-2xl">
-           <div className="bg-gradient-to-br from-blue-600/20 to-indigo-600/10 border border-blue-500/30 rounded-3xl p-8 mb-10 shadow-soft">
-              <h3 className="text-xl font-black text-blue-400 mb-4 inline-flex items-center gap-2">
+        <div className="w-full lg:w-[420px] bg-white border-r border-slate-100 p-6 md:p-10 flex flex-col overflow-y-auto shadow-sm">
+           <div className="bg-blue-50 border border-blue-100 rounded-3xl p-8 mb-10">
+              <h3 className="text-xl font-black text-blue-600 mb-4 inline-flex items-center gap-2">
                  <BookOpen size={20} /> وصف الدرس
               </h3>
-              <p className="text-slate-400 font-medium text-sm leading-relaxed text-balance">
+              <p className="text-slate-600 font-medium text-sm leading-relaxed text-right">
                 {lesson.description || "استمتع بمشاهدة شرح المبدع م/ محمود الديب. تأكد من تدوين ملاحظاتك الهامة والتركيز في كل دقيقة."}
               </p>
            </div>
 
-           <div className="space-y-6 flex-1">
-              <div className="flex items-center justify-between p-4 bg-white/5 rounded-xl">
+           <div className="space-y-6 flex-1 text-right">
+              <div className="flex items-center justify-between p-5 bg-slate-50 border border-slate-100 rounded-2xl">
                  <div className="flex items-center gap-3">
                     <Clock size={18} className="text-slate-400" />
-                    <span className="text-sm font-bold text-slate-300">وقت المشاهدة</span>
+                    <span className="text-sm font-bold text-slate-500">مدة الدرس</span>
                  </div>
-                 <span className="text-xs font-black text-white">45:00 د</span>
+                 <span className="text-xs font-black text-slate-900">متغير حسب المحتوى</span>
               </div>
               
-              <div className="flex items-center justify-between p-4 bg-white/5 rounded-xl">
-                 <div className="flex items-center gap-3">
-                    <BookOpen size={18} className="text-slate-400" />
-                    <span className="text-sm font-bold text-slate-300">المرفقات</span>
+              <div className="p-6 bg-yellow-50/50 border border-yellow-100 rounded-2xl">
+                 <div className="flex items-start gap-4">
+                    <AlertCircle className="text-yellow-600 shrink-0" size={24} />
+                    <div>
+                       <h4 className="font-black text-yellow-800 text-sm mb-1">تنبيه حماية</h4>
+                       <p className="text-xs font-bold text-yellow-700 leading-relaxed">
+                          يمنع منعاً باتاً تصوير الشاشة أو محاولة تحميل الفيديو، الحساب مراقب آلياً وسيتم حظر أي محاولة للتلاعب.
+                       </p>
+                    </div>
                  </div>
-                 <span className="text-xs font-black text-blue-400 cursor-pointer hover:underline">تحميل PDF</span>
               </div>
            </div>
 
-           <div className="mt-auto pt-8 border-t border-white/10 text-center">
-              <p className="text-[10px] font-bold text-slate-500 mb-4 italic">حقوق النشر محفوظة لمنصة البارع © 2026</p>
-              <div className="flex gap-2">
-                 <button className="flex-1 py-4 bg-white/5 rounded-xl font-black text-sm hover:bg-white/10 transition-all border border-white/5">الدرس السابق</button>
-                 <button className="flex-1 py-4 bg-blue-600 rounded-xl font-black text-sm hover:bg-blue-700 transition-all">الدرس القادم</button>
-              </div>
+           <div className="mt-12 pt-8 border-t border-slate-100 text-center">
+              <p className="text-[10px] font-bold text-slate-400 mb-2 italic">جميع الحقوق محفوظة لمنصة البارع التعليمية © 2026</p>
            </div>
         </div>
       </main>

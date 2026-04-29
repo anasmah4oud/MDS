@@ -100,7 +100,7 @@ export default function Home() {
       </nav>
 
       {/* Hero Section */}
-      <section className="relative pt-32 md:pt-40 pb-12 md:pb-20 px-4">
+      <section className="relative pt-40 md:pt-48 pb-12 md:pb-20 px-4">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center gap-8 md:gap-12">
           <motion.div 
             initial={{ x: 50, opacity: 0 }}
@@ -140,11 +140,11 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Marquee Section */}
-      <div className="bg-blue-600 py-6 overflow-hidden rotate-[-2deg] scale-[1.05] my-10 border-y-4 border-white">
+      {/* Marquee Section - Fixed */}
+      <div className="fixed top-16 md:top-20 left-0 right-0 bg-blue-600 py-3 overflow-hidden rotate-[-2deg] scale-[1.05] z-[90] border-y-2 border-white">
         <div className="flex whitespace-nowrap animate-[marquee_20s_linear_infinite] gap-12">
           {Array(10).fill("( وما توفيقي إلا بالله )").map((text, i) => (
-            <span key={i} className="text-white text-3xl font-black tracking-widest">{text}</span>
+            <span key={i} className="text-white text-xl md:text-2xl font-bold tracking-widest">{text}</span>
           ))}
         </div>
       </div>
@@ -210,9 +210,9 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <GradeCard grade={1} title="الصف الأول الثانوي" img="https://placehold.co/600x400/3b82f6/white?text=1st+Sec" />
-            <GradeCard grade={2} title="الصف الثاني الثانوي" img="https://placehold.co/600x400/3b82f6/white?text=2nd+Sec" />
-            <GradeCard grade={3} title="الصف الثالث الثانوي" img="https://placehold.co/600x400/3b82f6/white?text=3rd+Sec" />
+            <GradeCard grade={1} title="الصف الأول الثانوي" img="/grade1.png" />
+            <GradeCard grade={2} title="الصف الثاني الثانوي" img="/grade2.png" />
+            <GradeCard grade={3} title="الصف الثالث الثانوي" img="/grade3.png" />
           </div>
         </div>
       </section>
