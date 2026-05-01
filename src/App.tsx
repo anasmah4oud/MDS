@@ -60,10 +60,9 @@ const LoadingScreen = () => (
 export default function App() {
   return (
     <AuthProvider>
-      <div className="app-shell">
-        <Router>
-          <React.Suspense fallback={<LoadingScreen />}>
-            <Routes>
+      <Router>
+        <React.Suspense fallback={<LoadingScreen />}>
+          <Routes>
             {/* Public Routes */}
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
