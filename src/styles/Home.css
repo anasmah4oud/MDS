@@ -1,12 +1,40 @@
 @reference "../index.css";
 
-/**
- * Home Page Styles
- */
-.hero-gradient {
-  @apply bg-gradient-to-br from-slate-900 via-slate-800 to-blue-900;
+/* أنيميشن شريط التمرير */
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(50%); }
 }
 
-.feature-card {
-  @apply p-8 bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl hover:bg-white/10 transition-all;
+.animate-marquee {
+  animation: marquee 30s linear infinite;
+  display: flex;
+  width: max-content;
+}
+
+/* تأثيرات الزجاج الخلفي */
+.glass-effect {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* تحسين الخطوط للهواتف */
+@media (max-width: 768px) {
+  h1 {
+    font-size: 2.8rem !important;
+    line-height: 1.1 !important;
+  }
+}
+
+/* منع التمرير الأفقي بسبب العناصر العائمة */
+body {
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+/* تأثيرات النيون الخفيفة */
+.shadow-premium {
+  box-shadow: 0 25px 50px -12px rgba(37, 99, 235, 0.15);
 }
