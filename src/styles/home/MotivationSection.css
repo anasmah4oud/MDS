@@ -1,6 +1,8 @@
+/* MotivationSection.css */
 .motivation-section {
   padding: 6rem 1.5rem;
-  background: #0b1120;
+  background: #ffffff;
+  position: relative;
 }
 .motivation-container {
   max-width: 1280px;
@@ -13,10 +15,11 @@
 .motivation-header h2 {
   font-size: 2.5rem;
   font-weight: 900;
-  color: #fff;
+  color: #0f172a;
 }
 .motivation-header p {
-  color: rgba(255,255,255,0.5);
+  color: #64748b;
+  font-size: 1.2rem;
 }
 .motivation-grid {
   display: grid;
@@ -24,18 +27,38 @@
   gap: 2rem;
 }
 .motivation-card {
-  background: rgba(255,255,255,0.02);
-  border: 1px solid rgba(255,255,255,0.05);
+  background: #f8fafc;
   border-radius: 2rem;
-  padding: 2rem;
+  padding: 2.5rem 2rem;
+  border: 1px solid rgba(0, 0, 0, 0.04);
   transition: all 0.3s;
+  position: relative;
+  overflow: hidden;
+}
+.motivation-card::before {
+  content: '"';
+  position: absolute;
+  font-size: 6rem;
+  color: rgba(59, 130, 246, 0.08);
+  top: 10px;
+  right: 20px;
+  font-family: serif;
+  line-height: 1;
+  transition: color 0.3s;
 }
 .motivation-card:hover {
-  background: rgba(255,255,255,0.05);
-  border-color: rgba(168,85,247,0.3);
+  background: white;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
+  border-color: rgba(59, 130, 246, 0.15);
+  transform: translateY(-5px);
+}
+.motivation-card:hover::before {
+  color: rgba(59, 130, 246, 0.15);
 }
 .motivation-card p {
-  color: rgba(255,255,255,0.7);
+  color: #334155;
   font-size: 1.15rem;
   line-height: 1.8;
+  position: relative;
+  z-index: 1;
 }

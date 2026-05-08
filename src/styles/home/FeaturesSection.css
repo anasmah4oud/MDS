@@ -1,11 +1,26 @@
+/* FeaturesSection.css – قسم الميزات بتصميم خلاب */
 .features-section {
-  background: #0b1120;
   padding: 6rem 1.5rem;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
   position: relative;
+  overflow: hidden;
+}
+.features-section::before {
+  content: '';
+  position: absolute;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(59,130,246,0.06) 0%, transparent 70%);
+  top: -50px;
+  right: -100px;
+  border-radius: 50%;
+  animation: float 8s ease-in-out infinite;
 }
 .features-container {
   max-width: 1280px;
   margin: 0 auto;
+  position: relative;
+  z-index: 1;
 }
 .features-header {
   text-align: center;
@@ -14,17 +29,20 @@
 .features-header h2 {
   font-size: clamp(2rem, 5vw, 3.5rem);
   font-weight: 900;
-  color: #fff;
+  color: #0f172a;
   margin-bottom: 1rem;
+  background: linear-gradient(to right, #1e293b, #334155);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 .features-header p {
-  color: rgba(255,255,255,0.5);
-  font-size: 1.15rem;
+  color: #64748b;
+  font-size: 1.2rem;
 }
 .features-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 2rem;
+  gap: 2.5rem;
   align-items: center;
 }
 @media (min-width: 768px) {
@@ -36,50 +54,79 @@
   gap: 2rem;
 }
 .feature-card {
-  background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(255,255,255,0.06);
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(0, 0, 0, 0.04);
   border-radius: 2rem;
   padding: 2rem;
-  transition: all 0.3s;
-  backdrop-filter: blur(10px);
+  transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.03);
+  position: relative;
+  overflow: hidden;
+}
+.feature-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, rgba(59,130,246,0.03), rgba(139,92,246,0.03));
+  opacity: 0;
+  transition: opacity 0.4s;
 }
 .feature-card:hover {
-  background: rgba(255,255,255,0.06);
-  border-color: rgba(96,165,250,0.3);
-  transform: translateY(-4px);
+  transform: translateY(-8px);
+  border-color: rgba(59,130,246,0.2);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.06);
+}
+.feature-card:hover::after {
+  opacity: 1;
 }
 .feature-icon {
-  width: 52px;
-  height: 52px;
+  width: 56px;
+  height: 56px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(59,130,246,0.1);
-  border-radius: 1.25rem;
-  color: #60a5fa;
-  margin-bottom: 1.25rem;
+  background: linear-gradient(135deg, #eff6ff, #eef2ff);
+  border-radius: 1.5rem;
+  color: #2563eb;
+  margin-bottom: 1.5rem;
+  transition: all 0.3s;
+}
+.feature-card:hover .feature-icon {
+  background: linear-gradient(135deg, #dbeafe, #e0e7ff);
+  transform: rotate(-5deg) scale(1.05);
 }
 .feature-card h3 {
-  font-size: 1.35rem;
+  font-size: 1.4rem;
   font-weight: 700;
-  color: #fff;
+  color: #1e293b;
   margin-bottom: 0.5rem;
 }
 .feature-card p {
-  color: rgba(255,255,255,0.5);
+  color: #64748b;
   line-height: 1.7;
 }
 .features-center-logo {
   display: none;
-  width: 120px;
-  height: 120px;
-  background: linear-gradient(135deg, rgba(59,130,246,0.1), rgba(139,92,246,0.1));
+  width: 100px;
+  height: 100px;
+  background: white;
   border-radius: 50%;
   align-items: center;
   justify-content: center;
-  border: 1px solid rgba(255,255,255,0.1);
-  font-size: 3rem;
-  color: rgba(255,255,255,0.2);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.05);
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: #cbd5e1;
+  transition: all 0.3s;
+  margin: 0 auto;
+}
+.features-center-logo:hover {
+  color: #94a3b8;
+  transform: scale(1.05) rotate(5deg);
 }
 @media (min-width: 768px) {
   .features-center-logo { display: flex; }
