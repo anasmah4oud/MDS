@@ -1,14 +1,10 @@
 import React from 'react';
+import '../../styles/home/LoadingScreen.css';
 
-const LoadingScreen: React.FC = () => {
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-900">
-      <div className="flex flex-col items-center gap-4">
-        <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
-        <p className="text-white/80 text-lg">جار التحميل...</p>
-      </div>
-    </div>
-  );
-};
-
+const LoadingScreen: React.FC = () => (
+  <div className="loading-screen">
+    <div className="spinner"></div>
+    <p className="loading-text">يتم التحميل...</p>
+  </div>
+);
 export default LoadingScreen;

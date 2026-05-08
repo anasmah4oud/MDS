@@ -1,8 +1,13 @@
 import React from 'react';
-import { CheckCircle, GraduationCap, Users, BookOpen, Headset } from 'lucide-react';
+import { BookOpen, Users, CheckCircle, GraduationCap } from 'lucide-react';
 import '../../styles/home/FeaturesSection.css';
 
-interface FeatureItemProps { icon: React.ReactNode; title: string; desc: string }
+interface FeatureItemProps {
+  icon: React.ReactNode;
+  title: string;
+  desc: string;
+}
+
 const FeatureItem: React.FC<FeatureItemProps> = ({ icon, title, desc }) => (
   <div className="feature-card">
     <div className="feature-icon">{icon}</div>
@@ -20,16 +25,17 @@ const FeaturesSection: React.FC = () => (
       </div>
       <div className="features-grid">
         <div className="feature-column">
-          <FeatureItem icon={<BookOpen size={24} />} title="شرح مفصل" desc="شرح مفصل لكل جزء من أجزاء المنهج بأسلوب مبسط" />
-          <FeatureItem icon={<Users size={24} />} title="متابعة مستمرة" desc="متابعة مستمرة مع ولي الأمر لضمان تقدم الطالب" />
+          <FeatureItem icon={<BookOpen size={24} />} title="شرح مفصل" desc="شرح كل جزء بأسلوب مبسط وسلس" />
+          <FeatureItem icon={<Users size={24} />} title="متابعة مستمرة" desc="متابعة مع ولي الأمر لضمان التقدم" />
         </div>
         <div className="features-center-logo">©</div>
         <div className="feature-column">
-          <FeatureItem icon={<CheckCircle size={24} />} title="امتحانات دورية" desc="امتحانات على كل حصة لتقييم استيعاب الطالب" />
-          <FeatureItem icon={<GraduationCap size={24} />} title="امتحان شامل" desc="امتحان شامل كل شهر مع هدايا قيمة للمتفوقين" />
+          <FeatureItem icon={<CheckCircle size={24} />} title="امتحانات دورية" desc="امتحان على كل حصة لتقييم الاستيعاب" />
+          <FeatureItem icon={<GraduationCap size={24} />} title="امتحان شامل" desc="امتحان شهري مع هدايا قيمة للمتفوقين" />
         </div>
       </div>
     </div>
   </section>
 );
+
 export default FeaturesSection;

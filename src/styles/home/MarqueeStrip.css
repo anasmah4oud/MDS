@@ -1,11 +1,30 @@
 .marquee-strip {
-  background: #f8fafc;
+  background: #f1f5f9;
   border-top: 1px solid #e2e8f0;
   border-bottom: 1px solid #e2e8f0;
-  padding: 1.2rem 0;
+  padding: 1rem 0;
   overflow: hidden;
 }
-.marquee-track { display: flex; animation: marquee 35s linear infinite; }
-.marquee-group { display: flex; gap: 3rem; }
-.marquee-text { font-size: 1.5rem; font-weight: 700; color: #cbd5e1; padding: 0 2rem; }
-@keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+
+.marquee-track {
+  display: flex;
+  animation: marquee 30s linear infinite;
+}
+
+.marquee-group {
+  display: flex;
+  gap: 3rem;
+}
+
+.marquee-text {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #cbd5e1;
+  white-space: nowrap;
+  padding: 0 2rem;
+}
+
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}

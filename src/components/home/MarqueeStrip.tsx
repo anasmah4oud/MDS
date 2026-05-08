@@ -1,18 +1,15 @@
-
 import React from 'react';
+import '../../styles/home/MarqueeStrip.css';
 
 const MarqueeStrip: React.FC = () => {
-  const text = "( وما توفيقي إلا بالله )";
+  const phrase = '( وما توفيقي إلا بالله )';
   return (
-    <div className="bg-gradient-to-r from-blue-500/10 to-cyan-500/10 py-6 overflow-hidden border-y border-white/5">
-      <div className="flex animate-marquee whitespace-nowrap">
-        {/* تكرار مزدوج لحركة مستمرة */}
+    <div className="marquee-strip">
+      <div className="marquee-track">
         {[...Array(2)].map((_, j) => (
-          <div key={j} className="flex gap-12">
-            {Array(10).fill(text).map((item, i) => (
-              <span key={`${j}-${i}`} className="text-2xl md:text-3xl font-bold text-white/20 mx-6">
-                {item}
-              </span>
+          <div key={j} className="marquee-group">
+            {Array(10).fill(phrase).map((text, i) => (
+              <span key={`${j}-${i}`} className="marquee-text">{text}</span>
             ))}
           </div>
         ))}
@@ -20,5 +17,4 @@ const MarqueeStrip: React.FC = () => {
     </div>
   );
 };
-
 export default MarqueeStrip;

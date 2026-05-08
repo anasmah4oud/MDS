@@ -1,19 +1,72 @@
-.motivation-section { padding: 6rem 1.5rem; background: #f8fafc; }
-.motivation-container { max-width: 1280px; margin: 0 auto; }
-.motivation-header { text-align: center; margin-bottom: 4rem; }
-.motivation-header h2 { font-size: 2.5rem; font-weight: 900; color: #0f172a; }
-.motivation-header p { color: #64748b; }
-.motivation-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px,1fr)); gap: 2rem; }
-.motivation-card {
-  background: white; border-radius: 2rem; padding: 2.5rem 2rem;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.02); border: 1px solid #f1f5f9;
-  transition: all 0.3s; position: relative; overflow: hidden;
+.motivation-section {
+  padding: 5rem 1.5rem;
+  background: #ffffff;
 }
+
+.motivation-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.motivation-header {
+  text-align: center;
+  margin-bottom: 4rem;
+}
+
+.motivation-header h2 {
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: #0f172a;
+}
+
+.motivation-header p {
+  color: #64748b;
+  font-size: 1.1rem;
+}
+
+.motivation-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 2rem;
+}
+
+.motivation-card {
+  background: #f8fafc;
+  border: 1px solid #f1f5f9;
+  border-radius: 2rem;
+  padding: 2.5rem 2rem;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s;
+}
+
 .motivation-card::before {
-  content: '“'; position: absolute; font-size: 6rem; color: #e2e8f0;
-  top: 10px; right: 20px; font-family: serif; line-height: 1;
+  content: '“';
+  position: absolute;
+  font-size: 6rem;
+  color: #e2e8f0;
+  top: 5px;
+  right: 20px;
+  font-family: serif;
+  line-height: 1;
   transition: color 0.3s;
 }
-.motivation-card:hover { border-color: #bfdbfe; box-shadow: 0 15px 30px rgba(37,99,235,0.06); transform: translateY(-5px); }
-.motivation-card:hover::before { color: #93c5fd; }
-.motivation-card p { color: #334155; position: relative; z-index: 1; }
+
+.motivation-card:hover {
+  background: white;
+  border-color: #dbeafe;
+  box-shadow: 0 15px 30px rgba(37,99,235,0.06);
+  transform: translateY(-4px);
+}
+
+.motivation-card:hover::before {
+  color: #93c5fd;
+}
+
+.motivation-card p {
+  color: #334155;
+  font-size: 1.1rem;
+  line-height: 1.8;
+  position: relative;
+  z-index: 1;
+}

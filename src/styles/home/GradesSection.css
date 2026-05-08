@@ -1,23 +1,100 @@
-.grades-section { padding: 6rem 1.5rem; background: #ffffff; }
-.grades-container { max-width: 1280px; margin: 0 auto; }
-.grades-header { text-align: center; margin-bottom: 4rem; }
-.grades-header h2 { font-size: 2.5rem; font-weight: 900; color: #0f172a; }
-.grades-header p { color: #64748b; }
-.grades-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px,1fr)); gap: 2.5rem; }
+.grades-section {
+  padding: 5rem 1.5rem;
+  background: #f8fafc;
+}
+
+.grades-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.grades-header {
+  text-align: center;
+  margin-bottom: 4rem;
+}
+
+.grades-header h2 {
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: #0f172a;
+}
+
+.grades-header p {
+  color: #64748b;
+  margin-top: 0.5rem;
+}
+
+.grades-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2rem;
+}
+
 .grade-card {
-  background: white; border-radius: 2rem; overflow: hidden;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.04); border: 1px solid #f1f5f9;
+  background: white;
+  border-radius: 2rem;
+  overflow: hidden;
+  border: 1px solid #f1f5f9;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.03);
+  transition: all 0.3s ease;
+}
+
+.grade-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 25px 40px rgba(0,0,0,0.07);
+  border-color: #dbeafe;
+}
+
+.grade-card-img {
+  aspect-ratio: 4/3;
+  overflow: hidden;
+  background: #f1f5f9;
+}
+
+.grade-card-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s;
+}
+
+.grade-card:hover .grade-card-img img {
+  transform: scale(1.05);
+}
+
+.grade-card-body {
+  padding: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.grade-card-body .info span {
+  color: #2563eb;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.grade-card-body .info h3 {
+  color: #1e293b;
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin-top: 0.2rem;
+}
+
+.grade-arrow {
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f1f5f9;
+  border-radius: 50%;
+  color: #2563eb;
   transition: all 0.3s;
 }
-.grade-card:hover { transform: translateY(-8px); box-shadow: 0 20px 40px rgba(0,0,0,0.07); }
-.grade-card-img { aspect-ratio: 4/3; overflow: hidden; }
-.grade-card-img img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s; }
-.grade-card:hover .grade-card-img img { transform: scale(1.05); }
-.grade-card-body { padding: 1.5rem; display: flex; justify-content: space-between; align-items: center; }
-.grade-card-body .info span { color: #2563eb; font-size: 0.9rem; font-weight: 600; }
-.grade-card-body .info h3 { color: #1e293b; font-size: 1.3rem; }
-.grade-arrow {
-  width: 44px; height: 44px; display: flex; align-items: center; justify-content: center;
-  background: #f1f5f9; border-radius: 50%; color: #2563eb; transition: all 0.3s;
+
+.grade-card:hover .grade-arrow {
+  background: #2563eb;
+  color: white;
 }
-.grade-card:hover .grade-arrow { background: #2563eb; color: white; }

@@ -4,8 +4,8 @@
   left: 0;
   right: 0;
   height: 4px;
-  background: linear-gradient(to right, #2563eb, #7c3aed);
+  background: linear-gradient(90deg, #3b82f6, #8b5cf6);
   z-index: 100;
   transform-origin: left;
-  box-shadow: 0 0 12px rgba(37,99,235,0.2);
+  box-shadow: 0 0 10px rgba(59,130,246,0.3);
 }
