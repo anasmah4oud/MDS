@@ -1,0 +1,27 @@
+.marquee-strip {
+  background: linear-gradient(90deg, rgba(59,130,246,0.08), rgba(139,92,246,0.08));
+  padding: 1.2rem 0;
+  overflow: hidden;
+  border-top: 1px solid rgba(255,255,255,0.05);
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.marquee-track {
+  display: flex;
+  white-space: nowrap;
+  animation: marquee 35s linear infinite;
+}
+.marquee-group {
+  display: flex;
+  gap: 3rem;
+}
+.marquee-text {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: rgba(255,255,255,0.15);
+  padding: 0 2rem;
+  letter-spacing: 1px;
+}
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
