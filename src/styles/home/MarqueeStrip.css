@@ -1,31 +1,11 @@
-/* MarqueeStrip.css – شريط النص المتحرك */
 .marquee-strip {
-  background: linear-gradient(90deg, rgba(59, 130, 246, 0.05), rgba(139, 92, 246, 0.05));
+  background: #f8fafc;
+  border-top: 1px solid #e2e8f0;
+  border-bottom: 1px solid #e2e8f0;
   padding: 1.2rem 0;
   overflow: hidden;
-  border-top: 1px solid rgba(0, 0, 0, 0.04);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
-  position: relative;
 }
-.marquee-track {
-  display: flex;
-  white-space: nowrap;
-  animation: marquee 35s linear infinite;
-  will-change: transform;
-}
-.marquee-group {
-  display: flex;
-  gap: 3rem;
-}
-.marquee-text {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: rgba(0, 0, 0, 0.08);
-  letter-spacing: 2px;
-  padding: 0 2rem;
-  position: relative;
-}
-@keyframes marquee {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
-}
+.marquee-track { display: flex; animation: marquee 35s linear infinite; }
+.marquee-group { display: flex; gap: 3rem; }
+.marquee-text { font-size: 1.5rem; font-weight: 700; color: #cbd5e1; padding: 0 2rem; }
+@keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }

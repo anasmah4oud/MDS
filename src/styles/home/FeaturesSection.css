@@ -1,133 +1,31 @@
-/* FeaturesSection.css – قسم الميزات بتصميم خلاب */
-.features-section {
-  padding: 6rem 1.5rem;
-  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
-  position: relative;
-  overflow: hidden;
-}
-.features-section::before {
-  content: '';
-  position: absolute;
-  width: 400px;
-  height: 400px;
-  background: radial-gradient(circle, rgba(59,130,246,0.06) 0%, transparent 70%);
-  top: -50px;
-  right: -100px;
-  border-radius: 50%;
-  animation: float 8s ease-in-out infinite;
-}
-.features-container {
-  max-width: 1280px;
-  margin: 0 auto;
-  position: relative;
-  z-index: 1;
-}
-.features-header {
-  text-align: center;
-  margin-bottom: 4rem;
-}
+.features-section { padding: 6rem 1.5rem; background: #ffffff; }
+.features-container { max-width: 1280px; margin: 0 auto; }
+.features-header { text-align: center; margin-bottom: 4rem; }
 .features-header h2 {
-  font-size: clamp(2rem, 5vw, 3.5rem);
-  font-weight: 900;
-  color: #0f172a;
-  margin-bottom: 1rem;
-  background: linear-gradient(to right, #1e293b, #334155);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  font-size: clamp(2rem,5vw,3.2rem); font-weight: 900; color: #0f172a;
 }
-.features-header p {
-  color: #64748b;
-  font-size: 1.2rem;
-}
+.features-header p { color: #64748b; }
 .features-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 2.5rem;
-  align-items: center;
+  display: grid; grid-template-columns: 1fr; gap: 2rem; align-items: center;
 }
-@media (min-width: 768px) {
-  .features-grid { grid-template-columns: 1fr auto 1fr; }
-}
-.feature-column {
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
-}
+@media (min-width: 768px) { .features-grid { grid-template-columns: 1fr auto 1fr; } }
+.feature-column { display: flex; flex-direction: column; gap: 2rem; }
 .feature-card {
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(15px);
-  border: 1px solid rgba(0, 0, 0, 0.04);
-  border-radius: 2rem;
-  padding: 2rem;
-  transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.03);
-  position: relative;
-  overflow: hidden;
+  background: white; border: 1px solid #f1f5f9;
+  border-radius: 2rem; padding: 2rem;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.02);
+  transition: all 0.3s;
 }
-.feature-card::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(135deg, rgba(59,130,246,0.03), rgba(139,92,246,0.03));
-  opacity: 0;
-  transition: opacity 0.4s;
-}
-.feature-card:hover {
-  transform: translateY(-8px);
-  border-color: rgba(59,130,246,0.2);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.06);
-}
-.feature-card:hover::after {
-  opacity: 1;
-}
+.feature-card:hover { border-color: #bfdbfe; box-shadow: 0 15px 30px rgba(37,99,235,0.08); transform: translateY(-6px); }
 .feature-icon {
-  width: 56px;
-  height: 56px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, #eff6ff, #eef2ff);
-  border-radius: 1.5rem;
-  color: #2563eb;
-  margin-bottom: 1.5rem;
-  transition: all 0.3s;
+  width: 52px; height: 52px; display: flex; align-items: center; justify-content: center;
+  background: #eff6ff; border-radius: 1.25rem; color: #2563eb; margin-bottom: 1rem;
 }
-.feature-card:hover .feature-icon {
-  background: linear-gradient(135deg, #dbeafe, #e0e7ff);
-  transform: rotate(-5deg) scale(1.05);
-}
-.feature-card h3 {
-  font-size: 1.4rem;
-  font-weight: 700;
-  color: #1e293b;
-  margin-bottom: 0.5rem;
-}
-.feature-card p {
-  color: #64748b;
-  line-height: 1.7;
-}
+.feature-card h3 { color: #1e293b; font-size: 1.4rem; margin-bottom: 0.5rem; }
+.feature-card p { color: #64748b; }
 .features-center-logo {
-  display: none;
-  width: 100px;
-  height: 100px;
-  background: white;
-  border-radius: 50%;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.05);
-  font-size: 2.5rem;
-  font-weight: 900;
-  color: #cbd5e1;
-  transition: all 0.3s;
-  margin: 0 auto;
+  display: none; width: 100px; height: 100px;
+  background: #f8fafc; border-radius: 50%; align-items: center; justify-content: center;
+  font-size: 2.5rem; color: #cbd5e1;
 }
-.features-center-logo:hover {
-  color: #94a3b8;
-  transform: scale(1.05) rotate(5deg);
-}
-@media (min-width: 768px) {
-  .features-center-logo { display: flex; }
-}
+@media (min-width: 768px) { .features-center-logo { display: flex; } }

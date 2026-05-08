@@ -1,17 +1,11 @@
-/* ProgressBar.css – شريط تقدم ساحر */
 .progress-bar {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   height: 4px;
-  background: linear-gradient(to right, #3b82f6, #8b5cf6, #06b6d4);
+  background: linear-gradient(to right, #2563eb, #7c3aed);
   z-index: 100;
   transform-origin: left;
-  border-radius: 0 2px 2px 0;
-  box-shadow: 0 0 20px rgba(59, 130, 246, 0.5), 0 0 40px rgba(139, 92, 246, 0.3);
-  transition: box-shadow 0.3s;
-}
-.progress-bar:hover {
-  box-shadow: 0 0 30px rgba(59, 130, 246, 0.7), 0 0 60px rgba(139, 92, 246, 0.5);
+  box-shadow: 0 0 12px rgba(37,99,235,0.2);
 }

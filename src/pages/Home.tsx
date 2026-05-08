@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import LoadingScreen from '../components/home/LoadingScreen';
 import ProgressBar from '../components/home/ProgressBar';
 import Navbar from '../components/home/Navbar';
@@ -39,4 +39,5 @@ const Home: React.FC = () => {
     </div>
   );
 };
+
 export default Home;

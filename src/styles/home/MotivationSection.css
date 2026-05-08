@@ -1,64 +1,19 @@
-/* MotivationSection.css */
-.motivation-section {
-  padding: 6rem 1.5rem;
-  background: #ffffff;
-  position: relative;
-}
-.motivation-container {
-  max-width: 1280px;
-  margin: 0 auto;
-}
-.motivation-header {
-  text-align: center;
-  margin-bottom: 4rem;
-}
-.motivation-header h2 {
-  font-size: 2.5rem;
-  font-weight: 900;
-  color: #0f172a;
-}
-.motivation-header p {
-  color: #64748b;
-  font-size: 1.2rem;
-}
-.motivation-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 2rem;
-}
+.motivation-section { padding: 6rem 1.5rem; background: #f8fafc; }
+.motivation-container { max-width: 1280px; margin: 0 auto; }
+.motivation-header { text-align: center; margin-bottom: 4rem; }
+.motivation-header h2 { font-size: 2.5rem; font-weight: 900; color: #0f172a; }
+.motivation-header p { color: #64748b; }
+.motivation-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px,1fr)); gap: 2rem; }
 .motivation-card {
-  background: #f8fafc;
-  border-radius: 2rem;
-  padding: 2.5rem 2rem;
-  border: 1px solid rgba(0, 0, 0, 0.04);
-  transition: all 0.3s;
-  position: relative;
-  overflow: hidden;
+  background: white; border-radius: 2rem; padding: 2.5rem 2rem;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.02); border: 1px solid #f1f5f9;
+  transition: all 0.3s; position: relative; overflow: hidden;
 }
 .motivation-card::before {
-  content: '"';
-  position: absolute;
-  font-size: 6rem;
-  color: rgba(59, 130, 246, 0.08);
-  top: 10px;
-  right: 20px;
-  font-family: serif;
-  line-height: 1;
+  content: '“'; position: absolute; font-size: 6rem; color: #e2e8f0;
+  top: 10px; right: 20px; font-family: serif; line-height: 1;
   transition: color 0.3s;
 }
-.motivation-card:hover {
-  background: white;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
-  border-color: rgba(59, 130, 246, 0.15);
-  transform: translateY(-5px);
-}
-.motivation-card:hover::before {
-  color: rgba(59, 130, 246, 0.15);
-}
-.motivation-card p {
-  color: #334155;
-  font-size: 1.15rem;
-  line-height: 1.8;
-  position: relative;
-  z-index: 1;
-}
+.motivation-card:hover { border-color: #bfdbfe; box-shadow: 0 15px 30px rgba(37,99,235,0.06); transform: translateY(-5px); }
+.motivation-card:hover::before { color: #93c5fd; }
+.motivation-card p { color: #334155; position: relative; z-index: 1; }
