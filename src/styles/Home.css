@@ -1,82 +1,24 @@
 @reference "../index.css";
 
-/* 
-  Home Page Styles - Premium Light Mode 
+
+
+/**
+
+
+
+Home Page Styles
+
 */
 
-/* تحسين الخطوط لتناسب اللغة العربية */
-.font-arabic {
-  font-family: 'Cairo', 'Tajawal', system-ui, -apple-system, sans-serif;
+.hero-gradient {
+
+@apply bg-gradient-to-br from-slate-900 via-slate-800 to-blue-900;
+
 }
 
-/* التمرير اللانهائي (Marquee) بنقاء عالي جداً CSS فقط للأداء */
-.marquee-content {
-  animation: marquee 30s linear infinite;
-  will-change: transform;
+.feature-card {
+
+@apply p-8 bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl hover:bg-white/10 transition-all;
+
 }
 
-/* حركة الشريط */
-@keyframes marquee {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(50%); } /* استخدمنا 50% لليمين لأن اتجاه الصفحة LTR في هذا الجزء */
-}
-
-/* توقيف الحركة عند تمرير الماوس */
-.marquee-content:hover {
-  animation-play-state: paused;
-}
-
-/* 
-  حركات العناصر الطافية (Blobs) في الخلفية 
-  لتعطي لمسة جمالية بدون التأثير على الأداء
-*/
-@keyframes blob {
-  0% {
-    transform: translate(0px, 0px) scale(1);
-  }
-  33% {
-    transform: translate(30px, -50px) scale(1.1);
-  }
-  66% {
-    transform: translate(-20px, 20px) scale(0.9);
-  }
-  100% {
-    transform: translate(0px, 0px) scale(1);
-  }
-}
-
-.animate-blob {
-  animation: blob 7s infinite;
-}
-
-.animation-delay-2000 {
-  animation-delay: 2s;
-}
-
-.animation-delay-4000 {
-  animation-delay: 4s;
-}
-
-/* تحسين شريط التمرير (Scrollbar) للمنصة */
-::-webkit-scrollbar {
-  width: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: #f1f5f9; 
-}
-
-::-webkit-scrollbar-thumb {
-  background: #cbd5e1; 
-  border-radius: 10px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #3b82f6; 
-}
-
-/* تأثير التحديد */
-::selection {
-  background-color: #3b82f6;
-  color: white;
-}
