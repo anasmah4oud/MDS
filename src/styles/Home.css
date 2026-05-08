@@ -1,7 +1,53 @@
-/* Home.css - حركات إضافية احترافية */
+/**
+ * Home Page Styles - البارع محمود الديب
+ * Professional, Light Theme, Responsive, Animated
+ */
 
-/* حركة الماركيه (السير النصي) */
-@keyframes marquee {
+/* ─── Base & Reset ─── */
+.home-page {
+  font-family: 'Segoe UI', 'Tahoma', 'Geneva', 'Verdana', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* Smooth scroll for the whole page */
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ─── Particles Canvas ─── */
+.particles-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ─── Marquee Animation ─── */
+.marquee-track {
+  animation: marquee-scroll 30s linear infinite;
+  will-change: transform;
+}
+
+@keyframes marquee-scroll {
   0% {
     transform: translateX(0);
   }
@@ -10,84 +56,453 @@
   }
 }
 
-.animate-marquee {
-  animation: marquee 20s linear infinite;
-  width: max-content;
+/* Pause marquee on hover for accessibility */
+.marquee-wrapper:hover .marquee-track {
+  animation-play-state: paused;
 }
 
-/* حركة البلوبس (البقعة الخلفية) */
-@keyframes blob {
-  0% {
-    transform: translate(0px, 0px) scale(1);
-  }
-  33% {
-    transform: translate(30px, -50px) scale(1.1);
-  }
-  66% {
-    transform: translate(-20px, 20px) scale(0.9);
-  }
-  100% {
-    transform: translate(0px, 0px) scale(1);
-  }
+/* ─── Tabular Numbers for Counters ─── */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum';
 }
 
-.animate-blob {
-  animation: blob 10s infinite ease-in-out;
+/* ─── Custom Scrollbar ─── */
+.home-page ::-webkit-scrollbar {
+  width: 8px;
 }
 
-.animation-delay-2000 {
-  animation-delay: 2s;
+.home-page ::-webkit-scrollbar-track {
+  background: #f1f5f9;
 }
 
-.animation-delay-4000 {
-  animation-delay: 4s;
+.home-page ::-webkit-scrollbar-thumb {
+  background: linear-gradient(to bottom, #3b82f6, #1d4ed8);
+  border-radius: 4px;
 }
 
-/* تأثير الكتابة الآلي (typewriter) */
-.typewriter {
+.home-page ::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(to bottom, #2563eb, #1e40af);
+}
+
+/* ─── Selection Colors ─── */
+.home-page ::selection {
+  background: rgba(59, 130, 246, 0.2);
+  color: #1e3a5f;
+}
+
+/* ─── Hero Section Enhancements ─── */
+.home-page section:first-of-type {
+  position: relative;
+}
+
+/* ─── Feature Cards Glow Effect ─── */
+.feature-card-glow {
+  position: relative;
   overflow: hidden;
-  white-space: nowrap;
-  border-left: 2px solid #4f46e5;
-  animation: typing 3s steps(40, end), blink-caret 0.75s step-end infinite;
-  display: inline-block;
-  width: fit-content;
-  max-width: 100%;
 }
 
-@keyframes typing {
+.feature-card-glow::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.03) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  pointer-events: none;
+}
+
+.feature-card-glow:hover::before {
+  opacity: 1;
+}
+
+/* ─── Grade Cards Image Overlay ─── */
+.grade-card-overlay {
+  position: relative;
+}
+
+.grade-card-overlay::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(15, 23, 42, 0.6) 0%, transparent 50%);
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+
+.grade-card-overlay:hover::after {
+  opacity: 1;
+}
+
+/* ─── Stats Counter Animation ─── */
+@keyframes count-up {
   from {
-    width: 0;
+    opacity: 0;
+    transform: translateY(20px);
   }
   to {
-    width: 100%;
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
-@keyframes blink-caret {
-  from, to {
-    border-color: transparent;
+.stat-animate {
+  animation: count-up 0.6s ease-out forwards;
+}
+
+/* ─── Button Ripple Effect ─── */
+.btn-ripple {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-ripple::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, transparent 70%);
+  transform: scale(0);
+  opacity: 0;
+  transition: transform 0.5s ease, opacity 0.5s ease;
+}
+
+.btn-ripple:active::after {
+  transform: scale(2);
+  opacity: 1;
+  transition: 0s;
+}
+
+/* ─── Navbar Glass Effect ─── */
+.nav-glass {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* ─── Footer Link Hover Animation ─── */
+.footer-link {
+  position: relative;
+  display: inline-block;
+}
+
+.footer-link::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  right: 0;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(to left, #3b82f6, #f59e0b);
+  transition: width 0.3s ease;
+  border-radius: 2px;
+}
+
+.footer-link:hover::after {
+  width: 100%;
+}
+
+/* ─── Mobile Menu Animation ─── */
+@keyframes slide-down {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.mobile-menu-enter {
+  animation: slide-down 0.3s ease-out forwards;
+}
+
+/* ─── Responsive Typography Scale ─── */
+@media (max-width: 640px) {
+  .home-page h1 {
+    font-size: 2.25rem !important;
+    line-height: 1.2 !important;
+  }
+
+  .home-page h2 {
+    font-size: 1.75rem !important;
+  }
+}
+
+/* ─── Touch Device Optimizations ─── */
+@media (pointer: coarse) {
+  .home-page .hover\:scale-105:hover {
+    transform: none;
+  }
+
+  .particles-canvas {
+    display: none;
+  }
+}
+
+/* ─── Print Styles ─── */
+@media print {
+  .home-page nav,
+  .home-page .marquee-wrapper,
+  .particles-canvas,
+  .home-page footer {
+    display: none !important;
+  }
+
+  .home-page section {
+    page-break-inside: avoid;
+  }
+}
+
+/* ─── Loading Skeleton ─── */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton {
+  background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+/* ─── Focus Styles for Accessibility ─── */
+.home-page a:focus-visible,
+.home-page button:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+  border-radius: 0.5rem;
+}
+
+/* ─── Image Loading Placeholder ─── */
+.img-loading {
+  background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
   }
   50% {
-    border-color: #4f46e5;
+    opacity: 0.5;
   }
 }
 
-/* للشاشات الصغيرة نلغي الكتابة الآلي (نخلي النص طبيعي) */
-@media (max-width: 768px) {
-  .typewriter {
-    white-space: normal;
-    border-left: none;
+/* ─── Gradient Text Animation ─── */
+@keyframes gradient-shift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.gradient-text-animate {
+  background-size: 200% auto;
+  animation: gradient-shift 3s ease infinite;
+}
+
+/* ─── Floating Animation for Badges ─── */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.float-animation {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* ─── Card Hover Lift ─── */
+.card-lift {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card-lift:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 40px -10px rgba(59, 130, 246, 0.15);
+}
+
+/* ─── Section Divider ─── */
+.section-divider {
+  height: 1px;
+  background: linear-gradient(to right, transparent, #e2e8f0, transparent);
+  margin: 0 auto;
+  max-width: 200px;
+}
+
+/* ─── Custom Button Styles ─── */
+.btn-primary {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.25);
+  transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.35);
+  transform: translateY(-2px);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+/* ─── Glass Card Effect ─── */
+.glass-card {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+/* ─── Dark Section Text Shadow ─── */
+.dark-section-text {
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* ─── Responsive Grid Adjustments ─── */
+@media (min-width: 1280px) {
+  .home-page .max-w-7xl {
+    max-width: 80rem;
+  }
+}
+
+/* ─── Animation for Hero Image Border ─── */
+@keyframes border-glow {
+  0%, 100% {
+    border-color: rgba(59, 130, 246, 0.2);
+  }
+  50% {
+    border-color: rgba(59, 130, 246, 0.4);
+  }
+}
+
+.hero-image-border {
+  animation: border-glow 3s ease-in-out infinite;
+}
+
+/* ─── Stats Number Glow ─── */
+.stat-number {
+  text-shadow: 0 0 20px rgba(59, 130, 246, 0.1);
+}
+
+/* ─── Motivation Cards Stagger ─── */
+.motivation-card {
+  opacity: 0;
+  animation: fade-in-up 0.6s ease-out forwards;
+}
+
+.motivation-card:nth-child(1) { animation-delay: 0.1s; }
+.motivation-card:nth-child(2) { animation-delay: 0.2s; }
+.motivation-card:nth-child(3) { animation-delay: 0.3s; }
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ─── Footer Social Icons ─── */
+.social-icon {
+  transition: all 0.3s ease;
+}
+
+.social-icon:hover {
+  transform: translateY(-3px);
+  color: #3b82f6;
+}
+
+/* ─── Grade Card Badge ─── */
+.grade-badge {
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* ─── Progress Bar Glow ─── */
+.progress-glow {
+  box-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
+}
+
+/* ─── Smooth Image Loading ─── */
+img {
+  transition: opacity 0.3s ease;
+}
+
+img[src=""] {
+  opacity: 0;
+}
+
+/* ─── Link Underline Animation ─── */
+.link-underline {
+  position: relative;
+}
+
+.link-underline::after {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 2px;
+  bottom: -2px;
+  right: 0;
+  background-color: currentColor;
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 0.3s ease;
+}
+
+.link-underline:hover::after {
+  transform: scaleX(1);
+}
+
+/* ─── Mobile Touch Feedback ─── */
+@media (hover: none) {
+  .home-page button:active,
+  .home-page a:active {
+    opacity: 0.8;
+  }
+}
+
+/* ─── Reduced Motion Preferences ─── */
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track {
     animation: none;
-    width: 100%;
   }
-}
 
-/* تحسين مظهر الحواف للهواتف */
-@media (max-width: 640px) {
-  .rounded-3xl {
-    border-radius: 1.5rem;
+  .float-animation {
+    animation: none;
   }
-  .backdrop-blur-xl {
-    backdrop-filter: blur(12px);
+
+  .gradient-text-animate {
+    animation: none;
+  }
+
+  .hero-image-border {
+    animation: none;
+  }
+
+  .motivation-card {
+    animation: none;
+    opacity: 1;
   }
 }
