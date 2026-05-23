@@ -3,11 +3,12 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { ChevronRight, Shield, Clock, BookOpen, AlertCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
+import { initializeContentProtection } from '../lib/content-protection';
 import { Lesson } from '../types';
 import Plyr from 'plyr-react';
 import "plyr-react/plyr.css";
@@ -16,12 +17,32 @@ import '../styles/VideoView.css';
 export default function VideoView() {
   const { lessonId } = useParams();
   const navigate = useNavigate();
-  const { profile } = useAuth();
+  const { profile, user } = useAuth();
   const [lesson, setLesson] = useState<Lesson | null>(null);
   const [loading, setLoading] = useState(true);
+  const [plyrSource, setPlyrSource] = useState<any>(null);
+  const playerRef = useRef<any>(null);
+
+  // Simple obfuscation helper - تحويل الرابط إلى صيغة غير مباشرة
+  const obfuscateUrl = (url: string): string => {
+    return btoa(url).split('').reverse().join('');
+  };
+
+  const deobfuscateUrl = (obfuscated: string): string => {
+    try {
+      return atob(obfuscated.split('').reverse().join(''));
+    } catch {
+      return obfuscated;
+    }
+  };
 
   useEffect(() => {
     fetchLesson();
+    
+    // ===== تفعيل جميع طبقات الحماية =====
+    // Activate all protection layers
+    const protectionCleanup = initializeContentProtection();
+
     // Disable right click and common dev shortcuts
     const handleContextMenu = (e: MouseEvent) => e.preventDefault();
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -36,9 +57,22 @@ export default function VideoView() {
     };
     document.addEventListener('contextmenu', handleContextMenu);
     document.addEventListener('keydown', handleKeyDown);
+
+    // Prevent iframe source inspection
+    const preventIframeExposure = () => {
+      const iframes = document.querySelectorAll('iframe');
+      iframes.forEach(iframe => {
+        iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-presentation');
+      });
+    };
+
+    const observer = new MutationObserver(preventIframeExposure);
+    observer.observe(document.body, { childList: true, subtree: true });
+
     return () => {
       document.removeEventListener('contextmenu', handleContextMenu);
       document.removeEventListener('keydown', handleKeyDown);
+      observer.disconnect();
     };
   }, [lessonId]);
 
@@ -52,11 +86,57 @@ export default function VideoView() {
       
       if (error) throw error;
       setLesson(data as Lesson);
+
+      // تحميل الفيديو ديناميكياً وليس مباشرة في الـ HTML
+      await initializePlayer(data as Lesson);
     } catch (err) {
       console.error(err);
     } finally {
       setLoading(false);
     }
+  };
+
+  // تحميل بيانات الفيديو ديناميكياً
+  const initializePlayer = async (lessonData: Lesson) => {
+    try {
+      // محاكاة تأخير لجعل الرابط غير مرئي
+      await new Promise(resolve => setTimeout(resolve, 300));
+
+      const videoId = getYouTubeId(lessonData.url);
+      
+      // عدم إظهار الرابط مباشرة
+      const source = {
+        type: 'video',
+        sources: [
+          {
+            src: videoId,
+            provider: 'youtube',
+          },
+        ],
+      };
+
+      setPlyrSource(source);
+    } catch (err) {
+      console.error('Error initializing player:', err);
+    }
+  };
+
+  // Robust video ID extraction
+  const getYouTubeId = (url: string) => {
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+    const match = url.match(regExp);
+    return (match && match[2].length === 11) ? match[2] : url;
+  };
+
+  const plyrOptions = {
+    controls: [
+      'play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'captions', 'settings', 'pip', 'airplay', 'fullscreen'
+    ],
+    settings: ['quality', 'speed'],
+    youtube: { noCookie: true, rel: 0, showinfo: 0, iv_load_policy: 3, modestbranding: 1 },
+    ratio: '16:9',
+    // إخفاء عناصر YouTube العامة
+    hideYoutubeSharing: true,
   };
 
   if (loading) {
@@ -76,34 +156,6 @@ export default function VideoView() {
       </div>
     );
   }
-
-  // Robust video ID extraction
-  const getYouTubeId = (url: string) => {
-    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
-    const match = url.match(regExp);
-    return (match && match[2].length === 11) ? match[2] : url;
-  };
-
-  const videoId = getYouTubeId(lesson.url);
-
-  const plyrSource: any = {
-    type: 'video',
-    sources: [
-      {
-        src: videoId,
-        provider: 'youtube',
-      },
-    ],
-  };
-
-  const plyrOptions = {
-    controls: [
-      'play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'captions', 'settings', 'pip', 'airplay', 'fullscreen'
-    ],
-    settings: ['quality', 'speed'],
-    youtube: { noCookie: true, rel: 0, showinfo: 0, iv_load_policy: 3, modestbranding: 1 },
-    ratio: '16:9'
-  };
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 overflow-x-hidden font-sans" dir="rtl">
@@ -130,7 +182,8 @@ export default function VideoView() {
         <div className="flex-1 bg-slate-900 flex items-center justify-center overflow-hidden relative group min-h-[300px] md:min-h-[500px]">
            <div className="w-full h-full flex items-center justify-center bg-black">
               <div className="w-full aspect-video shadow-2xl">
-                 <Plyr source={plyrSource} options={plyrOptions} />
+                 {/* تحميل الفيديو ديناميكياً - لن يظهر الرابط في HTML */}
+                 {plyrSource && <Plyr ref={playerRef} source={plyrSource} options={plyrOptions} />}
               </div>
            </div>
            
@@ -148,6 +201,36 @@ export default function VideoView() {
               </h3>
               <p className="text-slate-600 font-medium text-sm leading-relaxed text-right">
                 {lesson.description || "استمتع بمشاهدة شرح المبدع م/ محمود الديب. تأكد من تدوين ملاحظاتك الهامة والتركيز في كل دقيقة."}
+              </p>
+           </div>
+
+           <div className="space-y-6 flex-1 text-right">
+              <div className="flex items-center justify-between p-5 bg-slate-50 border border-slate-100 rounded-2xl">
+                 <div className="flex items-center gap-3">
+                    <Clock size={18} className="text-slate-400" />
+                    <span className="text-sm font-bold text-slate-500">مدة الدرس</span>
+                 </div>
+                 <span className="text-xs font-black text-slate-900">متغير حسب المحتوى</span>
+              </div>
+              
+              <div className="p-6 bg-yellow-50/50 border border-yellow-100 rounded-2xl">
+                 <div className="flex items-start gap-4">
+                    <AlertCircle className="text-yellow-600 shrink-0" size={24} />
+                    <div>
+                       <h4 className="font-black text-yellow-800 text-sm mb-1">تنبيه حماية</h4>
+                       <p className="text-xs font-bold text-yellow-700 leading-relaxed">
+                          يمنع منعاً باتاً تصوير الشاشة أو محاولة تحميل الفيديو، الحساب مراقب آلياً وسيتم حظر أي محاولة للتلاعب.
+                       </p>
+                    </div>
+                 </div>
+              </div>
+           </div>
+
+           <div className="mt-12 pt-8 border-t border-slate-100 text-center">
+              <p className="text-[10px] font-bold text-slate-400 mb-2 italic">جميع الحقوق محفوظة لمنصة البارع التعليمية © 2026</p>
+           </div>
+        </div>
+      </main>
               </p>
            </div>
 

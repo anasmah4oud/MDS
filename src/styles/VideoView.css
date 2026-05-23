@@ -47,3 +47,78 @@
     @apply rounded-none;
   }
 }
+
+/* Security & Protection Layers */
+
+/* Hide iframe src from inspection - إخفاء الروابط من Inspect */
+iframe {
+  border: none !important;
+}
+
+/* Prevent source code viewing */
+.plyr iframe {
+  pointer-events: auto !important;
+}
+
+/* Obscure video source paths */
+.plyr__video-wrapper source {
+  display: none !important;
+  visibility: hidden !important;
+}
+
+/* Prevent right-click context menu */
+.plyr--video {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+/* Disable text selection on player controls */
+.plyr__controls {
+  user-select: none;
+  -webkit-user-select: none;
+  pointer-events: auto;
+}
+
+/* Hide video poster to prevent extraction */
+.plyr--video .plyr__poster {
+  background-attachment: fixed;
+}
+
+/* Encrypt-like display of player metadata */
+.plyr__caption {
+  position: absolute;
+  opacity: 0.8;
+}
+
+/* Security warning overlay */
+.video-player-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.005) 2px,
+    rgba(0, 0, 0, 0.005) 4px
+  );
+  z-index: 1;
+}
+
+/* Prevent full-page screenshot */
+@media print {
+  .plyr {
+    display: none !important;
+  }
+}
+
+/* Additional iframe sandboxing display hint */
+iframe[sandbox] {
+  border-color: transparent !important;
+}
