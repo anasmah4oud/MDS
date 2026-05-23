@@ -18,7 +18,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import {
   Menu, X, ChevronRight, CheckCircle, GraduationCap,
   Users, BookOpen, Headset, MessageSquare, PhoneCall,
-  Globe, LayoutDashboard, LogIn, UserPlus, Youtube, Facebook, Send
+  Globe, LayoutDashboard,
+  ChevronLeft, LogIn, UserPlus, Youtube, Facebook, Send
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import '../styles/Home.css';
@@ -278,7 +279,7 @@ export default function Home() {
 
       {/* شريط التلاوة (مع تأثير نصي لامع) */}
       <div className="bg-blue-600 py-6 overflow-hidden my-10 border-y-4 border-white/20">
-        <div className="flex min-w-[200%] gap-12 animate-[marquee_1s_linear_infinite]" style={{ willChange: 'transform' }}>
+        <div className="flex min-w-[200%] gap-12 animate-[marquee_10s_linear_infinite]" style={{ willChange: 'transform' }}>
           {[...Array(2)].map((_, j) =>
             Array(12).fill(' 🔰 وما توفيقي إلا بالله 🔰').map((text, i) => (
               <span
@@ -381,7 +382,6 @@ export default function Home() {
               <img src="/logo.png" alt="Logo" className="relative w-20 h-20 rounded-full object-cover" />
             </motion.div>
             <h3 className="text-5xl font-black mb-4 tracking-tight">البارع محمود الديب</h3>
-            <p className="mx-auto max-w-2xl text-slate-300 text-lg font-medium">نحوّل العبارات التحفيزية إلى تجربة بصرية حية وتصميم عربي عصري.</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-16">
@@ -395,7 +395,10 @@ export default function Home() {
             <Link
               to="/login"
               className="inline-flex items-center gap-3 bg-white text-slate-950 px-12 py-5 rounded-full text-2xl font-black hover:bg-slate-100 transition-all shadow-2xl"
-            >
+
+
+>
+                <ChevronLeft size={24} />
               ابدأ رحلتك نحو التفوق الآن
               <ChevronRight size={24} />
             </Link>
@@ -412,9 +415,8 @@ export default function Home() {
               <p className="text-2xl font-bold text-blue-600 mb-10 leading-relaxed">دي مش مجرد أرقام دي أدلة أنك في المكان الصح</p>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
-                <StatCard value={displayLessons} label="حصة تعليمية" accent="from-blue-500 to-cyan-500" suffix="+" />
-                <StatCard value={displayStudents} label="طالب فخور" accent="from-violet-500 to-blue-500" suffix="+" />
-                <StatCard value={displayExperience} label="سنوات خبرة" accent="from-emerald-500 to-lime-500" suffix="+" />
+                <StatCard value={displayLessons} label="حصة " accent="from-blue-500 to-cyan-500" suffix="+" />
+                <StatCard value={displayStudents} label="طالب " accent="from-violet-500 to-blue-500" suffix="+" />
               </div>
             </div>
 
@@ -432,89 +434,116 @@ export default function Home() {
       </section>
 
       {/* تذييل الصفحة (بخطوط متحركة وأيقونات متوهجة) */}
-      <footer className="relative bg-slate-950 text-white pt-20 pb-10 overflow-hidden">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-72 h-1 rounded-full bg-gradient-to-r from-blue-500 via-violet-500 to-cyan-400 opacity-80" />
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="mb-10 flex justify-center">
-            <div className="h-1 w-32 rounded-full bg-gradient-to-r from-blue-500 via-violet-500 to-cyan-400" />
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-16 mb-12">
-            <div className="text-center md:text-right">
-              <div className="flex items-center gap-4 mb-6 justify-center md:justify-start">
-                <img src="/logo.png" alt="البارع" className="w-16 h-16 rounded-full" />
-                <h4 className="text-3xl font-black">البارع</h4>
-              </div>
-              <p className="text-slate-400 text-lg leading-relaxed mb-8">
-                المنصة التعليمية الأولى لتبسيط اللغة العربية لطلاب الثانوية العامة في مصر. نسعى دائماً للتميز والتفوق.
-              </p>
-            </div>
+<footer className="relative bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white pt-16 pb-8 mt-20">
+  {/* تأثير خلفية متحركة */}
+  <div className="absolute inset-0 overflow-hidden">
+    <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-pulse" />
+    <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-violet-500 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-pulse delay-1000" />
+  </div>
 
-            <div className="text-center">
-              <h5 className="text-xl font-bold mb-8">روابط سريعة</h5>
-              <div className="flex flex-col gap-4 text-slate-400">
-                <Link to="/support" className="relative inline-block group hover:text-blue-400 transition-colors">
-                  الدعم الفني
-                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-400 transition-all duration-300 group-hover:w-full" />
-                </Link>
-                <Link to="/contact" className="relative inline-block group hover:text-blue-400 transition-colors">
-                  تواصل معنا
-                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-400 transition-all duration-300 group-hover:w-full" />
-                </Link>
-                <Link to="/login" className="relative inline-block group hover:text-blue-400 transition-colors">
-                  تسجيل الدخول
-                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-400 transition-all duration-300 group-hover:w-full" />
-                </Link>
-              </div>
-            </div>
+  <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    {/* خط علوي أنيق */}
+    <div className="flex justify-center mb-12">
+      <div className="h-1 w-24 rounded-full bg-gradient-to-r from-blue-400 via-purple-400 to-cyan-400" />
+    </div>
 
-            <div className="text-center md:text-left">
-              <h5 className="text-xl font-bold mb-8">تواصل مباشر</h5>
-              <div className="flex flex-col gap-4 text-slate-400">
-                <p>واتساب: 01006984012</p>
-              </div>
-            </div>
-          </div>
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
+      {/* القسم الأول: الشعار والوصف */}
+      <div className="text-center lg:text-right">
+        <div className="flex items-center justify-center lg:justify-end gap-3 mb-5">
+          <img src="/logo.png" alt="البارع" className="w-12 h-12 rounded-full shadow-lg shadow-blue-500/20" />
+          <h4 className="text-2xl font-extrabold bg-gradient-to-l from-blue-400 to-cyan-300 bg-clip-text text-transparent">
+            البارع
+          </h4>
+        </div>
+        <p className="text-slate-300 text-sm leading-relaxed max-w-xs mx-auto lg:mx-0">
+          المنصة التعليمية الأولى لتبسيط اللغة العربية لطلاب الثانوية العامة في مصر. نسعى دائماً للتميز والتفوق.
+        </p>
+      </div>
 
-          <div className="flex justify-center md:justify-end gap-4 mb-8">
-            <motion.a
-              href="https://www.youtube.com"
-              target="_blank"
-              rel="noreferrer"
-              whileHover={{ scale: 1.2, boxShadow: '0 0 20px rgba(59,130,246,0.6)' }}
-              className="p-3 rounded-full bg-white/10 hover:bg-white/20 transition-colors relative"
-            >
-              <Youtube size={20} className="relative z-10" />
-            </motion.a>
-            <motion.a
-              href="https://www.facebook.com"
-              target="_blank"
-              rel="noreferrer"
-              whileHover={{ scale: 1.2, boxShadow: '0 0 20px rgba(59,130,246,0.6)' }}
-              className="p-3 rounded-full bg-white/10 hover:bg-white/20 transition-colors relative"
-            >
-              <Facebook size={20} className="relative z-10" />
-            </motion.a>
-            <motion.a
-              href="https://t.me"
-              target="_blank"
-              rel="noreferrer"
-              whileHover={{ scale: 1.2, boxShadow: '0 0 20px rgba(59,130,246,0.6)' }}
-              className="p-3 rounded-full bg-white/10 hover:bg-white/20 transition-colors relative"
-            >
-              <Send size={20} className="relative z-10" />
-            </motion.a>
-          </div>
+      {/* القسم الثاني: روابط سريعة */}
+      <div className="text-center">
+        <h5 className="text-lg font-bold mb-5 inline-block border-b-2 border-blue-400 pb-1">روابط سريعة</h5>
+        <ul className="space-y-3">
+          <li>
+            <Link to="/support" className="text-slate-300 hover:text-blue-300 transition duration-300 flex items-center justify-center gap-2 group">
+              <span className="w-0 group-hover:w-2 h-0.5 bg-blue-400 transition-all duration-300" />
+              الدعم الفني
+            </Link>
+          </li>
+          <li>
+            <Link to="/contact" className="text-slate-300 hover:text-blue-300 transition duration-300 flex items-center justify-center gap-2 group">
+              <span className="w-0 group-hover:w-2 h-0.5 bg-blue-400 transition-all duration-300" />
+              تواصل معنا
+            </Link>
+          </li>
+          <li>
+            <Link to="/login" className="text-slate-300 hover:text-blue-300 transition duration-300 flex items-center justify-center gap-2 group">
+              <span className="w-0 group-hover:w-2 h-0.5 bg-blue-400 transition-all duration-300" />
+              تسجيل الدخول
+            </Link>
+          </li>
+        </ul>
+      </div>
 
-          <div className="border-t border-white/10 pt-10 text-center text-slate-500 font-medium space-y-4">
-            <p>جميع الحقوق محفوظة للأستاذ محمود الديب ® {new Date().getFullYear()}</p>
-            <p className="text-blue-400 italic">تم الإنشاء بكل الحب لطلاب الثانوية العامة</p>
+      {/* القسم الثالث: معلومات الاتصال */}
+      <div className="text-center">
+        <h5 className="text-lg font-bold mb-5 inline-block border-b-2 border-blue-400 pb-1">تواصل مباشر</h5>
+        <div className="flex flex-col items-center gap-2 text-slate-300">
+          <div className="flex items-center gap-2 bg-white/5 backdrop-blur-sm px-4 py-2 rounded-full">
+            <span>📱</span>
+            <span dir="ltr">01006984012</span>
+            <span>واتساب</span>
           </div>
         </div>
-      </footer>
-    </div>
-  );
-}
+      </div>
 
+      {/* القسم الرابع: وسائل التواصل الاجتماعي */}
+      <div className="text-center">
+        <h5 className="text-lg font-bold mb-5 inline-block border-b-2 border-blue-400 pb-1">تابعنا</h5>
+        <div className="flex justify-center gap-5">
+          <motion.a
+            href="https://www.youtube.com"
+            target="_blank"
+            rel="noreferrer"
+            whileHover={{ y: -3, scale: 1.1 }}
+            className="p-2 rounded-full bg-white/5 hover:bg-red-500/20 backdrop-blur-sm transition-all duration-300"
+          >
+            <Youtube size={22} />
+          </motion.a>
+          <motion.a
+            href="https://www.facebook.com"
+            target="_blank"
+            rel="noreferrer"
+            whileHover={{ y: -3, scale: 1.1 }}
+            className="p-2 rounded-full bg-white/5 hover:bg-blue-600/20 backdrop-blur-sm transition-all duration-300"
+          >
+            <Facebook size={22} />
+          </motion.a>
+          <motion.a
+            href="https://t.me"
+            target="_blank"
+            rel="noreferrer"
+            whileHover={{ y: -3, scale: 1.1 }}
+            className="p-2 rounded-full bg-white/5 hover:bg-cyan-500/20 backdrop-blur-sm transition-all duration-300"
+          >
+            <Send size={22} />
+          </motion.a>
+        </div>
+      </div>
+    </div>
+
+    {/* شريط حقوق الملكية */}
+    <div className="border-t border-white/10 pt-8 text-center space-y-3">
+      <p className="text-slate-400 text-sm">
+        جميع الحقوق محفوظة للأستاذ محمود الديب © {new Date().getFullYear()}
+      </p>
+      <p className="text-transparent bg-gradient-to-r from-blue-300 to-cyan-300 bg-clip-text text-sm italic">
+        تم الإنشاء بكل الحب لطلاب الثانوية العامة 💙
+      </p>
+    </div>
+  </div>
+</footer>
 // ========== المكونات المساعدة (بنفس المنطق، مع تحسينات التصميم) ==========
 
 function FeatureItem({ icon, title, desc, fromLeft }: { icon: React.ReactNode; title: string; desc: string; fromLeft: boolean }) {
@@ -606,7 +635,7 @@ function GradeCard({ grade, title, img }: { grade: number; title: string; img: s
             </div>
           </div>
           <div className="p-6 flex justify-between items-center transition-colors bg-white">
-            <span className="text-slate-900 font-bold group-hover:text-blue-600">استكشف الآن</span>
+            <span className="text-slate-900 font-bold group-hover:text-blue-600">ابدأ الآن</span>
             <ChevronRight className="text-blue-600 group-hover:-translate-x-1 transition-transform" />
           </div>
         </motion.div>
