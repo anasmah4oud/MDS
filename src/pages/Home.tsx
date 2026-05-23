@@ -284,7 +284,7 @@ export default function Home() {
             Array(12).fill('  وما توفيقي إلا بالله ').map((text, i) => (
               <span
                 key={`${j}-${i}`}
-                className="text-white text-3xl md:text-4xl font-black tracking-[0.45em] whitespace-nowrap shimmer-text"
+                className="text-white line-height-1.75 text-3xl md:text-4xl font-black tracking-[0.45em] whitespace-nowrap shimmer-text"
               >
                 {text}
               </span>
@@ -299,7 +299,7 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 relative">
           <div className="text-center mb-20 relative z-10">
             <h3 className="text-4xl font-bold text-slate-900 mb-4">لماذا منصة البارع؟</h3>
-            <div className="mx-auto h-1.5 w-24 rounded-full bg-gradient-to-r from-blue-500 to-violet-500" />
+            <div className="mx-auto h-1.5 w-24 rounded-full bg-gradient-to-r from-blue-500 to-black-500" />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12 items-center relative z-10">
@@ -374,7 +374,7 @@ export default function Home() {
         <div className="max-w-5xl mx-auto px-4 relative z-10">
           <div className="text-center mb-14">
               <div className="absolute inset-0 rounded-full bg-gradient-to-br from-blue-400/20 via-violet-400/10 to-transparent blur-2xl" />
-              <img src="/logo.png" alt="Logo" className="relative w-20 h-20 rounded-full object-cover" />
+              <img src="/logo.png" alt="Logo" className="relative w-20 h-20 align-middle rounded-full object-cover" />
             <h3 className="text-5xl font-black mb-4 tracking-tight"> محمود الديب</h3>
           </div>
 
@@ -603,7 +603,7 @@ function GradeCard({ grade, title, img }: { grade: number; title: string; img: s
         <motion.div
           className="absolute inset-0 rounded-[2.25rem]"
           style={{
-            background: 'conic-gradient(from 0deg, #ffffff, #1900ff, #000000, #ff0000)',
+            background: 'conic-gradient(from 0deg, #0022ff, #000000, #000000, #ff0000)',
             filter: 'blur(4px)',
           }}
           animate={{ rotate: 360 }}
@@ -639,33 +639,52 @@ function GradeCard({ grade, title, img }: { grade: number; title: string; img: s
 function MotivationCard({ text }: { text: string }) {
   return (
     <motion.div
-      whileHover={{ y: -6, scale: 1.01 }}
-      initial={{ opacity: 0, y: 20 }}
+      whileHover={{ y: -4 }}
+      initial={{ opacity: 0, y: 12 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.4 }}
-      className="relative overflow-hidden rounded-3xl border border-white/10 bg-slate-900/60 p-6 backdrop-blur-xl shadow-[0_20px_80px_rgba(15,23,42,0.35)]"
+      transition={{ duration: 0.35 }}
+      viewport={{ once: true, amount: 0.2 }}
+      className="
+        relative overflow-hidden rounded-3xl
+        border border-white/10
+        bg-slate-900/80
+        p-6
+        shadow-xl
+        will-change-transform
+      "
     >
-      <div className="absolute inset-0 rounded-3xl bg-white/5 blur-xl" />
-      <div className="relative flex items-start gap-4">
-        <motion.svg
-          viewBox="0 0 24 24"
-          className="w-12 h-12 text-cyan-300"
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true, amount: 0.4 }}
+      <div className="flex items-start gap-4">
+        
+        {/* Icon */}
+        <motion.div
+          initial={{ scale: 0.7, opacity: 0 }}
+          whileInView={{ scale: 1, opacity: 1 }}
+          transition={{
+            duration: 0.35,
+            ease: "easeOut",
+          }}
+          viewport={{ once: true }}
+          className="flex-shrink-0"
         >
-          <motion.path
-            d="M5 13l4 4L19 7"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            initial={{ pathLength: 0 }}
-            whileInView={{ pathLength: 1 }}
-          />
-        </motion.svg>
-        <span className="relative text-lg font-semibold text-white shimmer-text">{text}</span>
+          <svg
+            viewBox="0 0 24 24"
+            className="w-11 h-11 text-cyan-300"
+          >
+            <path
+              d="M5 13l4 4L19 7"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </motion.div>
+
+        {/* Text */}
+        <span className="text-lg font-semibold text-white">
+          {text}
+        </span>
       </div>
     </motion.div>
   );
