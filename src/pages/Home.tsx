@@ -544,6 +544,10 @@ export default function Home() {
     </div>
   </div>
 </footer>
+    </div>
+  );
+}
+
 // ========== المكونات المساعدة (بنفس المنطق، مع تحسينات التصميم) ==========
 
 function FeatureItem({ icon, title, desc, fromLeft }: { icon: React.ReactNode; title: string; desc: string; fromLeft: boolean }) {
