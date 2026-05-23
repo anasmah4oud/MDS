@@ -53,8 +53,8 @@ export default function Home() {
     const unsubscribeStudents = studentsValue.onChange((value) => setDisplayStudents(Math.round(value)));
     const unsubscribeExperience = experienceValue.onChange((value) => setDisplayExperience(Math.round(value)));
 
-    const controlsLessons = animate(lessonsValue, 1200, { duration: 1.8, ease: 'easeOut' });
-    const controlsStudents = animate(studentsValue, 5000, { duration: 1.8, ease: 'easeOut' });
+    const controlsLessons = animate(lessonsValue, 1200, { duration: 0, ease: 'easeOut' });
+    const controlsStudents = animate(studentsValue, 5000, { duration: 0, ease: 'easeOut' });
     const controlsExperience = animate(experienceValue, 10, { duration: 1.8, ease: 'easeOut' });
 
     return () => {
@@ -373,14 +373,8 @@ export default function Home() {
 
         <div className="max-w-5xl mx-auto px-4 relative z-10">
           <div className="text-center mb-14">
-            <motion.div
-              className="relative inline-flex items-center justify-center w-28 h-28 mx-auto rounded-full bg-white/10 border border-white/10 shadow-[0_0_60px_rgba(59,130,246,0.18)]"
-              animate={{ rotate: 360 }}
-              transition={{ repeat: Infinity, duration: 20, ease: 'linear' }}
-            >
               <div className="absolute inset-0 rounded-full bg-gradient-to-br from-blue-400/20 via-violet-400/10 to-transparent blur-2xl" />
               <img src="/logo.png" alt="Logo" className="relative w-20 h-20 rounded-full object-cover" />
-            </motion.div>
             <h3 className="text-5xl font-black mb-4 tracking-tight">البارع محمود الديب</h3>
           </div>
 
