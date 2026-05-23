@@ -10,16 +10,12 @@ import {
   useSpring,
   AnimatePresence,
   useInView,
-  useMotionValue,
-  animate,
   useTransform,
 } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   Menu, X, ChevronRight, CheckCircle, GraduationCap,
-  Users, BookOpen, Headset, MessageSquare, PhoneCall,
-  Globe, LayoutDashboard,
-  ChevronLeft, LogIn, UserPlus, Youtube, Facebook, Send
+  Users, BookOpen, ChevronLeft, LogIn, UserPlus, Youtube, Facebook, Send
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import '../styles/Home.css';
@@ -32,46 +28,13 @@ export default function Home() {
     restDelta: 0.001
   });
 
-  const heroTextAnimation = {
-    hidden: { opacity: 0, y: 30 },
-    visible: { opacity: 1, y: 0 }
-  };
-
   const statsRef = useRef<HTMLDivElement>(null);
-  const statsInView = useInView(statsRef, { once: true, amount: 0.35 });
-  const lessonsValue = useMotionValue(0);
-  const studentsValue = useMotionValue(0);
-  const experienceValue = useMotionValue(0);
-  const [displayLessons, setDisplayLessons] = useState(0);
-  const [displayStudents, setDisplayStudents] = useState(0);
-  const [displayExperience, setDisplayExperience] = useState(0);
-
-  useEffect(() => {
-    if (!statsInView) return;
-
-    const unsubscribeLessons = lessonsValue.onChange((value) => setDisplayLessons(Math.round(value)));
-    const unsubscribeStudents = studentsValue.onChange((value) => setDisplayStudents(Math.round(value)));
-    const unsubscribeExperience = experienceValue.onChange((value) => setDisplayExperience(Math.round(value)));
-
-    const controlsLessons = animate(lessonsValue, 1200, { duration: 0, ease: 'easeOut' });
-    const controlsStudents = animate(studentsValue, 5000, { duration: 0, ease: 'easeOut' });
-    const controlsExperience = animate(experienceValue, 10, { duration: 1.8, ease: 'easeOut' });
-
-    return () => {
-      unsubscribeLessons();
-      unsubscribeStudents();
-      unsubscribeExperience();
-      controlsLessons.stop();
-      controlsStudents.stop();
-      controlsExperience.stop();
-    };
-  }, [statsInView, lessonsValue, studentsValue, experienceValue]);
 
   const { user, profile, isAdmin, loading } = useAuth();
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  // للتحكم في شفافية النافبار عند التمرير (تحسين جمالي فقط)
+  // للتحكم في شفافية النافبار عند التمرير
   const [scrolled, setScrolled] = useState(false);
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
@@ -87,7 +50,7 @@ export default function Home() {
   });
   const heroImageY = useTransform(heroScroll, [0, 1], [0, 100]);
 
-  // إعادة التوجيه بعد التأكد من الحساب (المنطق الأصلي كما هو)
+  // إعادة التوجيه بعد التأكد من الحساب
   useEffect(() => {
     if (!loading && user && profile) {
       if (isAdmin) {
@@ -112,13 +75,13 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-slate-50 overflow-x-hidden" dir="rtl">
-      {/* شريط التقدم المحسّن بتوهج */}
+      {/* 1. شريط التقدم المحسّن (أزرق في أسود) */}
       <motion.div
-        className="fixed top-0 left-0 right-0 h-1.5 z-[100] origin-right progress-glow"
+        className="fixed top-0 left-0 right-0 h-1.5 z-[100] origin-right bg-gradient-to-r from-blue-600 to-black shadow-[0_0_10px_rgba(37,99,235,0.5)]"
         style={{ scaleX }}
       />
 
-      {/* شريط التنقل بتأثير زجاجي متغير */}
+      {/* شريط التنقل */}
       <nav
         className={`fixed top-0 w-full z-50 border-b border-slate-200 transition-all duration-500 ${
           scrolled
@@ -190,7 +153,6 @@ export default function Home() {
         ref={heroRef}
         className="relative pt-40 md:pt-48 pb-12 md:pb-20 px-4 overflow-hidden"
       >
-        {/* جزيئات متحركة (تأثير جمالي) */}
         <div className="absolute inset-0 pointer-events-none">
           {[...Array(25)].map((_, i) => (
             <motion.div
@@ -208,12 +170,6 @@ export default function Home() {
               }}
             />
           ))}
-        </div>
-
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute -right-24 top-16 w-96 h-96 rounded-full bg-blue-500/10 blur-3xl animate-[float_12s_ease-in-out_infinite]" />
-          <div className="absolute -left-24 top-1/4 w-80 h-80 rounded-full bg-cyan-300/10 blur-3xl animate-[float_10s_ease-in-out_infinite_reverse]" />
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(59,130,246,0.12),transparent_25%),repeating-linear-gradient(135deg,rgba(15,23,42,0.02)_0_1px,transparent_1px_52px)] opacity-80" />
         </div>
 
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center gap-8 md:gap-12 relative z-10">
@@ -277,14 +233,14 @@ export default function Home() {
         </div>
       </section>
 
-      {/* شريط التلاوة (مع تأثير نصي لامع) */}
-      <div className="bg-blue-600 py-6 overflow-hidden my-10 border-y-4 border-white/20">
-        <div className="flex min-w-[200%]  gap-12 animate-[marquee_10s_linear_infinite]" style={{ willChange: 'transform' }}>
+      {/* 2. شريط التلاوة (تم تعديل الهوامش وارتفاع السطر لمنع قص الكلام) */}
+      <div className="bg-blue-600 py-8 overflow-hidden my-10 border-y-4 border-white/20">
+        <div className="flex min-w-[200%] gap-12 animate-[marquee_10s_linear_infinite]" style={{ willChange: 'transform' }}>
           {[...Array(2)].map((_, j) =>
-            Array(12).fill('  وما توفيقي إلا بالله ').map((text, i) => (
+            Array(12).fill('  وما توفيقي إلا بالله  ').map((text, i) => (
               <span
                 key={`${j}-${i}`}
-                className="text-white line-height-1.75 text-3xl md:text-4xl font-black tracking-[0.45em] whitespace-nowrap shimmer-text"
+                className="text-white leading-normal text-3xl md:text-4xl font-black tracking-[0.45em] whitespace-nowrap shimmer-text pb-2"
               >
                 {text}
               </span>
@@ -293,16 +249,16 @@ export default function Home() {
         </div>
       </div>
 
-      {/* قسم الميزات (Spotlight + أيقونات دوارة) */}
+      {/* قسم الميزات */}
       <section className="py-24 bg-slate-50 relative overflow-hidden">
         <div className="absolute inset-x-0 top-0 h-72 bg-[radial-gradient(circle_at_top,rgba(56,189,248,0.16),transparent_55%)]" />
-        <div className="max-w-7xl mx-auto px-4 relative">
-          <div className="text-center mb-20 relative z-10">
+        <div className="max-w-7xl mx-auto px-4 relative z-10">
+          <div className="text-center mb-20">
             <h3 className="text-4xl font-bold text-slate-900 mb-4">لماذا منصة البارع؟</h3>
-            <div className="mx-auto h-1.5 w-24 rounded-full bg-gradient-to-r from-blue-500 to-black-500" />
+            <div className="mx-auto h-1.5 w-24 rounded-full bg-gradient-to-r from-blue-500 to-blue-700" />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-12 items-center relative z-10">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-12 items-center">
             <div className="space-y-8 md:order-1">
               <FeatureItem
                 icon={<BookOpen />}
@@ -348,7 +304,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* المراحل الدراسية (بطاقات بحدود دوّارة) */}
+      {/* المراحل الدراسية */}
       <section className="py-24 bg-slate-50">
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-16">
@@ -364,18 +320,24 @@ export default function Home() {
         </div>
       </section>
 
-      {/* قسم التحفيز (شبكة متحركة + نصوص لامعة) */}
+      {/* 5. قسم التحفيز (تخفيف التأثيرات وتعديل اللوجو والاسم) */}
       <section className="relative py-32 bg-slate-950 text-white overflow-hidden">
-        <div className="absolute inset-0 moving-grid opacity-20" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(59,130,246,0.18),transparent_40%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(129,140,248,0.12),transparent_45%)]" />
-        <div className="absolute top-10 left-1/2 -translate-x-1/2 w-80 h-80 rounded-full bg-blue-500/10 blur-3xl" />
+        {/* تم إزالة moving-grid لتسريع الأداء */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(59,130,246,0.08),transparent_50%)]" />
 
         <div className="max-w-5xl mx-auto px-4 relative z-10">
-          <div className="text-center mb-14">
-              <div className="absolute inset-0 rounded-full bg-gradient-to-br from-blue-400/20 via-violet-400/10 to-transparent blur-2xl" />
-              <img src="/logo.png" alt="Logo" className="relative w-20 h-20 align-middle rounded-full object-cover" />
-            <h3 className="text-5xl font-black mb-4 tracking-tight"> محمود الديب</h3>
+          <div className="flex flex-col items-center justify-center text-center mb-16 relative">
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 rounded-full bg-yellow-500/10 blur-3xl pointer-events-none" />
+            
+            <img 
+              src="/logo.png" 
+              alt="Logo" 
+              className="relative w-24 h-24 rounded-full object-cover mb-6 shadow-lg shadow-yellow-500/20 border-2 border-yellow-500/30" 
+            />
+            
+            <h3 className="text-5xl font-black tracking-tight bg-gradient-to-b from-yellow-300 to-yellow-600 bg-clip-text text-transparent pb-2">
+              محمود الديب
+            </h3>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-16">
@@ -388,11 +350,9 @@ export default function Home() {
           <div className="text-center">
             <Link
               to="/login"
-              className="inline-flex items-center gap-3 bg-white text-slate-950 px-12 py-5 rounded-full text-2xl font-black hover:bg-slate-100 transition-all shadow-2xl"
-
-
->
-                <ChevronLeft size={24} />
+              className="inline-flex items-center gap-3 bg-white text-slate-950 px-12 py-5 rounded-full text-2xl font-black hover:bg-slate-100 transition-all shadow-2xl hover:scale-105"
+            >
+              <ChevronLeft size={24} />
               ابدأ رحلتك نحو التفوق الآن
               <ChevronRight size={24} />
             </Link>
@@ -400,7 +360,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* الإحصائيات (مع نبض بعد اكتمال العد) */}
+      {/* 6. الإحصائيات (أرقام ثابتة بدون عداد) */}
       <section ref={statsRef} className="py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4">
           <div className="grid gap-12 lg:grid-cols-[1.8fr_1.2fr] items-center">
@@ -409,8 +369,9 @@ export default function Home() {
               <p className="text-2xl font-bold text-blue-600 mb-10 leading-relaxed">دي مش مجرد أرقام دي أدلة أنك في المكان الصح</p>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
-                <StatCard value={displayLessons} label="حصة " accent="from-blue-500 to-cyan-500" suffix="+" />
-                <StatCard value={displayStudents} label="طالب " accent="from-violet-500 to-blue-500" suffix="+" />
+                {/* تم وضع الأرقام ثابتة مباشرة */}
+                <StatCard value={1200} label="حصة " accent="from-blue-500 to-cyan-500" suffix="+" />
+                <StatCard value={5000} label="طالب " accent="from-violet-500 to-blue-500" suffix="+" />
               </div>
             </div>
 
@@ -427,116 +388,118 @@ export default function Home() {
         </div>
       </section>
 
-      {/* تذييل الصفحة (بخطوط متحركة وأيقونات متوهجة) */}
-<footer className="relative bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white pt-16 pb-8 mt-20">
-  {/* تأثير خلفية متحركة */}
-  <div className="absolute inset-0 overflow-hidden">
-    <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-pulse" />
-    <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-violet-500 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-pulse delay-1000" />
-  </div>
-
-  <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    {/* خط علوي أنيق */}
-    <div className="flex justify-center mb-12">
-      <div className="h-1 w-24 rounded-full bg-gradient-to-r from-blue-400 via-purple-400 to-cyan-400" />
-    </div>
-
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
-      {/* القسم الأول: الشعار والوصف */}
-      <div className="text-center lg:text-right">
-        <div className="lg:justify-end gap-3 mb-5">
-          <img src="/logo.png" alt="البارع" className="w-12 h-12 rounded-full shadow-lg shadow-blue-500/20" />
-          <h4 className="text-2xl font-extrabold bg-gradient-to-l from-blue-400 to-cyan-300 bg-clip-text text-transparent">
-            البارع محمود الديب
-          </h4>
+      {/* 7. تذييل الصفحة (ألوان جديدة كحلي/أزرق غامق، خطوط ذهبية، عناصر متحركة) */}
+      <footer className="relative bg-gradient-to-br from-[#020617] via-[#0f172a] to-[#020617] text-white pt-16 pb-8 mt-20 border-t border-slate-800">
+        
+        {/* عناصر متحركة في الفوتر */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute -top-20 -right-20 w-72 h-72 bg-blue-600/10 rounded-full blur-3xl animate-[pulse_6s_ease-in-out_infinite]" />
+          <div className="absolute bottom-10 left-10 w-96 h-96 bg-yellow-500/5 rounded-full blur-3xl animate-[pulse_8s_ease-in-out_infinite_reverse]" />
         </div>
-        <p className="text-slate-300 text-sm leading-relaxed max-w-xs mx-auto lg:mx-0">
-      نسعى دائماً للتميز والتفوق.
-        </p>
-      </div>
 
-      {/* القسم الثاني: روابط سريعة */}
-      <div className="text-center">
-        <h5 className="text-lg font-bold mb-5 inline-block border-b-2 border-blue-400 pb-1">روابط سريعة</h5>
-        <ul className="space-y-3">
-          <li>
-            <Link to="/support" className="text-slate-300 hover:text-blue-300 transition duration-300 flex items-center justify-center gap-2 group">
-              <span className="w-0 group-hover:w-2 h-0.5 bg-blue-400 transition-all duration-300" />
-              الدعم الفني
-            </Link>
-          </li>
-          <li>
-            <Link to="/contact" className="text-slate-300 hover:text-blue-300 transition duration-300 flex items-center justify-center gap-2 group">
-              <span className="w-0 group-hover:w-2 h-0.5 bg-blue-400 transition-all duration-300" />
-              تواصل معنا
-            </Link>
-          </li>
-        </ul>
-      </div>
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 z-10">
+          
+          {/* خط علوي ذهبي */}
+          <div className="flex justify-center mb-12">
+            <div className="h-1 w-32 rounded-full bg-gradient-to-r from-yellow-500 via-yellow-200 to-yellow-600" />
+          </div>
 
-      {/* القسم الثالث: معلومات الاتصال */}
-      <div className="text-center">
-        <h5 className="text-lg font-bold mb-5 inline-block border-b-2 border-blue-400 pb-1">تواصل مباشر</h5>
-        <div className="flex flex-col items-center gap-2 text-slate-300">
-          <div className="flex items-center gap-2 bg-white/5 backdrop-blur-sm px-4 py-2 rounded-full">
-            <span>📱</span>
-            <span dir="ltr">01006984012</span>
-            <span>واتساب</span>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
+            
+            {/* القسم الأول: الشعار والوصف (اللوجو بجوار الاسم) */}
+            <div className="text-center lg:text-right">
+              <div className="flex items-center justify-center lg:justify-start gap-4 mb-5">
+                <img src="/logo.png" alt="البارع" className="w-14 h-14 rounded-full shadow-lg shadow-yellow-500/10 border border-slate-700" />
+                <h4 className="text-2xl font-black bg-gradient-to-l from-yellow-300 to-yellow-600 bg-clip-text text-transparent pb-1">
+                  البارع محمود الديب
+                </h4>
+              </div>
+              <p className="text-slate-300 text-sm leading-relaxed max-w-xs mx-auto lg:mx-0">
+                نسعى دائماً للتميز والتفوق.
+              </p>
+            </div>
+
+            {/* القسم الثاني: روابط سريعة */}
+            <div className="text-center">
+              <h5 className="text-lg font-bold mb-5 inline-block border-b-2 border-yellow-500 pb-1">روابط سريعة</h5>
+              <ul className="space-y-3">
+                <li>
+                  <Link to="/support" className="text-slate-300 hover:text-yellow-400 transition duration-300 flex items-center justify-center gap-2 group">
+                    <span className="w-0 group-hover:w-2 h-0.5 bg-yellow-400 transition-all duration-300" />
+                    الدعم الفني
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/contact" className="text-slate-300 hover:text-yellow-400 transition duration-300 flex items-center justify-center gap-2 group">
+                    <span className="w-0 group-hover:w-2 h-0.5 bg-yellow-400 transition-all duration-300" />
+                    تواصل معنا
+                  </Link>
+                </li>
+              </ul>
+            </div>
+
+            {/* القسم الثالث: معلومات الاتصال */}
+            <div className="text-center">
+              <h5 className="text-lg font-bold mb-5 inline-block border-b-2 border-yellow-500 pb-1">تواصل مباشر</h5>
+              <div className="flex flex-col items-center gap-2 text-slate-300">
+                <div className="flex items-center gap-2 bg-white/5 hover:bg-white/10 transition-colors backdrop-blur-sm px-5 py-2.5 rounded-full cursor-pointer">
+                  <span dir="ltr" className="font-bold tracking-wider text-yellow-100">01006984012</span>
+                  <span className="text-sm">واتساب</span>
+                </div>
+              </div>
+            </div>
+
+            {/* القسم الرابع: وسائل التواصل الاجتماعي */}
+            <div className="text-center">
+              <h5 className="text-lg font-bold mb-5 inline-block border-b-2 border-yellow-500 pb-1">تابعنا</h5>
+              <div className="flex justify-center gap-5">
+                <motion.a
+                  href="https://www.youtube.com/channel/UCIW308efj12Q86_hV8LgsNw"
+                  target="_blank"
+                  rel="noreferrer"
+                  whileHover={{ y: -4, scale: 1.1 }}
+                  className="p-3 rounded-full bg-slate-800/50 hover:bg-red-500/80 shadow-lg backdrop-blur-sm transition-all duration-300"
+                >
+                  <Youtube size={20} />
+                </motion.a>
+                <motion.a
+                  href="https://www.facebook.com"
+                  target="_blank"
+                  rel="noreferrer"
+                  whileHover={{ y: -4, scale: 1.1 }}
+                  className="p-3 rounded-full bg-slate-800/50 hover:bg-blue-600/80 shadow-lg backdrop-blur-sm transition-all duration-300"
+                >
+                  <Facebook size={20} />
+                </motion.a>
+                <motion.a
+                  href="https://t.me"
+                  target="_blank"
+                  rel="noreferrer"
+                  whileHover={{ y: -4, scale: 1.1 }}
+                  className="p-3 rounded-full bg-slate-800/50 hover:bg-cyan-500/80 shadow-lg backdrop-blur-sm transition-all duration-300"
+                >
+                  <Send size={20} />
+                </motion.a>
+              </div>
+            </div>
+          </div>
+
+          {/* شريط حقوق الملكية */}
+          <div className="border-t border-slate-800/80 pt-8 text-center space-y-3">
+            <p className="text-slate-400 text-sm">
+              جميع الحقوق محفوظة للأستاذ محمود الديب © {new Date().getFullYear()}
+            </p>
+            <p className="text-transparent bg-gradient-to-r from-yellow-300 to-yellow-600 bg-clip-text text-sm italic font-medium">
+              💛 تم الإنشاء بكل الحب لطلاب الثانوية العامة 💛
+            </p>
           </div>
         </div>
-      </div>
-
-      {/* القسم الرابع: وسائل التواصل الاجتماعي */}
-      <div className="text-center">
-        <h5 className="text-lg font-bold mb-5 inline-block border-b-2 border-blue-400 pb-1">تابعنا</h5>
-        <div className="flex justify-center gap-5">
-          <motion.a
-            href="https://www.youtube.com/channel/UCIW308efj12Q86_hV8LgsNw"
-            target="_blank"
-            rel="noreferrer"
-            whileHover={{ y: -3, scale: 1.1 }}
-            className="p-2 rounded-full bg-white/5 hover:bg-red-500/20 backdrop-blur-sm transition-all duration-300"
-          >
-            <Youtube size={22} />
-          </motion.a>
-          <motion.a
-            href="https://www.facebook.com"
-            target="_blank"
-            rel="noreferrer"
-            whileHover={{ y: -3, scale: 1.1 }}
-            className="p-2 rounded-full bg-white/5 hover:bg-blue-600/20 backdrop-blur-sm transition-all duration-300"
-          >
-            <Facebook size={22} />
-          </motion.a>
-          <motion.a
-            href="https://t.me"
-            target="_blank"
-            rel="noreferrer"
-            whileHover={{ y: -3, scale: 1.1 }}
-            className="p-2 rounded-full bg-white/5 hover:bg-cyan-500/20 backdrop-blur-sm transition-all duration-300"
-          >
-            <Send size={22} />
-          </motion.a>
-        </div>
-      </div>
-    </div>
-
-    {/* شريط حقوق الملكية */}
-    <div className="border-t border-white/10 pt-8 text-center space-y-3">
-      <p className="text-slate-400 text-sm">
-        جميع الحقوق محفوظة للأستاذ محمود الديب © {new Date().getFullYear()}
-      </p>
-      <p className="text-transparent bg-gradient-to-r from-blue-300 to-cyan-300 bg-clip-text text-sm italic">
-         💙 تم الإنشاء بكل الحب لطلاب الثانوية العامة 💙
-      </p>
-    </div>
-  </div>
-</footer>
+      </footer>
     </div>
   );
 }
 
-// ========== المكونات المساعدة (بنفس المنطق، مع تحسينات التصميم) ==========
+// ========== المكونات المساعدة ==========
 
 function FeatureItem({ icon, title, desc, fromLeft }: { icon: React.ReactNode; title: string; desc: string; fromLeft: boolean }) {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
@@ -556,21 +519,21 @@ function FeatureItem({ icon, title, desc, fromLeft }: { icon: React.ReactNode; t
       viewport={{ once: true, amount: 0.35 }}
       variants={{ hidden: { opacity: 0, x: fromLeft ? -40 : 40, y: 20 }, visible: { opacity: 1, x: 0, y: 0 } }}
       transition={{ duration: 0.8, ease: 'easeOut' }}
-      whileHover={{ y: -8, boxShadow: '0 30px 60px rgba(59,130,246,0.16)' }}
-      className="glass-effect p-8 rounded-[2rem] flex flex-col items-center text-center transition-all relative overflow-hidden"
+      whileHover={{ y: -8, boxShadow: '0 30px 60px rgba(220,38,38,0.1)' }}
+      className="glass-effect p-8 rounded-[2rem] flex flex-col items-center text-center transition-all relative overflow-hidden bg-white"
       onMouseMove={handleMouseMove}
       style={{ willChange: 'transform, box-shadow' }}
     >
-      {/* تأثير spotlight يتبع الماوس */}
       <div
         className="pointer-events-none absolute inset-0 opacity-0 hover:opacity-100 transition-opacity duration-500"
         style={{
-          background: `radial-gradient(600px circle at ${mousePos.x}px ${mousePos.y}px, rgba(59,130,246,0.15), transparent 40%)`,
+          background: `radial-gradient(600px circle at ${mousePos.x}px ${mousePos.y}px, rgba(220,38,38,0.08), transparent 40%)`,
         }}
       />
       <div className="relative z-10 flex flex-col items-center">
+        {/* 3. تعديل لون خلفية الأيقونات (أحمر في أسود) */}
         <motion.div
-          className="w-16 h-16 rounded-2xl flex items-center justify-center mb-6 text-white bg-gradient-to-br from-blue-500 to-violet-500 text-2xl"
+          className="w-16 h-16 rounded-2xl flex items-center justify-center mb-6 text-white bg-gradient-to-br from-red-600 to-black text-2xl shadow-lg shadow-red-500/20"
           whileInView={{ rotate: 360 }}
           viewport={{ once: true, amount: 0.5 }}
           transition={{ duration: 1.2, ease: 'easeOut' }}
@@ -598,12 +561,12 @@ function GradeCard({ grade, title, img }: { grade: number; title: string; img: s
 
   return (
     <Link to="/login" className="group block">
-      <div className="relative rounded-[2.25rem] p-[2px] overflow-hidden">
-        {/* حدود دوّارة ديناميكية */}
+      <div className="relative rounded-[2.25rem] p-[3px] overflow-hidden">
+        {/* 4. تعديل حدود البطاقات الدوارة (أحمر في أزرق) */}
         <motion.div
           className="absolute inset-0 rounded-[2.25rem]"
           style={{
-            background: 'conic-gradient(from 0deg, #0022ff, #000000, #000000, #ff0000)',
+            background: 'conic-gradient(from 0deg, #ef4444, #1d4ed8, #ef4444)',
             filter: 'blur(4px)',
           }}
           animate={{ rotate: 360 }}
@@ -646,16 +609,14 @@ function MotivationCard({ text }: { text: string }) {
       viewport={{ once: true, amount: 0.2 }}
       className="
         relative overflow-hidden rounded-3xl
-        border border-white/10
-        bg-slate-900/80
+        border border-white/5
+        bg-slate-900/60 backdrop-blur-md
         p-6
         shadow-xl
         will-change-transform
       "
     >
       <div className="flex items-start gap-4">
-        
-        {/* Icon */}
         <motion.div
           initial={{ scale: 0.7, opacity: 0 }}
           whileInView={{ scale: 1, opacity: 1 }}
@@ -668,7 +629,7 @@ function MotivationCard({ text }: { text: string }) {
         >
           <svg
             viewBox="0 0 24 24"
-            className="w-11 h-11 text-cyan-300"
+            className="w-11 h-11 text-yellow-500"
           >
             <path
               d="M5 13l4 4L19 7"
@@ -681,8 +642,7 @@ function MotivationCard({ text }: { text: string }) {
           </svg>
         </motion.div>
 
-        {/* Text */}
-        <span className="text-lg font-semibold text-white">
+        <span className="text-lg font-semibold text-white/90">
           {text}
         </span>
       </div>
@@ -691,20 +651,10 @@ function MotivationCard({ text }: { text: string }) {
 }
 
 function StatCard({ value, label, accent, suffix }: { value: number; label: string; accent: string; suffix?: string }) {
-  const [pulse, setPulse] = useState(false);
-
-  useEffect(() => {
-    if (value > 0 && !pulse) {
-      setPulse(true);
-    }
-  }, [value, pulse]);
-
   return (
     <motion.div
       whileHover={{ y: -8 }}
-      animate={pulse ? { scale: [1, 1.05, 1] } : {}}
-      transition={{ duration: 0.4 }}
-      className="rounded-[2rem] border border-slate-200/10 bg-white p-8 shadow-[0_24px_80px_rgba(15,23,42,0.08)] transition-all"
+      className="rounded-[2rem] border border-slate-200/50 bg-white p-8 shadow-[0_24px_80px_rgba(15,23,42,0.06)] transition-all"
     >
       <div className={`inline-flex px-4 py-2 rounded-full bg-gradient-to-r ${accent} text-white text-sm font-semibold mb-4`}>
         {label}
