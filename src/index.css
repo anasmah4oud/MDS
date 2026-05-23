@@ -34,6 +34,46 @@
   .text-balance {
     text-wrap: balance;
   }
+
+  .hero-cta-btn {
+    @apply relative overflow-hidden;
+  }
+
+  .hero-cta-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    left: -100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent);
+    transform: skewX(-15deg);
+    transition: left 0.7s ease;
+    pointer-events: none;
+  }
+
+  .hero-cta-btn:hover::before {
+    left: 100%;
+  }
+
+  .footer-link-underline {
+    @apply relative inline-block;
+  }
+
+  .footer-link-underline::after {
+    content: '';
+    position: absolute;
+    inset-inline-start: 50%;
+    bottom: -2px;
+    width: 0;
+    height: 2px;
+    border-radius: 9999px;
+    background: linear-gradient(to right, #60a5fa, #a855f7);
+    transition: width 0.28s ease, inset-inline-start 0.28s ease;
+  }
+
+  .footer-link-underline:hover::after {
+    width: 100%;
+    inset-inline-start: 0;
+  }
 }
 
 @keyframes marquee {
@@ -43,4 +83,9 @@
   100% {
     transform: translateX(-50%);
   }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-18px); }
 }
