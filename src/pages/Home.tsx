@@ -450,14 +450,14 @@ export default function Home() {
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
       {/* القسم الأول: الشعار والوصف */}
       <div className="text-center lg:text-right">
-        <div className="flex items-center justify-center lg:justify-end gap-3 mb-5">
+        <div className="lg:justify-end gap-3 mb-5">
           <img src="/logo.png" alt="البارع" className="w-12 h-12 rounded-full shadow-lg shadow-blue-500/20" />
           <h4 className="text-2xl font-extrabold bg-gradient-to-l from-blue-400 to-cyan-300 bg-clip-text text-transparent">
-            البارع
+            البارع محمود الديب
           </h4>
         </div>
         <p className="text-slate-300 text-sm leading-relaxed max-w-xs mx-auto lg:mx-0">
-          المنصة التعليمية الأولى لتبسيط اللغة العربية لطلاب الثانوية العامة في مصر. نسعى دائماً للتميز والتفوق.
+      نسعى دائماً للتميز والتفوق.
         </p>
       </div>
 
@@ -475,12 +475,6 @@ export default function Home() {
             <Link to="/contact" className="text-slate-300 hover:text-blue-300 transition duration-300 flex items-center justify-center gap-2 group">
               <span className="w-0 group-hover:w-2 h-0.5 bg-blue-400 transition-all duration-300" />
               تواصل معنا
-            </Link>
-          </li>
-          <li>
-            <Link to="/login" className="text-slate-300 hover:text-blue-300 transition duration-300 flex items-center justify-center gap-2 group">
-              <span className="w-0 group-hover:w-2 h-0.5 bg-blue-400 transition-all duration-300" />
-              تسجيل الدخول
             </Link>
           </li>
         </ul>
@@ -503,7 +497,7 @@ export default function Home() {
         <h5 className="text-lg font-bold mb-5 inline-block border-b-2 border-blue-400 pb-1">تابعنا</h5>
         <div className="flex justify-center gap-5">
           <motion.a
-            href="https://www.youtube.com"
+            href="https://www.youtube.com/channel/UCIW308efj12Q86_hV8LgsNw"
             target="_blank"
             rel="noreferrer"
             whileHover={{ y: -3, scale: 1.1 }}
@@ -539,7 +533,7 @@ export default function Home() {
         جميع الحقوق محفوظة للأستاذ محمود الديب © {new Date().getFullYear()}
       </p>
       <p className="text-transparent bg-gradient-to-r from-blue-300 to-cyan-300 bg-clip-text text-sm italic">
-        تم الإنشاء بكل الحب لطلاب الثانوية العامة 💙
+         💙 تم الإنشاء بكل الحب لطلاب الثانوية العامة 💙
       </p>
     </div>
   </div>
