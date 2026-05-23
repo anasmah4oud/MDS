@@ -279,7 +279,7 @@ export default function Home() {
 
       {/* شريط التلاوة (مع تأثير نصي لامع) */}
       <div className="bg-blue-600 py-6 overflow-hidden my-10 border-y-4 border-white/20">
-        <div className="flex min-w-[200%] gap-12 animate-[marquee_10s_linear_infinite]" style={{ willChange: 'transform' }}>
+        <div className="flex min-w-[200%]  gap-12 animate-[marquee_10s_linear_infinite]" style={{ willChange: 'transform' }}>
           {[...Array(2)].map((_, j) =>
             Array(12).fill('  وما توفيقي إلا بالله ').map((text, i) => (
               <span
@@ -375,7 +375,7 @@ export default function Home() {
           <div className="text-center mb-14">
               <div className="absolute inset-0 rounded-full bg-gradient-to-br from-blue-400/20 via-violet-400/10 to-transparent blur-2xl" />
               <img src="/logo.png" alt="Logo" className="relative w-20 h-20 rounded-full object-cover" />
-            <h3 className="text-5xl font-black mb-4 tracking-tight">البارع محمود الديب</h3>
+            <h3 className="text-5xl font-black mb-4 tracking-tight"> محمود الديب</h3>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-16">
@@ -603,7 +603,7 @@ function GradeCard({ grade, title, img }: { grade: number; title: string; img: s
         <motion.div
           className="absolute inset-0 rounded-[2.25rem]"
           style={{
-            background: 'conic-gradient(from 0deg, #f97316, #d946ef, #06b6d4, #f97316)',
+            background: 'conic-gradient(from 0deg, #ffffff, #1900ff, #000000, #ff0000)',
             filter: 'blur(4px)',
           }}
           animate={{ rotate: 360 }}
@@ -643,7 +643,7 @@ function MotivationCard({ text }: { text: string }) {
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.4 }}
-      transition={{ duration: 0.7, ease: 'easeOut' }}
+      transition={{ duration: 0, ease: 'easeOut' }}
       className="relative overflow-hidden rounded-3xl border border-white/10 bg-slate-900/60 p-6 backdrop-blur-xl shadow-[0_20px_80px_rgba(15,23,42,0.35)]"
     >
       <div className="absolute inset-0 rounded-3xl bg-white/5 blur-xl" />
