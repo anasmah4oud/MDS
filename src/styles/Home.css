@@ -13,29 +13,20 @@
 
 /* تأثير توهج شريط التقدم */
 .progress-glow {
+  background: linear-gradient(90deg, #3b82f6, #8b5cf6, #06b6d4);
+  background-size: 200% 100%;
+  animation: gradientFlow 2s linear infinite;
   box-shadow: 0 0 12px rgba(59, 130, 246, 0.6), 0 0 4px rgba(99, 102, 241, 0.4);
 }
 
-/* أنيميشن الخلفية المتدرجة لشريط التقدم */
 @keyframes gradientFlow {
-  0% {
-    background-position: 100% 0;
-  }
-  100% {
-    background-position: 0 0;
-  }
+  0% { background-position: 100% 0; }
+  100% { background-position: 0 0; }
 }
 
-/* تأثير نصي متلألئ (shimmer) للنصوص داخل الماركي والتحفيز */
+/* تأثير نصي لامع (shimmer) */
 .shimmer-text {
-  background: linear-gradient(
-    90deg,
-    #ffffff 0%,
-    #facc15 30%,
-    #ffffff 50%,
-    #facc15 70%,
-    #ffffff 100%
-  );
+  background: linear-gradient(90deg, #ffffff 0%, #facc15 30%, #ffffff 50%, #facc15 70%, #ffffff 100%);
   background-size: 200% auto;
   -webkit-background-clip: text;
   background-clip: text;
@@ -44,32 +35,24 @@
 }
 
 @keyframes shimmer {
-  to {
-    background-position: 200% center;
-  }
+  to { background-position: 200% center; }
 }
 
-/* شبكة متحركة لقسم التحفيز */
+/* شبكة متحركة في قسم التحفيز */
 .moving-grid {
-  background-image: linear-gradient(
-      rgba(255, 255, 255, 0.05) 1px,
-      transparent 1px
-    ),
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
     linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
   background-size: 50px 50px;
   animation: gridMove 20s linear infinite;
 }
 
 @keyframes gridMove {
-  0% {
-    background-position: 0 0, 0 0;
-  }
-  100% {
-    background-position: 50px 50px, -50px -50px;
-  }
+  0% { background-position: 0 0, 0 0; }
+  100% { background-position: 50px 50px, -50px -50px; }
 }
 
-/* تحسين أزرار CTA في الهيرو */
+/* تحسين زر CTA في الهيرو */
 .hero-cta-btn {
   position: relative;
   overflow: hidden;
@@ -82,12 +65,7 @@
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 255, 255, 0.3),
-    transparent
-  );
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
   transition: left 0.6s;
   z-index: -1;
 }
@@ -95,7 +73,7 @@
   left: 100%;
 }
 
-/* تأثيرات إضافية للـ glass effect */
+/* تأثير زجاجي محسّن */
 .glass-effect {
   backdrop-filter: blur(12px);
   background: rgba(255, 255, 255, 0.7);
