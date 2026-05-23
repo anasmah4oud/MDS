@@ -281,7 +281,7 @@ export default function Home() {
       <div className="bg-blue-600 py-6 overflow-hidden my-10 border-y-4 border-white/20">
         <div className="flex min-w-[200%] gap-12 animate-[marquee_10s_linear_infinite]" style={{ willChange: 'transform' }}>
           {[...Array(2)].map((_, j) =>
-            Array(12).fill(' 🔰 وما توفيقي إلا بالله 🔰').map((text, i) => (
+            Array(12).fill('  وما توفيقي إلا بالله ').map((text, i) => (
               <span
                 key={`${j}-${i}`}
                 className="text-white text-3xl md:text-4xl font-black tracking-[0.45em] whitespace-nowrap shimmer-text"
