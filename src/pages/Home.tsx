@@ -643,7 +643,6 @@ function MotivationCard({ text }: { text: string }) {
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.4 }}
-      transition={{ duration: 0, ease: 'easeOut' }}
       className="relative overflow-hidden rounded-3xl border border-white/10 bg-slate-900/60 p-6 backdrop-blur-xl shadow-[0_20px_80px_rgba(15,23,42,0.35)]"
     >
       <div className="absolute inset-0 rounded-3xl bg-white/5 blur-xl" />
@@ -664,7 +663,6 @@ function MotivationCard({ text }: { text: string }) {
             strokeLinejoin="round"
             initial={{ pathLength: 0 }}
             whileInView={{ pathLength: 1 }}
-            transition={{ duration: 0.9, ease: 'easeOut' }}
           />
         </motion.svg>
         <span className="relative text-lg font-semibold text-white shimmer-text">{text}</span>
