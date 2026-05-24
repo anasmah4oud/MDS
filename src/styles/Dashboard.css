@@ -1,16 +1,151 @@
-@reference "../index.css";
+/* Dashboard.css - إضافات حركية وتنسيقات متطورة */
 
-/**
- * Dashboard Styles
- */
-.dashboard-card {
-  @apply bg-white rounded-[2.5rem] p-8 border border-slate-100 shadow-soft transition-all duration-300;
+/* تأثيرات خلفية كرت العنوان */
+.hero-card {
+  position: relative;
+  overflow: hidden;
 }
 
-.dashboard-hero {
-  @apply relative overflow-hidden bg-slate-900 rounded-[3rem] p-12 text-white shadow-2xl;
+.floating-shapes {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
 }
 
-.stat-glow {
-  @apply shadow-[0_0_20px_rgba(59,130,246,0.2)];
+.shape {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.05);
+  animation: floatShape 20s infinite ease-in-out;
+}
+
+.shape-1 {
+  width: 100px;
+  height: 100px;
+  top: 10%;
+  left: 10%;
+  animation-delay: 0s;
+  background: radial-gradient(circle, rgba(59,130,246,0.3) 0%, transparent 70%);
+}
+
+.shape-2 {
+  width: 150px;
+  height: 150px;
+  bottom: 20%;
+  right: 15%;
+  animation-delay: -5s;
+  background: radial-gradient(circle, rgba(168,85,247,0.2) 0%, transparent 70%);
+}
+
+.shape-3 {
+  width: 80px;
+  height: 80px;
+  top: 40%;
+  right: 30%;
+  animation-delay: -10s;
+  background: radial-gradient(circle, rgba(236,72,153,0.2) 0%, transparent 70%);
+}
+
+.shape-4 {
+  width: 200px;
+  height: 200px;
+  bottom: 0;
+  left: 20%;
+  animation-delay: -15s;
+  background: radial-gradient(circle, rgba(34,197,94,0.15) 0%, transparent 70%);
+}
+
+.shape-5 {
+  width: 120px;
+  height: 120px;
+  top: 60%;
+  left: 60%;
+  animation-delay: -7s;
+  background: radial-gradient(circle, rgba(250,204,21,0.15) 0%, transparent 70%);
+}
+
+@keyframes floatShape {
+  0%, 100% {
+    transform: translateY(0) scale(1) rotate(0deg);
+  }
+  25% {
+    transform: translateY(-30px) scale(1.1) rotate(5deg);
+  }
+  50% {
+    transform: translateY(15px) scale(0.9) rotate(-3deg);
+  }
+  75% {
+    transform: translateY(-20px) scale(1.05) rotate(2deg);
+  }
+}
+
+/* تحسينات البطاقة البنفسجية */
+.bg-gradient-to-br {
+  transition: all 0.3s ease;
+}
+
+.bg-gradient-to-br:hover {
+  box-shadow: 0 25px 50px -12px rgba(129, 140, 248, 0.4);
+}
+
+/* تأثير الظل المتوهج */
+.shadow-glow {
+  box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
+}
+
+.shadow-soft {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+}
+
+/* أنيميشن للعداد التصاعدي */
+.animate-bounce {
+  animation: bounce 1s infinite;
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(-25%);
+    animation-timing-function: cubic-bezier(0.8, 0, 1, 1);
+  }
+  50% {
+    transform: translateY(0);
+    animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
+  }
+}
+
+/* تأثير زجاجي للشريط العلوي */
+.backdrop-blur-md {
+  backdrop-filter: blur(12px);
+}
+
+/* تحسينات للشريط الجانبي */
+.sidebar {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* أنماط متجاوبة */
+@media (max-width: 640px) {
+  .hero-card {
+    padding: 2rem;
+  }
+  
+  .wallet-card {
+    min-width: 100%;
+  }
+}
+
+/* مؤثرات خاصة للبطاقات عند التحويم */
+.group:hover .group-hover\:scale-105 {
+  transform: scale(1.05);
+}
+
+.group:hover .group-hover\:translate-x-\[-4px\] {
+  transform: translateX(-4px);
+}
+
+/* خطوط مخصصة */
+.font-display {
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  letter-spacing: -0.5px;
 }

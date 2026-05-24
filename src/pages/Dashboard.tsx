@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { 
   LogOut, User as UserIcon, Wallet, Star, BookOpen, 
@@ -14,6 +14,29 @@ import {
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import '../styles/Dashboard.css';
+
+// عداد تصاعدي بسيط باستخدام framer-motion
+function AnimatedNumber({ value }: { value: number }) {
+  const motionValue = useMotionValue(0);
+  const rounded = useTransform(motionValue, (latest) => Math.round(latest));
+
+  useEffect(() => {
+    const controls = motionValue;
+    controls.set(0);
+    const duration = 1000;
+    const step = value / (duration / 16);
+    const interval = setInterval(() => {
+      controls.set(Math.min(controls.get() + step, value));
+      if (controls.get() >= value) {
+        controls.set(value);
+        clearInterval(interval);
+      }
+    }, 16);
+    return () => clearInterval(interval);
+  }, [value, motionValue]);
+
+  return <motion.span>{rounded}</motion.span>;
+}
 
 export default function Dashboard() {
   const { profile, loading } = useAuth();
@@ -33,7 +56,6 @@ export default function Dashboard() {
 
   const fetchDashboardStats = async () => {
     try {
-      // 1. Get subscriptions
       const { data: subData } = await supabase
         .from('subscriptions')
         .select('package_id')
@@ -44,7 +66,6 @@ export default function Dashboard() {
 
       let lessonsCount = 0;
       if (packageIds.length > 0) {
-        // Get weeks for these packages
         const { data: weeksData } = await supabase
           .from('weeks')
           .select('id')
@@ -53,7 +74,6 @@ export default function Dashboard() {
         const weekIds = weeksData?.map(w => w.id) || [];
         
         if (weekIds.length > 0) {
-          // Get lessons for these weeks
           const { count } = await supabase
             .from('lessons')
             .select('*', { count: 'exact', head: true })
@@ -66,14 +86,13 @@ export default function Dashboard() {
       setStats({
         subscribedPackages: subCount,
         totalLessons: lessonsCount,
-        completedLessons: Math.floor(lessonsCount * 0.3) // Estimate for now
+        completedLessons: Math.floor(lessonsCount * 0.3)
       });
     } catch (err) {
       console.error(err);
     }
   };
 
-  // Handle Logout
   const handleLogout = async () => {
     await supabase.auth.signOut();
     navigate('/');
@@ -81,15 +100,30 @@ export default function Dashboard() {
 
   if (loading) return null;
 
+  // متغيرات للحركة المتداخلة (stagger)
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.15,
+        delayChildren: 0.2,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { y: 30, opacity: 0 },
+    visible: { y: 0, opacity: 1, transition: { type: 'spring', stiffness: 80 } },
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col md:flex-row" dir="rtl">
-      {/* Sidebar for Desktop */}
       <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
 
-      {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Dashboard Navbar */}
-        <nav className="h-20 bg-white border-b border-slate-200 sticky top-0 z-40 px-4 md:px-8 flex items-center justify-between">
+        {/* شريط التنقل العلوي */}
+        <nav className="h-20 bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-40 px-4 md:px-8 flex items-center justify-between">
           <div className="flex items-center gap-2 md:gap-4">
             <button 
               onClick={() => setIsSidebarOpen(true)}
@@ -111,7 +145,7 @@ export default function Dashboard() {
             
             <div className="relative group">
               <img 
-                src={profile?.photo_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${profile?.id}`} 
+                src={profile?.photo_url || `data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAANsAAADmCAMAAABruQABAAAAeFBMVEUAAAD////ExMQ3Nzf8/PyKiorg4ODMzMxTU1NFRUXn5+eenp4mJiZMTEy+vr7t7e0xMTGCgoJ2dnZAQEBgYGCWlpYqKiocHBynp6dvb29VVVXp6em3t7fQ0NAXFxc0NDR6enqNjY2tra2ZmZn09PQPDw8YGBhkZGSc+8oGAAAHLUlEQVR4nO2d6XqiShBAOyrgvuEWoxOXOPP+b3glXqMiCLUPPZz/Jn0+oNeqavcmz8d209ut436/P44H7dl0Mt9sRwr/18n++dEw6LhsBsFQWFDSLZr8yvG6sgwiwf8v5tZ4L/C68t6QaoKM28e+pNiF4EOkFRJuURtklrCWeDf53RqfYLOE8ZC9Jdxu2zHKLKHP/ex43UYztFnCoMvaGla3OcksIeBsDqNb2CerOXfa8jWIz43+0C5M2FrE5fYVM6mde0yuqRiT25bNLIFppsLj1mNVc27O0ioWtymz2nmSydEsDrc1u9p5qGNoF4Nb3gKNRvNvcGuKqHHIkd34+v40n9Zu8OVMeajfHNGt7OIaxx9Lt6OoGnWcI7lFwmrEGQrFbSSu5hxlbklxWyi4LWzcJgpqpCUP3o136p8PfrGKd1NScyd9N503MgG9h4J1C9XUnMPufmHdZCb/2XR03RqKaugRHOm2VHXra7ptVNWc2yi6ceyyQljquel+bQmoLw7lptlJXkB1lRg3zbHtSqjktjNww0yZMW4Gag7VTvhPhiZuiCNjhBvtbBTLTMOtZaLmXEvBzeaVxLyUcDf+Q5ty7BTcjNQQPSX4F10zN/ASFeymvQS4AV4MgN309knSgKcmYDep47ZixuJuZmrwzgT6A4s1wBXoWgDqZjVyJ0BHb6gbdyQJhJ6wm103Ce8ooW6yh8CvgQbUQN0kz+6LaAu7DQzdoHELUDe5cJJioJtdUDdcEDkPsbAbPoycDjQKCupmN52s3Shuln2J9PemfxRwQ7qf9Hl8k4jfLcta2M1qBy9Bej4JS9rjBRpoAnU7GLqthN3kQybzgebHQd00YibzgMZS1vtcd9gNAtClKdyNK80NDjgwG+xm15mAY0zAblbHps59ibuZrQTgKSxwN+l8hzz2Cm5WJwLwmGxEDIaRG6Kh8J8EJmqIoCeEm81LiUgTwMRJaeSqpPmNaCfGbWXgBj2fwrpZDN/ggRvpZnAIN8U0E+Wmv4hDpXbg4sz/KKshAgzRbtqBT5hoZXReh+7RMDJfGOmm+8Uhk06xeVSa+5TYBDh0bp+iG7qJ2B/q5a2gi5Lh8021ws1x/T/NTWvmBY8vp7spvZWEQnKUvHyNaSWlWhepVoT8lhf0iJvP7UvcDbO04XET317AzSN53IT7E2K5TWq9IMlzVOg5Kbeb4OYJuXAcvT6XVAQzvSYeQ101GTnMxha/m0iKDi4T/xGWOob8540sJXt56k92T6xmJ556vUx1Q1uc8efQuK082GrZ8h05Uoe1H/jq9Ia/Wcz6tHnWPZy1ozkO5vaM7WGtix1So5ljvof2xl6rnTbUcQxqd7DX2MfPUtj6kCv89we0cHbsZkJ3Wmyg312H/2KEN7G7SELIPlHA2oPckLtDJioXtr2Tu0VGzu3M9vg6naDdE3piF0TdEsLDJCMX5LQONqJeCeJu33yF0fDQm+/3897q0Nh28fvgEHTcbKjdqkntVk1qt2pSu1WT2q2a1G7VpHarJrVbMZyrzdYF8t/BxZlvD/PpLH6o/E2K4HngIdpoEc+m+0OkEmc+GgY5+ztc9+Z+ZP/55gR8bTTILZq8qK3Pch3d28sw7z7s2ujyboUXO/PsWxWFUb2X1yvp1i1xtka+0+ybEklaZa+NLuW2LXeazXGpbLm99lmpbLgSbo3SJxf087PS53fNEtnehW6gi52pF5NCqlt+Fj67ArcRsHwC7ckBg/pmBYPCazd49gYlvngH/m9HtFv4C/zPzq8KNqYnxKSxvozYeOGGTbnBdZfYoPUXoYi5biNCVb8jdJ7bIlQOiXPjtfPciKF1O8gkBXSAnEHeTCXHjR7v2T+W0wuP9HTxnDjSbDemtMRpwdlouGEqZZY9T8904wwY7OxWUZj+JL7CxirrqBhNZlhilptIKsrysxl32u1O3BS5zCqrxmGGm2X5TDwZ6/5nt2qqZT25JzfL4tA0nr65tJtlTW8q6aILKTe7ymIc9F656V9ax0uU72ZZpJCHUa6bZdFrHsZ5bpb3HnARZLtpXewsyzbTzbpVPJyy3GxKivETPLvZ3aHFTffJzbKYNy+DtFvVR+17opSb9g3Bkiwe3exudZNg+ODm02P7eXDOu68toXHnZnlThQSdm5vlpW4yhD9uO+umsDP5cbNuiQBXN78GgAvD/90s7xeRYnZxs6tQLknr283HV/J7iHPV3pLMZ/ftZt0KIRI3/wbuC92zm+WNN5Jszm6WtzBJMjm7VX/DNZvm2c26DWK8OX/2t9KEzrdl6Y2GsyiYr8PK+bKd/Mze+ToEnGddTrukvB7vzsfF24WZ8+ccIM3aY7e2821r8sbAVTXEqRif3WKP3ZrO1yWOc5/O4nIpHcZeu/l1qnjPonarJAv3Iju24vQ9dlvWbpVk6TD5e9Xgl9duvFXW/yZOtVsl8dutpqampuaf5T/CMnowpD3vkgAAAABJRU5ErkJggg==`} 
                 className="w-10 h-10 rounded-full border-2 border-blue-100 cursor-pointer"
                 alt="Profile"
               />
@@ -133,85 +167,136 @@ export default function Dashboard() {
           </div>
         </nav>
 
-        {/* Content Area */}
-        <main className="p-4 md:p-8 space-y-8">
-          {/* Header Card */}
+        {/* المحتوى الرئيسي مع حركات متداخلة */}
+        <motion.main 
+          className="p-4 md:p-8 space-y-8"
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+        >
+          {/* بطاقة العنوان الرئيسية مع عناصر متحركة */}
           <motion.div 
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            className="bg-[#0f172a] rounded-[24px] md:rounded-[40px] p-8 md:p-16 text-white relative overflow-hidden shadow-2xl"
+            variants={itemVariants}
+            className="hero-card bg-[#0f172a] rounded-[24px] md:rounded-[40px] p-8 md:p-16 text-white relative overflow-hidden shadow-2xl"
           >
+            {/* عناصر زخرفية متحركة (CSS) */}
+            <div className="floating-shapes">
+              <div className="shape shape-1" />
+              <div className="shape shape-2" />
+              <div className="shape shape-3" />
+              <div className="shape shape-4" />
+              <div className="shape shape-5" />
+            </div>
             <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 to-transparent z-0" />
             <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-10">
               <div>
-                <span className="bg-blue-600/20 text-blue-400 px-4 py-2 rounded-full text-xs font-black tracking-widest uppercase mb-6 inline-block border border-blue-400/20 shadow-glow">Student Profile 2026</span>
-                <h3 className="text-3xl md:text-5xl font-black mb-4 font-display">أهلاً يا <span className="text-blue-500">{profile?.first_name}</span> 👋</h3>
-                <p className="text-lg md:text-xl font-medium text-slate-400 max-w-xl text-balance">مستعد لنبدأ رحلة تفوق جديدة اليوم؟ نخبة من أفضل الكورسات في انتظارك.</p>
+                <motion.span 
+                  className="bg-blue-600/20 text-blue-400 px-4 py-2 rounded-full text-xs font-black tracking-widest uppercase mb-6 inline-block border border-blue-400/20 shadow-glow"
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ type: 'spring', stiffness: 260, damping: 20 }}
+                >
+                  Student Profile 2026
+                </motion.span>
+                <h3 className="text-3xl md:text-5xl font-black mb-4 font-display">
+                  أهلاً يا <span className="text-blue-500">{profile?.first_name}</span> 👋
+                </h3>
+                <p className="text-lg md:text-xl font-medium text-slate-400 max-w-xl text-balance">
+                  مستعد لنبدأ رحلة تفوق جديدة اليوم؟ نخبة من أفضل الكورسات في انتظارك.
+                </p>
               </div>
               
-              <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-[32px] p-8 flex flex-col items-center justify-center min-w-[280px] shadow-2xl relative group">
-                <div className="absolute -top-4 -right-4 bg-blue-600 text-[10px] font-black px-3 py-1 rounded-full animate-bounce">رصيدك متاح</div>
+              <motion.div 
+                className="wallet-card bg-white/5 backdrop-blur-xl border border-white/10 rounded-[32px] p-8 flex flex-col items-center justify-center min-w-[280px] shadow-2xl relative group"
+                whileHover={{ scale: 1.02 }}
+                transition={{ type: 'spring', stiffness: 300 }}
+              >
+                <div className="absolute -top-4 -right-4 bg-blue-600 text-[10px] font-black px-3 py-1 rounded-full animate-bounce shadow-lg">
+                  رصيدك متاح
+                </div>
                 <p className="text-slate-400 font-bold mb-2 uppercase tracking-wider text-xs">إجمالي رصيد المحفظة</p>
-                <p className="text-4xl md:text-5xl font-black font-display mb-6">{profile?.wallet_balance || 0} <span className="text-lg opacity-50">ج.م</span></p>
+                <p className="text-4xl md:text-5xl font-black font-display mb-6">
+                  <AnimatedNumber value={profile?.wallet_balance || 0} /> <span className="text-lg opacity-50">ج.م</span>
+                </p>
                 <Link 
                   to="/charge"
-                  className="w-full bg-blue-600 text-white px-6 py-4 rounded-2xl text-center font-black hover:bg-blue-700 transition-all flex items-center justify-center gap-2 shadow-glow group-hover:scale-105"
+                  className="w-full bg-blue-600 text-white px-6 py-4 rounded-2xl text-center font-black hover:bg-blue-700 transition-all flex items-center justify-center gap-2 shadow-glow group-hover:scale-105 transform"
                 >
                   <Wallet size={20} />
                   إيداع رصيد
                 </Link>
-              </div>
+              </motion.div>
             </div>
-            {/* Decorative background icon */}
             <div className="absolute -top-10 -left-10 opacity-5 pointer-events-none">
                <Star size={300} />
             </div>
           </motion.div>
 
-          {/* Stats & Progress */}
+          {/* الإحصائيات والتقدم */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2 bg-white rounded-[40px] p-10 border border-slate-100 shadow-soft">
+            <motion.div 
+              variants={itemVariants}
+              className="lg:col-span-2 bg-white rounded-[40px] p-10 border border-slate-100 shadow-soft"
+            >
               <h4 className="text-2xl font-black text-slate-900 mb-12 flex items-center gap-3 font-display">
                 <div className="w-2 h-8 bg-blue-500 rounded-full" />
                 إحصائيات الإنجاز
               </h4>
               <div className="flex flex-col sm:flex-row items-center justify-around gap-12">
-                 <ProgressCircle percent={stats.subscribedPackages > 0 ? (stats.completedLessons / stats.totalLessons) * 100 : 0} label="الحصص المنجزة" value={`${stats.completedLessons} من ${stats.totalLessons}`} />
-                 <ProgressCircle percent={stats.subscribedPackages > 0 ? 85 : 0} color="bg-emerald-500" label="الاشتراكات النشطة" value={stats.subscribedPackages.toString()} />
+                 <ProgressCircle 
+                   percent={stats.subscribedPackages > 0 ? (stats.completedLessons / stats.totalLessons) * 100 : 0} 
+                   label="الحصص المنجزة" 
+                   value={`${stats.completedLessons} من ${stats.totalLessons}`} 
+                 />
+                 <ProgressCircle 
+                   percent={stats.subscribedPackages > 0 ? 85 : 0} 
+                   color="bg-emerald-500" 
+                   label="الاشتراكات النشطة" 
+                   value={stats.subscribedPackages.toString()} 
+                 />
               </div>
-            </div>
+            </motion.div>
 
-            <div className="bg-slate-900 rounded-[40px] p-10 text-white flex flex-col justify-between shadow-2xl relative overflow-hidden group">
+            <motion.div 
+              variants={itemVariants}
+              className="bg-gradient-to-br from-indigo-600 to-purple-700 rounded-[40px] p-10 text-white flex flex-col justify-between shadow-2xl relative overflow-hidden group"
+              whileHover={{ scale: 1.02 }}
+              transition={{ type: 'spring', stiffness: 300 }}
+            >
               <div className="relative z-10">
                 <h4 className="text-2xl font-black mb-4 font-display">سجل الآن!</h4>
-                <p className="text-slate-400 font-bold leading-relaxed mb-10 text-balance italic">
+                <p className="text-indigo-100 font-bold leading-relaxed mb-10 text-balance italic">
                   استغل عروض البارع الجديدة وابدأ صراعك مع المجهول في اللغة العربية لضمان الدرجة النهائية.
                 </p>
               </div>
               <Link 
                 to="/classes"
-                className="w-full bg-blue-600 text-white py-5 rounded-3xl font-black text-center hover:bg-white hover:text-blue-600 shadow-glow transition-all group relative z-10 font-display"
+                className="w-full bg-white text-indigo-700 py-5 rounded-3xl font-black text-center hover:bg-indigo-50 transition-all group relative z-10 font-display shadow-xl hover:shadow-2xl"
               >
                 تصفح الكورسات الجديدة 
                 <ChevronRight className="inline-block mr-2 group-hover:translate-x-[-4px] transition-transform rotate-180" />
               </Link>
-              <Users className="absolute -bottom-10 -right-10 text-white/5 w-64 h-64 group-hover:scale-110 transition-transform" />
-            </div>
+              <Users className="absolute -bottom-10 -right-10 text-white/10 w-64 h-64 group-hover:scale-110 transition-transform" />
+            </motion.div>
           </div>
 
-          {/* Quick Actions Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
-            <QuickActionCard to="/classes" color="bg-blue-50 text-blue-600" icon={<BookOpen />} label="الكورسات" />
-            <QuickActionCard to="/my-classes" color="bg-green-50 text-green-600" icon={<PlayCircle />} label="كورساتي" />
-            <QuickActionCard to="/free" color="bg-purple-50 text-purple-600" icon={<Gift />} label="الحصص المجانية" />
-            <QuickActionCard to="/support" color="bg-orange-50 text-orange-600" icon={<MessageSquare />} label="الدعم الفني" />
-          </div>
-        </main>
+          {/* بطاقات الإجراءات السريعة */}
+          <motion.div 
+            className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8"
+            variants={containerVariants}
+          >
+            <QuickActionCard to="/classes" color="bg-blue-50 text-blue-600" icon={<BookOpen />} label="الكورسات" variants={itemVariants} />
+            <QuickActionCard to="/my-classes" color="bg-green-50 text-green-600" icon={<PlayCircle />} label="كورساتي" variants={itemVariants} />
+            <QuickActionCard to="/free" color="bg-purple-50 text-purple-600" icon={<Gift />} label="الحصص المجانية" variants={itemVariants} />
+            <QuickActionCard to="/support" color="bg-orange-50 text-orange-600" icon={<MessageSquare />} label="الدعم الفني" variants={itemVariants} />
+          </motion.div>
+        </motion.main>
       </div>
     </div>
   );
 }
 
+// الشريط الجانبي مع حركة انسيابية
 function Sidebar({ isOpen, setIsOpen }: { isOpen: boolean, setIsOpen: (v: boolean) => void }) {
   const navigate = useNavigate();
   
@@ -230,7 +315,11 @@ function Sidebar({ isOpen, setIsOpen }: { isOpen: boolean, setIsOpen: (v: boolea
       </AnimatePresence>
 
       <motion.aside 
-        className={`fixed lg:relative inset-y-0 right-0 w-72 bg-white border-l border-slate-200 z-[70] flex flex-col transform transition-transform duration-300 ease-in-out dashboard-sidebar ${isOpen ? 'translate-x-0' : 'translate-x-full lg:translate-x-0'}`}
+        className="sidebar fixed lg:relative inset-y-0 right-0 w-72 bg-white border-l border-slate-200 z-[70] flex flex-col"
+        animate={{ x: isOpen ? 0 : '100%' }}
+        initial={{ x: '100%' }}
+        transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+        style={{ display: isOpen ? 'flex' : 'none' }} // للتحكم بالظهور فقط على الموبايل
       >
         <div className="p-8 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-3">
@@ -263,6 +352,16 @@ function Sidebar({ isOpen, setIsOpen }: { isOpen: boolean, setIsOpen: (v: boolea
           </button>
         </div>
       </motion.aside>
+
+      {/* على الشاشات الكبيرة يظهر الشريط الجانبي بشكل دائم */}
+      <style>{`
+        @media (min-width: 1024px) {
+          .sidebar {
+            display: flex !important;
+            transform: translateX(0) !important;
+          }
+        }
+      `}</style>
     </>
   );
 }
@@ -270,27 +369,45 @@ function Sidebar({ isOpen, setIsOpen }: { isOpen: boolean, setIsOpen: (v: boolea
 function SidebarLink({ to, icon, label }: { to: string, icon: React.ReactNode, label: string }) {
   const isActive = window.location.pathname === to;
   return (
-    <Link 
-      to={to} 
-      className={`flex items-center gap-4 p-4 rounded-2xl font-bold transition-all ${isActive ? 'bg-blue-600 text-white shadow-lg shadow-blue-100' : 'text-slate-600 hover:bg-slate-50 hover:text-blue-600'}`}
-    >
-      {icon}
-      {label}
-    </Link>
+    <motion.div whileHover={{ x: -4 }} whileTap={{ scale: 0.98 }}>
+      <Link 
+        to={to} 
+        className={`flex items-center gap-4 p-4 rounded-2xl font-bold transition-all ${isActive ? 'bg-blue-600 text-white shadow-lg shadow-blue-100' : 'text-slate-600 hover:bg-slate-50 hover:text-blue-600'}`}
+      >
+        {icon}
+        {label}
+      </Link>
+    </motion.div>
   );
 }
 
 function ProgressCircle({ percent, label, value, color = 'bg-blue-600' }: { percent: number, label: string, value: string, color?: string }) {
+  const circleVariants = {
+    hidden: { pathLength: 0 },
+    visible: { pathLength: percent / 100, transition: { duration: 1.5, ease: "easeOut" } }
+  };
+
+  const radius = 58;
+  const circumference = 2 * Math.PI * radius;
+  const strokeDashoffset = circumference - (circumference * percent) / 100;
+
   return (
-    <div className="flex flex-col items-center">
+    <motion.div 
+      className="flex flex-col items-center"
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true }}
+    >
       <div className="relative w-32 h-32 flex items-center justify-center">
-        <svg className="w-full h-full -rotate-90">
+        <svg className="w-full h-full -rotate-90" viewBox="0 0 128 128">
           <circle cx="64" cy="64" r="58" fill="none" stroke="currentColor" strokeWidth="10" className="text-slate-100" />
-          <circle 
+          <motion.circle 
             cx="64" cy="64" r="58" fill="none" stroke="currentColor" strokeWidth="10" 
             className={`${color.replace('bg-', 'text-')}`}
-            strokeDasharray={364.4}
-            strokeDashoffset={364.4 - (364.4 * percent) / 100}
+            strokeDasharray={circumference}
+            initial={{ strokeDashoffset: circumference }}
+            animate={{ strokeDashoffset }}
+            transition={{ duration: 1.5, ease: "easeOut" }}
             strokeLinecap="round"
           />
         </svg>
@@ -299,20 +416,25 @@ function ProgressCircle({ percent, label, value, color = 'bg-blue-600' }: { perc
         </div>
       </div>
       <span className="mt-4 font-bold text-slate-500">{label}</span>
-    </div>
+    </motion.div>
   );
 }
 
-function QuickActionCard({ to, color, icon, label }: { to: string, color: string, icon: React.ReactNode, label: string }) {
+function QuickActionCard({ to, color, icon, label, variants }: { to: string, color: string, icon: React.ReactNode, label: string, variants: any }) {
   return (
-    <Link 
-      to={to}
-      className={`group p-8 rounded-[32px] ${color} border border-transparent hover:border-current transition-all flex flex-col items-center justify-center text-center gap-4 hover:scale-105`}
-    >
-      <div className="text-4xl group-hover:scale-110 transition-transform">
-        {React.cloneElement(icon as React.ReactElement, { size: 40 })}
-      </div>
-      <span className="text-lg font-black">{label}</span>
-    </Link>
+    <motion.div variants={variants}>
+      <motion.div
+        whileHover={{ scale: 1.05, rotate: -1 }}
+        whileTap={{ scale: 0.95 }}
+        className={`group p-8 rounded-[32px] ${color} border border-transparent hover:border-current transition-all flex flex-col items-center justify-center text-center gap-4 shadow-sm hover:shadow-xl`}
+      >
+        <Link to={to} className="flex flex-col items-center gap-4">
+          <div className="text-4xl group-hover:scale-110 transition-transform">
+            {React.cloneElement(icon as React.ReactElement, { size: 40 })}
+          </div>
+          <span className="text-lg font-black">{label}</span>
+        </Link>
+      </motion.div>
+    </motion.div>
   );
 }
