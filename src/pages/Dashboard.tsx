@@ -137,12 +137,6 @@ export default function Dashboard() {
                     >
                       <HelpCircle size={18} /> الدعم الفني
                     </Link>
-                    <button 
-                      onClick={() => { handleLogout(); setIsProfileMenuOpen(false); }}
-                      className="w-full flex items-center gap-3 p-3 hover:bg-red-50 text-red-600 rounded-xl font-bold transition-colors"
-                    >
-                      <LogOut size={18} /> تسجيل الخروج
-                    </button>
                   </motion.div>
                 )}
               </AnimatePresence>

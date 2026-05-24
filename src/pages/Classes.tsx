@@ -9,11 +9,11 @@ import { Link } from 'react-router-dom';
 import { 
   BookOpen, Star, Filter, ShoppingCart, 
   CreditCard, Key, AlertCircle, CheckCircle2, 
-  ChevronRight, ArrowRight, X
+  ChevronRight, ArrowRight, X, Package
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
-import { Package } from '../types';
+import { Package as PackageType } from '../types';
 import '../styles/Classes.css';
 
 const containerVariants = {
@@ -32,10 +32,10 @@ const cardVariants = {
 export default function Classes() {
   const { profile } = useAuth();
   const [activeFilter, setActiveFilter] = useState('all');
-  const [packages, setPackages] = useState<Package[]>([]);
+  const [packages, setPackages] = useState<PackageType[]>([]);
   const [subscriptions, setSubscriptions] = useState<number[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedPackage, setSelectedPackage] = useState<Package | null>(null);
+  const [selectedPackage, setSelectedPackage] = useState<PackageType | null>(null);
   const [purchaseLoading, setPurchaseLoading] = useState(false);
   const [purchaseStep, setPurchaseStep] = useState<'options' | 'code' | 'wallet'>('options');
   const [activationCode, setActivationCode] = useState('');
@@ -54,7 +54,7 @@ export default function Classes() {
         .eq('grade_id', profile.grade);
       
       if (packError) throw packError;
-      setPackages(packList as Package[]);
+      setPackages(packList as PackageType[]);
 
       const { data: subData, error: subError } = await supabase
         .from('subscriptions')
@@ -144,7 +144,7 @@ export default function Classes() {
           className="relative z-10 text-center max-w-3xl px-6"
         >
           <motion.h1 className="text-5xl md:text-7xl font-black text-white mb-6 tracking-tight leading-tight">
-             <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300">محمود الديب</span> البارع
+             <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300">البارع</span> محمود الديب
           </motion.h1>
           <motion.p 
             initial={{ opacity: 0 }}
@@ -189,6 +189,16 @@ export default function Classes() {
               <div key={i} className="bg-slate-50 rounded-[2.5rem] h-96 animate-pulse border border-slate-100" />
             ))}
           </div>
+        ) : filteredPackages.length === 0 ? (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="col-span-full flex flex-col items-center justify-center py-20 text-slate-400"
+          >
+            <Package size={64} className="mb-6 opacity-30" />
+            <h3 className="text-2xl font-black mb-2">لا توجد باقات هنا</h3>
+            <p className="text-sm font-medium">جرب فلتر آخر أو تواصل مع الدعم لإضافة باقات جديدة</p>
+          </motion.div>
         ) : (
           <motion.div 
             variants={containerVariants}
@@ -369,16 +379,21 @@ function FilterButton({ active, onClick, children }: { active: boolean, onClick:
 }
 
 /* بطاقة الباقة */
-function PackageCard({ pkg, isSubscribed, onBuy }: { pkg: Package; isSubscribed: boolean; onBuy: () => void }) {
+function PackageCard({ pkg, isSubscribed, onBuy }: { pkg: PackageType; isSubscribed: boolean; onBuy: () => void }) {
   return (
     <motion.div 
-      whileHover={{ y: -12 }}
-      className="shimmer-border bg-white rounded-[2.5rem] border border-slate-100 shadow-sm hover:shadow-2xl hover:shadow-blue-500/10 flex flex-col h-full overflow-hidden transition-shadow duration-500 group"
+      whileHover={{ 
+        y: -12, 
+        scale: 1.02,
+        boxShadow: "0 25px 50px -12px rgba(59, 130, 246, 0.35)"
+      }}
+      transition={{ type: "spring", stiffness: 300, damping: 20 }}
+      className="shimmer-border bg-white rounded-[2.5rem] border border-slate-100 shadow-md hover:ring-2 hover:ring-blue-300/60 flex flex-col h-full overflow-hidden group"
     >
       <div className="relative aspect-video overflow-hidden bg-slate-900">
         <img 
           src={pkg.image_url || "https://placehold.co/1920x1080/0f172a/3b82f6?text=البارع"} 
-          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000" 
+          className="w-full h-full object-cover group-hover:scale-110 group-hover:brightness-110 transition-all duration-700 ease-out" 
           alt={pkg.name}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/20 to-transparent" />
