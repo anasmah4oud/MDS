@@ -1,108 +1,140 @@
-/* VideoView.css - تأثيرات ساحرة دون التأثير على الأداء */
+/**
+ * @license
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
-/* تأثير شبكة خلفية */
-.bg-grid-pattern {
-  background-image: 
-    linear-gradient(rgba(59, 130, 246, 0.1) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(59, 130, 246, 0.1) 1px, transparent 1px);
-  background-size: 40px 40px;
+/* --- 1. تخصيص وعزل مشغل Plyr لمنع اختراق روابط اليوتيوب وتأمين الحواف --- */
+.plyr-protection-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
 }
 
-/* تأثير التحميل الشيمر */
-.video-loading-shimmer {
-  background: linear-gradient(90deg, #f0f9ff 25%, #e0f2fe 50%, #f0f9ff 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
+@media (max-width: 768px) {
+  .plyr-protection-wrapper {
+    border-radius: 0px; /* لتبدو سينمائية وممتدة بالكامل على الهواتف */
+  }
 }
 
-@keyframes shimmer {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
+/* رفع إطار اليوتيوب وتكبيره قليلاً للتخلص من الأزرار العلوية وشريط المشاركة الخاص بيوتيوب */
+.plyr__video-embed iframe {
+  top: -10% !important;
+  height: 120% !important;
+  transform: scale(1.02);
+  pointer-events: none !important; /* هذا السطر السحري يجبر الضغطات على التفاعل مع أزرار Plyr فقط ومنع يوتيوب */
+  user-select: none !important;
 }
 
-/* نبض بطيء للشارات */
-.animate-pulse-slow {
-  animation: pulseSlow 3s ease-in-out infinite;
+/* تعديل ألوان أزرار تحكم Plyr لتطابق الهوية الفخمة لمنصة البارع */
+.plyr--full-ui input[type=range] {
+  color: #4f46e5 !important; /* Indigo 600 */
 }
 
-@keyframes pulseSlow {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.7; }
+.plyr__control--overlaid {
+  background: rgba(79, 70, 229, 0.9) !important;
 }
 
-/* دوران بطيء لللمعة */
+.plyr__control:hover {
+  background: #4f46e5 !important;
+  color: white !important;
+}
+
+/* --- 2. جزيئات التمويه الدقيقة المعززة للأداء (Background Micro-Particles) --- */
+.dot-particle {
+  position: absolute;
+  border-radius: relative;
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, rgba(99, 102, 241, 0) 70%);
+  border-radius: 50%;
+  pointer-events: none;
+  filter: blur(40px);
+  will-change: transform; /* تحفز كارت الشاشة لتفادي استهلاك المعالج */
+}
+
+.dot-1 {
+  width: 250px;
+  height: 250px;
+  left: -50px;
+  top: -50px;
+  animation: floatParticleOne 18s infinite ease-in-out;
+}
+
+.dot-2 {
+  width: 300px;
+  height: 300px;
+  right: -80px;
+  bottom: -40px;
+  animation: floatParticleTwo 22s infinite ease-in-out;
+}
+
+.dot-3 {
+  width: 180px;
+  height: 180px;
+  left: 40%;
+  top: 30%;
+  animation: floatParticleOne 14s infinite ease-in-out;
+  animation-delay: 3s;
+}
+
+@keyframes floatParticleOne {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(30px, 20px) scale(1.1); }
+}
+
+@keyframes floatParticleTwo {
+  0%, 100% { transform: translate(0, 0) scale(1.1); }
+  50% { transform: translate(-40px, -30px) scale(0.9); }
+}
+
+/* --- 3. حركة العلامة المائية العائمة لمكافحة برامج كاميرات التسجيل الخارجية --- */
+.floating-watermark {
+  position: absolute;
+  will-change: transform;
+  animation: premiumWatermarkMove 24s infinite ease-in-out;
+  white-space: nowrap;
+  user-select: none;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
+}
+
+@keyframes premiumWatermarkMove {
+  0% { transform: translate(15vw, 15vh); }
+  25% { transform: translate(65vw, 25vh); }
+  50% { transform: translate(20vw, 65vh); }
+  75% { transform: translate(60vw, 55vh); }
+  100% { transform: translate(15vw, 15vh); }
+}
+
+/* تأثير التباطؤ على الأجهزة المحمولة لضمان ثبات معدل الفريمات (FPS) */
+@media (max-width: 768px) {
+  .floating-watermark {
+    animation: premiumWatermarkMoveMobile 30s infinite ease-in-out;
+  }
+}
+
+@keyframes premiumWatermarkMoveMobile {
+  0% { transform: translate(5vw, 10vh); }
+  50% { transform: translate(45vw, 50vh); }
+  100% { transform: translate(5vw, 10vh); }
+}
+
+/* --- 4. فئات إضافية لحركات بطيئة وممتعة (Utility Micro-animations) --- */
 .animate-spin-slow {
-  animation: spinSlow 8s linear infinite;
+  animation: spin 8s linear infinite;
 }
 
-@keyframes spinSlow {
+.animate-pulse-slow {
+  animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes spin {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
 }
 
-/* جسيمات عائمة داخل المشغل */
-.floating-dot {
-  position: absolute;
-  width: 6px;
-  height: 6px;
-  background: rgba(255, 255, 255, 0.15);
-  border-radius: 50%;
-  filter: blur(1px);
-  animation: floatAround 5s ease-in-out infinite;
-  pointer-events: none;
-  z-index: 1;
-}
-
-@keyframes floatAround {
-  0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.2; }
-  25% { transform: translate(15px, -20px) scale(1.5); opacity: 0.4; }
-  50% { transform: translate(-10px, 15px) scale(0.8); opacity: 0.1; }
-  75% { transform: translate(20px, 10px) scale(1.2); opacity: 0.3; }
-}
-
-/* علامة مائية متحركة */
-.floating-watermark {
-  position: absolute;
-  bottom: 10%;
-  left: 10%;
-  animation: watermarkDrift 20s linear infinite;
-  white-space: nowrap;
-}
-
-@keyframes watermarkDrift {
-  0% { transform: translate(0, 0) rotate(-5deg); }
-  50% { transform: translate(30px, -15px) rotate(5deg); }
-  100% { transform: translate(0, 0) rotate(-5deg); }
-}
-
-/* إطار توهج حول المشغل */
-.player-glow-border {
-  background: radial-gradient(circle at 50% 0%, rgba(59,130,246,0.2), transparent 70%);
-  opacity: 0;
-  transition: opacity 0.5s;
-}
-.group:hover .player-glow-border {
-  opacity: 1;
-}
-
-/* تحريك خلفية التنبيه الخفيف */
-.animate-subtle-bg-shift {
-  animation: bgShift 10s ease-in-out infinite;
-}
-
-@keyframes bgShift {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.05); }
-}
-
-/* تحسينات للهواتف */
-@media (max-width: 1023px) {
-  .floating-dot {
-    width: 4px;
-    height: 4px;
-  }
-  .floating-watermark {
-    font-size: 0.9rem;
-    bottom: 5%;
-  }
+/* --- 5. خلفية شبكة النقاط الهندسية الفاخرة للوضع الفاتح --- */
+.bg-grid-pattern {
+  background-image: radial-gradient(#4f46e5 0.75px, transparent 0.75px);
+  background-size: 16px 16px;
 }
