@@ -101,7 +101,7 @@ export default function MyClasses() {
               </div>
             </div>
             <div className="hidden lg:block shrink-0">
-               <img src="/master_avatar.png" className="w-40 h-40 rounded-full border-4 border-white/20 shadow-2xl object-cover bg-white" alt="المعلم" />
+               <img src="https://www.gulfpicasso.com/en/text-to-image/gallery/26d98faf-8a9d-43d1-8bf9-24c0b8783a48" className="w-40 h-40 rounded-full border-4 border-white/20 shadow-2xl object-cover bg-white" alt="المعلم" />
             </div>
           </div>
         </div>

@@ -1,20 +1,50 @@
-@reference "../index.css";
-
-/**
- * Classes Page Styles
- */
-.package-grid {
-  @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10;
+/* Classes.css */
+/* خلفية متحركة للهيرو */
+.animate-float {
+  animation: float 8s ease-in-out infinite;
+}
+.animate-float-delayed {
+  animation: float 10s ease-in-out infinite reverse;
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-25px) rotate(3deg); }
 }
 
-.filter-btn {
-  @apply px-6 py-3 rounded-2xl font-bold transition-all active:scale-95;
+/* تأثير لمعان خفيف على البطاقات عند التحويم */
+.shimmer-border {
+  position: relative;
+}
+.shimmer-border::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: 2rem;
+  background: conic-gradient(from 0deg, transparent, #3b82f6, transparent, #8b5cf6, transparent);
+  animation: spin 6s linear infinite;
+  opacity: 0;
+  transition: opacity 0.5s;
+  z-index: -1;
+}
+.shimmer-border:hover::before {
+  opacity: 0.4;
+}
+@keyframes spin {
+  100% { transform: rotate(360deg); }
 }
 
-.filter-btn-active {
-  @apply bg-blue-600 text-white shadow-glow;
+/* تأثير الزجاج للفلتر */
+.filter-glass {
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  background-color: rgba(255, 255, 255, 0.7);
 }
 
-.filter-btn-inactive {
-  @apply bg-slate-50 text-slate-500 hover:bg-slate-100;
+/* حركة نبض خفيفة للزر النشط */
+.active-pulse {
+  animation: pulse-subtle 2s infinite;
+}
+@keyframes pulse-subtle {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4); }
+  50% { box-shadow: 0 0 0 8px rgba(59, 130, 246, 0); }
 }
