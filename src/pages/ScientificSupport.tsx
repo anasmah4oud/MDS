@@ -68,16 +68,11 @@ export default function ScientificSupport() {
               {/* مسافة بين السطور باستخدام block و margin */}
               <span className="block mt-6 text-3xl md:text-4xl">وهنجاوبك بالتفصيل</span>
             </h2>
-            
-            <p className="text-lg md:text-xl text-slate-500 font-medium max-w-xl mx-auto leading-relaxed">
-              عندك سؤال في النحو؟ البلاغة واقفة معاك؟ فريقنا المساعد مستعد لتوضيح أي نقطة غامضة في المنهج خطوة بخطوة.
-            </p>
-          </motion.div>
+            </motion.div>
 
           <motion.div variants={itemVariants} className="pt-4 flex justify-center">
             <WhatsAppCard 
               title="تواصل مع الدعم العلمي" 
-              detail="+20 120 357 8747" 
               href="https://wa.me/201203578747" 
             />
           </motion.div>
