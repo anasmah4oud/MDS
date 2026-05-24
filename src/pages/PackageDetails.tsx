@@ -3,14 +3,14 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import {
-  ChevronRight, Play, FileText, CheckCircle,
+import { 
+  ChevronRight, Play, FileText, CheckCircle, 
   Lock, Calendar, BookOpen, Clock, ChevronDown,
   LayoutDashboard, PlayCircle, Eye, X, Sparkles,
-  Star, Zap, ArrowLeft, Layers
+  Layers, Video, HelpCircle, Award, ArrowLeft
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { Package, Week, Lesson } from '../types';
@@ -18,30 +18,29 @@ import { useAuth } from '../context/AuthContext';
 import Plyr from 'plyr';
 import 'plyr/dist/plyr.css';
 
-// --- حركات Framer Motion ساحرة ---
+// --- حركات Framer Motion المحسنة للأداء ---
+const pageFadeIn = {
+  hidden: { opacity: 0 },
+  show: { opacity: 1, transition: { duration: 0.5, ease: "easeOut" } }
+};
+
 const containerVariants = {
   hidden: { opacity: 0 },
   show: {
     opacity: 1,
-    transition: { staggerChildren: 0.08, delayChildren: 0.3 }
+    transition: { staggerChildren: 0.06 }
   }
 };
 
 const itemVariants = {
-  hidden: { opacity: 0, y: 30, scale: 0.95 },
-  show: {
-    opacity: 1,
-    y: 0,
-    scale: 1,
-    transition: { type: "spring", stiffness: 260, damping: 20 }
-  }
+  hidden: { opacity: 0, y: 15 },
+  show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 260, damping: 20 } }
 };
 
-const floatAnimation = {
-  animate: {
-    y: [0, -10, 0],
-    transition: { duration: 4, repeat: Infinity, ease: "easeInOut" }
-  }
+const modalVariants = {
+  hidden: { opacity: 0, scale: 0.95, y: 30 },
+  show: { opacity: 1, scale: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 25 } },
+  exit: { opacity: 0, scale: 0.98, y: 20, transition: { duration: 0.2 } }
 };
 
 export default function PackageDetails() {
@@ -79,7 +78,7 @@ export default function PackageDetails() {
         .select('*')
         .eq('id', id)
         .single();
-
+      
       if (pkgError) throw pkgError;
       setPkg(pkgData as Package);
 
@@ -88,7 +87,7 @@ export default function PackageDetails() {
         .select('*')
         .eq('package_id', id)
         .order('id', { ascending: true });
-
+        
       if (weeksError) throw weeksError;
       setWeeks(weeksList as Week[]);
 
@@ -98,7 +97,7 @@ export default function PackageDetails() {
           .from('lessons')
           .select('*')
           .in('week_id', weekIds);
-
+        
         if (lessonsError) throw lessonsError;
 
         const lMap: Record<number, Lesson[]> = {};
@@ -107,7 +106,7 @@ export default function PackageDetails() {
           lMap[l.week_id].push(l as Lesson);
         });
         setLessonsMap(lMap);
-
+        
         if (weeksList.length > 0) {
           setExpandedWeek(weeksList[0].id);
         }
@@ -121,364 +120,309 @@ export default function PackageDetails() {
   };
 
   if (loading) return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/40 gap-6">
-      <motion.div
-        animate={{ rotate: 360, scale: [1, 1.2, 1] }}
-        transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-        className="relative"
-      >
-        <div className="absolute inset-0 bg-blue-400 blur-2xl opacity-30 rounded-full" />
-        <BookOpen size={52} className="text-blue-600 relative z-10 drop-shadow-lg" />
-      </motion.div>
-      <motion.p
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.3 }}
-        className="font-black italic text-2xl text-slate-700 tracking-tight"
-      >
-        جاري تحضير المحتوى الساحر...
-      </motion.p>
+    <div className="min-h-screen flex flex-col items-center justify-center bg-[#F8FAFC] gap-5 px-4">
+      <div className="relative flex items-center justify-center">
+        <div className="absolute w-24 h-24 bg-indigo-500/10 blur-2xl rounded-full animate-pulse" />
+        <div className="w-16 h-16 border-4 border-indigo-100 border-t-indigo-600 rounded-full animate-spin" />
+        <BookOpen size={28} className="absolute text-indigo-600 animate-bounce" />
+      </div>
+      <div className="text-center">
+        <p className="font-black text-xl text-slate-800 tracking-tight">جاري تجهيز محاضراتك</p>
+        <p className="text-sm text-slate-400 font-medium mt-1">منصة البارع ترحب بك دائمًا</p>
+      </div>
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#F8FAFC] via-white to-[#F0F4FF] text-slate-900 overflow-x-hidden relative" dir="rtl">
+    <div className="min-h-screen bg-[#FDFEFE] text-slate-900 overflow-x-hidden antialiased selection:bg-indigo-100" dir="rtl">
       
-      {/* عناصر متحركة في الخلفية */}
-      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-        <motion.div
-          animate={{ x: [0, 20, 0], y: [0, -15, 0], scale: [1, 1.1, 1] }}
-          transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute top-20 left-10 w-72 h-72 bg-blue-100/40 rounded-full blur-3xl"
-        />
-        <motion.div
-          animate={{ x: [0, -25, 0], y: [0, 20, 0], scale: [1, 1.15, 1] }}
-          transition={{ duration: 15, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-          className="absolute bottom-20 right-10 w-96 h-96 bg-indigo-100/30 rounded-full blur-3xl"
-        />
-        <motion.div
-          animate={{ rotate: [0, 360] }}
-          transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
-          className="absolute top-1/2 left-1/3 w-40 h-40 bg-amber-100/20 rounded-full blur-2xl"
-        />
-      </div>
+      {/* غطاء الخلفية العلوي المتدرج بدلاً من الصورة الداكنة المجهدة للعين */}
+      <div className="absolute top-0 inset-x-0 h-[480px] bg-gradient-to-b from-indigo-50/70 via-slate-50/40 to-transparent pointer-events-none" />
 
-      {/* الهيدر البطولي */}
-      <div className="relative h-[50vh] md:h-[70vh] overflow-hidden bg-slate-900 rounded-b-[3rem] md:rounded-b-[5rem] shadow-2xl shadow-blue-900/10 z-10">
-        <motion.img
-          initial={{ scale: 1.2, opacity: 0 }}
-          animate={{ scale: 1, opacity: 0.55 }}
-          transition={{ duration: 1.8, ease: "easeOut" }}
-          src={pkg?.image_url || "https://placehold.co/1200x800"}
-          className="absolute inset-0 w-full h-full object-cover blur-[1px]"
-          alt="Package Background"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#F8FAFC] via-[#F8FAFC]/80 to-transparent" />
+      {/* الهيكل الرئيسي للمحتوى */}
+      <motion.div 
+        variants={pageFadeIn}
+        initial="hidden"
+        animate="show"
+        className="max-w-6xl mx-auto px-4 pt-6 pb-24 relative z-10"
+      >
+        {/* زر العودة الذكي للموبايل والديسك توب */}
+        <div className="mb-6 flex justify-between items-center">
+          <Link 
+            to="/dashboard" 
+            className="group flex items-center gap-2 text-slate-600 bg-white border border-slate-100 shadow-sm px-4 py-2.5 rounded-2xl text-sm font-bold hover:text-indigo-600 hover:border-indigo-100 hover:shadow-md transition-all active:scale-95"
+          >
+            <ChevronRight size={16} className="group-hover:translate-x-1 transition-transform" /> 
+            <span>العودة للوحة التحكم</span>
+          </Link>
+        </div>
 
-        <div className="absolute inset-0 flex items-end p-6 md:p-20 z-20">
-          <div className="max-w-7xl mx-auto w-full">
-            <motion.div
-              initial={{ opacity: 0, x: 30 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.2, type: "spring" }}
-            >
-              <Link
-                to="/dashboard"
-                className="inline-flex items-center gap-2 text-blue-700 bg-white/80 backdrop-blur-lg px-5 py-2.5 rounded-full font-bold mb-6 md:mb-8 hover:bg-white hover:shadow-xl transition-all border border-white/50"
-              >
-                <ArrowLeft size={18} /> العودة للوحة التحكم
-              </Link>
-            </motion.div>
+        {/* كارت البطاقة التعريفية للباقة (Hero Card) - بتصميم فائق الفخامة يناسب الموبايل */}
+        <div className="bg-white border border-slate-100 shadow-[0_4px_30px_rgba(15,23,42,0.03)] rounded-[32px] p-5 md:p-8 mb-10 overflow-hidden relative">
+          <div className="absolute top-0 left-0 w-48 h-48 bg-gradient-to-br from-indigo-400/10 to-violet-400/0 rounded-full blur-3xl pointer-events-none" />
+          
+          <div className="flex flex-col lg:flex-row gap-6 lg:items-center justify-between relative z-10">
+            <div className="space-y-4 max-w-2xl">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="bg-indigo-50 text-indigo-600 px-3.5 py-1.5 rounded-xl text-xs font-black tracking-wide flex items-center gap-1.5 shadow-sm">
+                  <Sparkles size={13} className="animate-pulse" />
+                  {pkg?.type === 'offer' ? 'عرض خاص ومميز' : 'باقة تعليمية متكاملة'}
+                </span>
+              </div>
+              
+              <h1 className="text-2xl md:text-4xl lg:text-5xl font-black text-slate-900 tracking-tight leading-tight">
+                {pkg?.name}
+              </h1>
+              
+              <p className="text-sm md:text-base text-slate-500 font-medium leading-relaxed">
+                {pkg?.description}
+              </p>
+            </div>
 
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 md:gap-10">
-              <motion.div
-                initial={{ opacity: 0, y: 40 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4, type: "spring", stiffness: 200 }}
-              >
-                <div className="flex items-center gap-3 mb-4">
-                  <span className="bg-gradient-to-r from-amber-400 to-orange-500 text-white px-5 py-2 rounded-full text-xs font-black uppercase tracking-widest shadow-lg shadow-amber-500/30 flex items-center gap-2">
-                    <Zap size={16} className="fill-current" />
-                    {pkg?.type === 'offer' ? 'عرض خاص ✨' : 'باقة تعليمية'}
-                  </span>
+            {/* العدادات والإحصائيات كلوحة منفصلة سريعة الاستجابة */}
+            <div className="grid grid-cols-2 gap-3 bg-slate-50/70 p-4 rounded-2xl border border-slate-100 lg:w-[340px] shrink-0">
+              <div className="bg-white p-3.5 rounded-xl border border-slate-100/80 shadow-inner text-center">
+                <div className="w-8 h-8 bg-indigo-50 text-indigo-600 rounded-lg flex items-center justify-center mx-auto mb-2">
+                  <Calendar size={16} />
                 </div>
-                <h1 className="text-5xl md:text-8xl font-black mb-4 tracking-tighter leading-[1.1] text-slate-900 drop-shadow-sm">
-                  {pkg?.name}
-                </h1>
-                <p className="text-lg md:text-2xl text-slate-600 max-w-xl font-medium leading-relaxed bg-white/70 backdrop-blur-md p-5 rounded-3xl border border-white/60 inline-block shadow-sm">
-                  {pkg?.description}
+                <p className="text-[11px] font-bold text-slate-400">الأسابيع المتاحة</p>
+                <p className="text-xl font-black text-slate-800 mt-0.5">{weeks.length}</p>
+              </div>
+              
+              <div className="bg-white p-3.5 rounded-xl border border-slate-100/80 shadow-inner text-center">
+                <div className="w-8 h-8 bg-violet-50 text-violet-600 rounded-lg flex items-center justify-center mx-auto mb-2">
+                  <Layers size={16} />
+                </div>
+                <p className="text-[11px] font-bold text-slate-400">مجموع العناصر</p>
+                <p className="text-xl font-black text-slate-800 mt-0.5">
+                  {Object.values(lessonsMap).reduce((acc: number, curr) => acc + (curr as Lesson[]).length, 0)}
                 </p>
-              </motion.div>
-
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8, y: 20 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                transition={{ delay: 0.6, type: "spring", stiffness: 180 }}
-                className="flex items-center gap-6 md:gap-12 bg-white/80 backdrop-blur-2xl border border-white/80 shadow-2xl p-6 md:p-10 rounded-[2.5rem] md:rounded-[3rem]"
-              >
-                <div className="text-center group cursor-default">
-                  <motion.div variants={floatAnimation} animate="animate" className="w-14 h-14 md:w-16 md:h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-inner group-hover:bg-blue-100 transition-colors">
-                    <Calendar size={26} />
-                  </motion.div>
-                  <p className="text-xs font-bold text-slate-500 mb-1">الأسابيع</p>
-                  <p className="text-3xl md:text-4xl font-black text-slate-800">{weeks.length}</p>
-                </div>
-                <div className="w-px h-20 md:h-24 bg-gradient-to-b from-transparent via-slate-300 to-transparent" />
-                <div className="text-center group cursor-default">
-                  <motion.div variants={floatAnimation} animate="animate" className="w-14 h-14 md:w-16 md:h-16 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-inner group-hover:bg-indigo-100 transition-colors">
-                    <PlayCircle size={26} />
-                  </motion.div>
-                  <p className="text-xs font-bold text-slate-500 mb-1">المحاضرات</p>
-                  <p className="text-3xl md:text-4xl font-black text-slate-800">
-                    {Object.values(lessonsMap).reduce((acc: number, curr) => acc + (curr as Lesson[]).length, 0)}
-                  </p>
-                </div>
-              </motion.div>
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* المحتوى الرئيسي */}
-      <main className="max-w-5xl mx-auto px-4 py-16 md:py-24 relative z-20">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-50px" }}
-          className="flex items-center gap-4 mb-10 md:mb-14"
-        >
-          <motion.div
-            animate={{ scale: [1, 1.2, 1], rotate: [0, 10, -10, 0] }}
-            transition={{ duration: 3, repeat: Infinity }}
-            className="w-2 h-10 bg-gradient-to-b from-blue-500 to-indigo-600 rounded-full"
-          />
-          <h3 className="text-3xl md:text-4xl font-black text-slate-800 tracking-tight">
-            المحتوى التعليمي <Sparkles className="inline text-amber-400 ml-2" size={28} />
-          </h3>
-        </motion.div>
+        {/* قسم المحتوى والمحاضرات الهيكلي */}
+        <div className="space-y-4">
+          <div className="flex items-center gap-2.5 mb-6 px-1">
+            <div className="w-1.5 h-6 bg-indigo-600 rounded-full" />
+            <h2 className="text-xl md:text-2xl font-black text-slate-800">الخطة الدراسية للباقة</h2>
+          </div>
 
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          animate="show"
-          className="space-y-6"
-        >
-          {weeks.map((week, index) => (
-            <motion.div
-              key={week.id}
-              variants={itemVariants}
-              layout
-              className={`rounded-[2.5rem] overflow-hidden border transition-all duration-500 ${
-                expandedWeek === week.id
-                  ? 'bg-white border-blue-200/80 shadow-2xl shadow-blue-100/50 scale-[1.02]'
-                  : 'bg-white/80 border-slate-200/50 hover:bg-white hover:shadow-xl hover:border-blue-200/60 backdrop-blur-sm'
-              }`}
-            >
-              <button
-                onClick={() => setExpandedWeek(expandedWeek === week.id ? null : week.id)}
-                className="w-full flex items-center justify-between p-5 md:p-8 text-right focus:outline-none group"
-              >
-                <div className="flex items-center gap-5 md:gap-7">
-                  <motion.div
-                    whileHover={{ scale: 1.05 }}
-                    className={`w-14 h-14 md:w-16 md:h-16 rounded-2xl md:rounded-[1.5rem] flex items-center justify-center font-black text-2xl md:text-3xl transition-all duration-300 ${
-                      expandedWeek === week.id
-                        ? 'bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-xl shadow-blue-400/30'
-                        : 'bg-blue-50 text-blue-600 group-hover:bg-blue-100'
-                    }`}
-                  >
-                    {index + 1}
-                  </motion.div>
-                  <div>
-                    <h4 className={`text-xl md:text-2xl font-black transition-colors ${expandedWeek === week.id ? 'text-blue-950' : 'text-slate-800'}`}>
-                      {week.name}
-                    </h4>
-                    <p className="text-slate-500 font-semibold text-sm mt-1">{week.description}</p>
-                  </div>
-                </div>
-                <motion.div
-                  animate={{ rotate: expandedWeek === week.id ? 180 : 0 }}
-                  className={`w-12 h-12 rounded-full flex items-center justify-center transition-all ${
-                    expandedWeek === week.id ? 'bg-blue-50 text-blue-600' : 'bg-slate-100 text-slate-400 group-hover:bg-slate-200'
+          {/* قائمة الأسابيع التفاعلية */}
+          <motion.div 
+            variants={containerVariants}
+            className="space-y-3"
+          >
+            {weeks.map((week, index) => {
+              const isWeekExpanded = expandedWeek === week.id;
+              const currentWeekLessons = lessonsMap[week.id] || [];
+
+              return (
+                <motion.div 
+                  key={week.id} 
+                  variants={itemVariants}
+                  layout="position"
+                  className={`rounded-2xl border transition-all duration-300 ${
+                    isWeekExpanded 
+                      ? 'bg-white border-indigo-100 shadow-[0_10px_25px_rgba(99,102,241,0.04)] ring-1 ring-indigo-500/5' 
+                      : 'bg-white border-slate-100 shadow-sm hover:border-slate-200/80'
                   }`}
                 >
-                  <ChevronDown size={22} />
-                </motion.div>
-              </button>
-
-              <AnimatePresence>
-                {expandedWeek === week.id && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: 'auto', opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.4, ease: [0.25, 0.8, 0.25, 1] }}
-                    className="overflow-hidden bg-gradient-to-b from-slate-50/80 to-white border-t border-slate-100"
+                  {/* رأس الأسبوع القابل للضغط */}
+                  <button 
+                    onClick={() => setExpandedWeek(isWeekExpanded ? null : week.id)}
+                    className="w-full flex items-center justify-between p-4 sm:p-5 text-right focus:outline-none"
                   >
-                    <div className="p-4 md:p-8 space-y-4">
-                      {(lessonsMap[week.id] || []).map((lesson, idx) => (
-                        <motion.button
-                          key={lesson.id}
-                          initial={{ opacity: 0, x: -20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: idx * 0.04 }}
-                          whileHover={{ scale: 1.02, y: -3, boxShadow: "0 20px 25px -5px rgba(0,0,0,0.05)" }}
-                          whileTap={{ scale: 0.97 }}
-                          onClick={() => {
-                            if (lesson.type.startsWith('video')) {
-                              navigate(`/video/${lesson.id}`);
-                            } else {
-                              setSelectedLesson(lesson);
-                            }
-                          }}
-                          className="w-full flex items-center justify-between p-5 md:p-7 bg-white rounded-[2rem] border border-slate-100/80 shadow-sm hover:shadow-xl hover:border-blue-200 transition-all group"
-                        >
-                          <div className="flex items-center gap-4 md:gap-5">
-                            <motion.div
-                              whileHover={{ rotate: 5 }}
-                              className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-300 ${
-                                lesson.type.startsWith('video')
-                                  ? 'bg-blue-50 text-blue-600 group-hover:bg-blue-600 group-hover:text-white shadow-blue-100'
-                                  : lesson.type === 'pdf'
-                                  ? 'bg-emerald-50 text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white shadow-emerald-100'
-                                  : 'bg-amber-50 text-amber-600 group-hover:bg-amber-600 group-hover:text-white shadow-amber-100'
-                              }`}
-                            >
-                              {lesson.type.startsWith('video') ? <PlayCircle size={28} /> : lesson.type === 'pdf' ? <FileText size={28} /> : <BookOpen size={28} />}
-                            </motion.div>
-                            <div className="text-right">
-                              <p className="text-lg md:text-xl font-black text-slate-800 group-hover:text-blue-700 transition-colors">{lesson.name}</p>
-                              <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mt-1 flex items-center gap-1.5">
-                                <Clock size={12} />
-                                {lesson.type === 'video_exp'
-                                  ? 'فيديو شرح تفصيلي'
-                                  : lesson.type === 'video_hw'
-                                  ? 'فيديو حل وتطبيق'
-                                  : lesson.type === 'pdf'
-                                  ? 'ملزمة PDF'
-                                  : lesson.type === 'exam_mcq'
-                                  ? 'اختبار إلكتروني'
-                                  : 'واجب إلكتروني'}
-                              </p>
-                            </div>
-                          </div>
-                          <motion.div
-                            whileHover={{ scale: 1.1 }}
-                            className="w-12 h-12 bg-slate-50 text-slate-400 rounded-full flex items-center justify-center group-hover:bg-blue-50 group-hover:text-blue-600 transition-colors"
-                          >
-                            <Eye size={20} />
-                          </motion.div>
-                        </motion.button>
-                      ))}
-                      {(!lessonsMap[week.id] || lessonsMap[week.id].length === 0) && (
-                        <motion.div
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          className="p-10 text-center bg-white/80 backdrop-blur-sm rounded-3xl border border-dashed border-slate-200"
-                        >
-                          <BookOpen className="mx-auto text-slate-300 mb-4" size={36} />
-                          <p className="text-slate-500 font-bold text-base italic">جاري تجهيز محتوى هذا الأسبوع، كن مستعداً يا بطل! 🚀</p>
-                        </motion.div>
-                      )}
+                    <div className="flex items-center gap-4 min-w-0">
+                      {/* الرقم الترتيبي المستدير */}
+                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-black text-sm shrink-0 transition-all duration-300 ${
+                        isWeekExpanded 
+                          ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20' 
+                          : 'bg-slate-50 text-slate-500 border border-slate-100'
+                      }`}>
+                        {String(index + 1).padStart(2, '0')}
+                      </div>
+                      
+                      <div className="min-w-0">
+                        <h3 className={`text-base md:text-lg font-black truncate transition-colors ${isWeekExpanded ? 'text-indigo-600' : 'text-slate-800'}`}>
+                          {week.name}
+                        </h3>
+                        {week.description && (
+                          <p className="text-xs text-slate-400 font-medium truncate mt-0.5">{week.description}</p>
+                        )}
+                      </div>
                     </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </motion.div>
-          ))}
-        </motion.div>
-      </main>
 
-      {/* نافذة عرض الدرس الساحرة */}
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center border transition-all duration-300 shrink-0 ${
+                      isWeekExpanded ? 'bg-indigo-50 text-indigo-600 border-indigo-100 rotate-180' : 'bg-slate-50 text-slate-400 border-slate-100'
+                    }`}>
+                      <ChevronDown size={16} />
+                    </div>
+                  </button>
+
+                  {/* المحاضرات المدرجة تحت الأسبوع */}
+                  <AnimatePresence initial={false}>
+                    {isWeekExpanded && (
+                      <motion.div 
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.25, ease: "easeInOut" }}
+                        className="overflow-hidden bg-slate-50/50 border-t border-slate-50"
+                      >
+                        <div className="p-4 space-y-2.5">
+                          {currentWeekLessons.map((lesson) => {
+                            // تخصيص الألوان والأيقونات بناءً على نوع الدرس لسهولة الفهم البصري
+                            const isVideo = lesson.type.startsWith('video');
+                            const isPdf = lesson.type === 'pdf';
+                            const isExam = lesson.type.includes('exam') || lesson.type.includes('hw');
+                            
+                            let iconElement = <BookOpen size={18} />;
+                            let badgeText = 'محتوى تعليمي';
+                            let themeClass = 'bg-slate-50 text-slate-600 border-slate-100';
+
+                            if (isVideo) {
+                              iconElement = <Video size={18} />;
+                              badgeText = lesson.type === 'video_exp' ? 'فيديو شرح' : 'فيديو تطبيق';
+                              themeClass = 'bg-blue-50 text-blue-600 border-blue-100/50';
+                            } else if (isPdf) {
+                              iconElement = <FileText size={18} />;
+                              badgeText = 'ملف ملزمة PDF';
+                              themeClass = 'bg-emerald-50 text-emerald-600 border-emerald-100/50';
+                            } else if (isExam) {
+                              iconElement = <Award size={18} />;
+                              badgeText = lesson.type === 'exam_mcq' ? 'اختبار إلكتروني' : 'واجب إلكتروني';
+                              themeClass = 'bg-amber-50 text-amber-600 border-amber-100/50';
+                            }
+
+                            return (
+                              <button 
+                                key={lesson.id}
+                                onClick={() => {
+                                  if (isVideo) {
+                                    navigate(`/video/${lesson.id}`);
+                                  } else {
+                                    setSelectedLesson(lesson);
+                                  }
+                                }}
+                                className="w-full text-right p-3.5 bg-white border border-slate-100 hover:border-indigo-100 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 flex items-center justify-between gap-3 group active:scale-[0.99]"
+                              >
+                                <div className="flex items-center gap-3 min-w-0">
+                                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center border transition-colors shrink-0 ${themeClass} group-hover:bg-indigo-600 group-hover:text-white group-hover:border-indigo-600`}>
+                                    {iconElement}
+                                  </div>
+                                  <div className="min-w-0">
+                                    <p className="text-sm font-bold text-slate-700 group-hover:text-indigo-600 transition-colors truncate">
+                                      {lesson.name}
+                                    </p>
+                                    <span className="inline-block text-[10px] font-extrabold text-slate-400 mt-0.5">
+                                      {badgeText}
+                                    </span>
+                                  </div>
+                                </div>
+
+                                <div className="w-8 h-8 rounded-lg bg-slate-50 text-slate-400 border border-slate-100 flex items-center justify-center shrink-0 group-hover:bg-indigo-50 group-hover:text-indigo-600 group-hover:border-indigo-100 transition-colors">
+                                  <Eye size={14} />
+                                </div>
+                              </button>
+                            );
+                          })}
+
+                          {currentWeekLessons.length === 0 && (
+                            <div className="p-6 text-center bg-white rounded-xl border border-dashed border-slate-200">
+                              <BookOpen className="mx-auto text-slate-300 mb-2" size={24} />
+                              <p className="text-xs text-slate-400 font-bold italic">جاري إعداد ورفع المحاضرات لهذا الأسبوع.</p>
+                            </div>
+                          )}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </motion.div>
+              );
+            })}
+          </motion.div>
+        </div>
+      </motion.div>
+
+      {/* مودال العرض المطور (Lesson Viewer Modal) - يفتح لـ PDF والاختبارات التفاعلية كصفحة تغطية ممتازة */}
       <AnimatePresence>
         {selectedLesson && (
-          <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 md:p-8 lg:p-12">
-            <motion.div
+          <div className="fixed inset-0 z-[200] flex items-center justify-center p-0 sm:p-4 md:p-6 overflow-hidden">
+            <motion.div 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-slate-900/50 backdrop-blur-xl"
+              className="absolute inset-0 bg-slate-900/40 backdrop-blur-md"
               onClick={() => setSelectedLesson(null)}
             />
-
-            <motion.div
-              initial={{ scale: 0.85, opacity: 0, y: 80, rotateX: 10 }}
-              animate={{ scale: 1, opacity: 1, y: 0, rotateX: 0 }}
-              exit={{ scale: 0.9, opacity: 0, y: 30, rotateX: -5 }}
-              transition={{ type: "spring", damping: 25, stiffness: 280 }}
-              className="relative w-full h-full md:max-w-6xl md:h-[90vh] bg-white/95 backdrop-blur-2xl md:rounded-[4rem] overflow-hidden flex flex-col shadow-2xl shadow-blue-900/10 border border-white/50"
+            
+            <motion.div 
+              variants={modalVariants}
+              initial="hidden"
+              animate="show"
+              exit="exit"
+              className="relative w-full h-full sm:max-w-5xl sm:h-[85vh] bg-white sm:rounded-3xl overflow-hidden flex flex-col shadow-2xl border border-slate-100"
             >
-              {/* رأس النافذة */}
-              <div className="px-6 py-4 md:px-10 md:py-6 flex items-center justify-between border-b border-slate-100/80 bg-white/90 backdrop-blur-md sticky top-0 z-20">
-                <div className="flex items-center gap-4">
-                  <motion.div
-                    whileHover={{ rotate: -5 }}
-                    className="p-1.5 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl border border-blue-100 shadow-sm"
-                  >
-                    <img src="/logo.png" className="w-11 h-11 md:w-14 md:h-14 rounded-xl object-contain" alt="Master" />
-                  </motion.div>
-                  <div>
-                    <h4 className="font-black text-xl md:text-2xl text-slate-900 truncate max-w-[180px] md:max-w-md">{selectedLesson.name}</h4>
-                    <p className="text-xs font-bold text-blue-600 mt-1 flex items-center gap-1"><Star size={12} className="fill-amber-400 text-amber-400" /> البارع محمود الديب</p>
-                  </div>
-                </div>
-                <motion.button
-                  whileHover={{ scale: 1.1, rotate: 90 }}
+              {/* هيدر المودال */}
+              <div className="px-4 py-3 md:px-6 md:py-4 flex items-center justify-between border-b border-slate-100 bg-white sticky top-0 z-20 shrink-0">
+                 <div className="flex items-center gap-3 min-w-0">
+                    <div className="p-2 bg-indigo-50 border border-indigo-100 rounded-xl shrink-0">
+                      <Layers size={18} className="text-indigo-600" />
+                    </div>
+                    <div className="min-w-0">
+                      <h4 className="font-black text-sm md:text-lg text-slate-800 truncate max-w-[180px] sm:max-w-md">
+                        {selectedLesson.name}
+                      </h4>
+                      <p className="text-[10px] font-bold text-indigo-500 mt-0.5">منصة البارع التعليمية</p>
+                    </div>
+                 </div>
+                 
+                 <button 
                   onClick={() => setSelectedLesson(null)}
-                  className="w-12 h-12 bg-slate-100 hover:bg-red-50 text-slate-400 hover:text-red-500 rounded-full flex items-center justify-center transition-all duration-300"
-                >
-                  <X size={24} strokeWidth={2.5} />
-                </motion.button>
+                  className="w-9 h-9 bg-slate-50 hover:bg-rose-50 text-slate-400 hover:text-rose-500 border border-slate-100 rounded-xl flex items-center justify-center transition-colors"
+                 >
+                   <X size={16} />
+                 </button>
               </div>
 
-              {/* محتوى العرض */}
-              <div className="flex-1 overflow-hidden relative bg-gradient-to-b from-slate-50 to-white flex items-center justify-center">
-                {selectedLesson.type.startsWith('video') ? (
-                  <VideoPlayer url={selectedLesson.url} />
-                ) : selectedLesson.type === 'pdf' ? (
-                  <PdfViewer url={selectedLesson.url} />
-                ) : (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="flex flex-col items-center justify-center h-full p-6 md:p-12 text-center"
-                  >
-                    <motion.div
-                      animate={{ scale: [1, 1.1, 1], rotate: [0, 5, -5, 0] }}
-                      transition={{ duration: 4, repeat: Infinity }}
-                      className="w-28 h-28 md:w-36 md:h-36 bg-gradient-to-br from-amber-100 to-orange-100 rounded-[2.5rem] flex items-center justify-center mb-8 shadow-inner"
-                    >
-                      <BookOpen className="text-amber-600 w-14 h-14 md:w-18 md:h-18" />
-                    </motion.div>
-                    <h3 className="text-3xl md:text-4xl font-black mb-4 text-slate-900">نافذة الاختبار التفاعلي</h3>
-                    <p className="text-lg md:text-xl text-slate-500 font-medium mb-10 max-w-lg leading-relaxed">
-                      حان وقت تقييم مستواك! اضغط على الزر بالأسفل لبدء الاختبار في بيئة مخصصة.
-                    </p>
-                    <motion.a
-                      whileHover={{ scale: 1.05, y: -5 }}
-                      whileTap={{ scale: 0.95 }}
-                      href={selectedLesson.url}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-14 py-5 rounded-2xl text-xl font-black hover:shadow-2xl hover:shadow-blue-500/30 transition-all flex items-center gap-3"
-                    >
-                      بدء الاختبار الآن <Zap size={22} className="fill-white" />
-                    </motion.a>
-                  </motion.div>
-                )}
+              {/* منطقة محتوى المودال المرن */}
+              <div className="flex-1 overflow-hidden relative bg-slate-50 flex items-center justify-center">
+                 {selectedLesson.type === 'pdf' ? (
+                    <PdfViewer url={selectedLesson.url} />
+                 ) : (
+                    <div className="flex flex-col items-center justify-center text-center p-6 max-w-md w-full">
+                       <div className="w-16 h-16 bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-100 rounded-2xl flex items-center justify-center mb-5 shadow-sm">
+                         <Award className="text-amber-500 w-8 h-8" />
+                       </div>
+                       <h3 className="text-lg md:text-xl font-black text-slate-800 mb-2">الاختبار جاهز لك الآن!</h3>
+                       <p className="text-xs md:text-sm text-slate-400 font-medium mb-6 leading-relaxed">
+                         اضغط على الزر بالأسفل للانتقال الفوري لنافذة الاختبار التفاعلي المنفصلة لضمان استقرار الإجابة والأداء.
+                       </p>
+                       <motion.a 
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        href={selectedLesson.url} 
+                        target="_blank" 
+                        rel="noreferrer"
+                        className="w-full bg-indigo-600 text-white py-3.5 px-6 rounded-xl text-sm font-black shadow-lg shadow-indigo-600/10 hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2"
+                       >
+                         <span>ابدأ الاختبار التفاعلي</span>
+                         <ArrowLeft size={16} />
+                       </motion.a>
+                    </div>
+                 )}
               </div>
 
+              {/* فوتر اختياري مخصص للوصف والدعم البصري */}
               {selectedLesson.description && (
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="p-6 md:p-8 bg-white border-t border-slate-100 text-right"
-                >
-                  <div className="flex items-start gap-3">
-                    <Sparkles className="text-amber-400 mt-1 flex-shrink-0" size={22} />
-                    <p className="text-slate-600 font-medium leading-relaxed md:text-lg">{selectedLesson.description}</p>
-                  </div>
-                </motion.div>
+                <div className="p-4 bg-white border-t border-slate-50 text-right shrink-0">
+                   <div className="flex items-start gap-2 bg-slate-50 p-3 rounded-xl border border-slate-100">
+                     <Sparkles className="text-amber-500 mt-0.5 shrink-0" size={14} />
+                     <p className="text-xs text-slate-500 font-medium leading-relaxed">{selectedLesson.description}</p>
+                   </div>
+                </div>
               )}
             </motion.div>
           </div>
@@ -488,23 +432,23 @@ export default function PackageDetails() {
   );
 }
 
-// مكون مشغل الفيديو المحسن
+// --- مشغل الفيديو الذكي والمحمي بقفل الكليكات المزعجة (Video Player Component) ---
 function VideoPlayer({ url }: { url: string }) {
-  const containerRef = React.useRef<HTMLDivElement | null>(null);
-  const [videoId, setVideoId] = React.useState('');
-  const [provider, setProvider] = React.useState<'youtube' | 'vimeo'>('youtube');
-  const [isValid, setIsValid] = React.useState(true);
-  const [isLoading, setIsLoading] = React.useState(true);
-  const [player, setPlayer] = React.useState<Plyr | null>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const [videoId, setVideoId] = useState('');
+  const [provider, setProvider] = useState<'youtube' | 'vimeo'>('youtube');
+  const [isValid, setIsValid] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
+  const [player, setPlayer] = useState<Plyr | null>(null);
 
   useEffect(() => {
     let vid = '';
     let prov: 'youtube' | 'vimeo' = 'youtube';
     let valid = false;
-
+    
     try {
       if (url.includes('youtube.com/') || url.includes('youtu.be/')) {
-        const ytId = url.includes('v=') ? url.split('v=')[1].split('&')[0] :
+        const ytId = url.includes('v=') ? url.split('v=')[1].split('&')[0] : 
                      url.includes('embed/') ? url.split('embed/')[1].split('?')[0] :
                      url.split('youtu.be/')[1].split('?')[0];
         vid = ytId;
@@ -534,21 +478,17 @@ function VideoPlayer({ url }: { url: string }) {
         settings: ['quality', 'speed'],
         invertTime: true,
         autoplay: true,
-        muted: false,
         ratio: '16:9',
         clickToPlay: true,
         youtube: { noCookie: true, rel: 0, showinfo: 0, iv_load_policy: 3, modestbranding: 1, autoplay: 1 },
-        vimeo: { byline: false, portrait: false, title: false, transparent: false, autoplay: true, muted: false }
+        vimeo: { byline: false, portrait: false, title: false, transparent: false, autoplay: true }
       });
 
       setPlayer(plyrInstance);
 
       plyrInstance.on('ready', () => {
         setIsLoading(false);
-        const playPromise = plyrInstance?.play();
-        if (playPromise && playPromise instanceof Promise) {
-          playPromise.catch(() => console.log("Autoplay blocked"));
-        }
+        plyrInstance?.play()?.catch(() => console.log("Autoplay context pending user gesture"));
       });
 
       plyrInstance.on('play', () => setIsLoading(false));
@@ -570,64 +510,49 @@ function VideoPlayer({ url }: { url: string }) {
   };
 
   return (
-    <div className="w-full h-full flex items-center justify-center bg-black relative group overflow-hidden rounded-b-[3rem] md:rounded-b-[4rem]">
+    <div className="w-full h-full flex items-center justify-center bg-slate-900 relative group overflow-hidden">
       {isValid ? (
-        <div className="w-full h-full relative cursor-pointer" onClick={handleManualToggle}>
-          <div
-            key={`${provider}-${videoId}`}
-            ref={containerRef}
-            data-plyr-provider={provider}
-            data-plyr-embed-id={videoId}
+        <div className="w-full h-full relative" onClick={handleManualToggle}>
+          <div 
+            key={`${provider}-${videoId}`} 
+            ref={containerRef} 
+            data-plyr-provider={provider} 
+            data-plyr-embed-id={videoId} 
             className="w-full h-full pointer-events-none"
           />
-
+          
           <AnimatePresence>
             {isLoading && (
-              <motion.div
+              <motion.div 
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-slate-900/95 backdrop-blur-md"
+                className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-slate-900/95"
               >
-                <motion.div
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
-                  className="w-20 h-20 border-4 border-blue-500/30 border-t-blue-400 rounded-full"
-                />
-                <p className="text-white mt-6 font-bold tracking-widest text-sm">جاري التحميل...</p>
+                <div className="w-12 h-12 border-4 border-white/10 border-t-indigo-500 rounded-full animate-spin" />
+                <p className="text-white/70 text-xs font-bold mt-4 tracking-wider animate-pulse">جاري تهيئة البث المتوازن...</p>
               </motion.div>
             )}
           </AnimatePresence>
-
-          {!isLoading && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: player?.playing ? 0 : 1 }}
-              className="absolute inset-0 flex items-center justify-center pointer-events-none transition-opacity duration-700"
-            >
-              <div className="w-24 h-24 md:w-28 md:h-28 bg-white/10 backdrop-blur-xl rounded-full flex items-center justify-center text-white border border-white/20 shadow-2xl">
-                <Play size={48} className="ml-1 drop-shadow-lg" fill="white" />
-              </div>
-            </motion.div>
-          )}
-
-          <div className="absolute top-6 right-6 z-20 pointer-events-none select-none">
-            <div className="bg-black/30 backdrop-blur-lg px-4 py-1.5 rounded-full text-[10px] md:text-xs font-black tracking-widest text-white/90 uppercase border border-white/10">
-              منصة البارع • حقوق النشر محفوظة
-            </div>
-          </div>
         </div>
       ) : (
-        <div className="flex flex-col items-center justify-center p-12 text-center text-slate-400 gap-4 bg-slate-50 w-full h-full">
-          <PlayCircle size={52} className="text-slate-300" />
-          <p className="font-bold text-xl">عذراً، رابط الفيديو غير متاح حالياً.</p>
+        <div className="flex flex-col items-center justify-center p-8 text-center text-slate-400 gap-3 bg-slate-900 w-full h-full">
+          <PlayCircle size={36} className="text-slate-600" />
+          <p className="font-bold text-sm text-white/90">رابط الفيديو غير صالح أو تم نقله.</p>
         </div>
       )}
+
+      {/* غطاء حماية العلامة المائية ومنع القرصنة بشكل احترافي ناعم */}
+      <div className="absolute top-4 right-4 z-20 pointer-events-none select-none">
+        <div className="bg-slate-900/60 backdrop-blur-md px-3 py-1 rounded-lg text-[9px] font-black tracking-wider text-white/80 border border-white/5 shadow-md">
+          منصة البارع • محمية بحقوق الطبع
+        </div>
+      </div>
     </div>
   );
 }
 
-// عارض PDF محسن
+// --- مشغل ملفات الملازم والمستندات (PDF Viewer Component) ---
 function PdfViewer({ url }: { url: string }) {
   let embedUrl = url;
   if (url.includes('drive.google.com/file/d/')) {
@@ -636,18 +561,14 @@ function PdfViewer({ url }: { url: string }) {
   }
 
   return (
-    <div className="w-full h-full bg-slate-100/50 relative rounded-b-[3rem] md:rounded-b-[4rem] overflow-hidden">
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: [0.3, 0.6, 0.3] }}
-        transition={{ duration: 2, repeat: Infinity }}
-        className="absolute inset-0 flex items-center justify-center z-0"
-      >
-        <FileText size={52} className="text-slate-300" />
-      </motion.div>
-      <iframe
-        src={embedUrl}
-        className="relative z-10 w-full h-full border-none shadow-inner"
+    <div className="w-full h-full bg-slate-100 relative">
+      <div className="absolute inset-0 flex flex-col items-center justify-center z-0 gap-3">
+         <FileText size={36} className="text-indigo-200 animate-pulse" />
+         <p className="text-slate-400 font-bold text-xs">جاري سحب مستند الملزمة...</p>
+      </div>
+      <iframe 
+        src={embedUrl} 
+        className="relative z-10 w-full h-full border-none"
         title="PDF Viewer"
         allow="autoplay"
         loading="lazy"
