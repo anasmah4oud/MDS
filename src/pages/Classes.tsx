@@ -406,19 +406,13 @@ function FilterButton({ active, onClick, children }: { active: boolean, onClick:
 /* بطاقة الباقة */
 function PackageCard({ pkg, isSubscribed, onBuy }: { pkg: PackageType; isSubscribed: boolean; onBuy: () => void }) {
   return (
-    <motion.div 
-      whileHover={{ 
-        y: -12, 
-        scale: 1.02,
-        boxShadow: "0 25px 50px -12px rgba(59, 130, 246, 0.35)"
-      }}
-      transition={{ type: "spring", stiffness: 300, damping: 20 }}
-      className="shimmer-border bg-white rounded-[2.5rem] border border-slate-100 shadow-md hover:ring-2 hover:ring-blue-300/60 flex flex-col h-full overflow-hidden group"
+    <motion.div
+      className="shimmer-border bg-white rounded-[2.5rem] border border-slate-100 shadow-md flex flex-col h-full overflow-hidden"
     >
       <div className="relative aspect-video overflow-hidden bg-slate-900">
         <img 
           src={pkg.image_url || "https://placehold.co/1920x1080/0f172a/3b82f6?text=البارع"} 
-          className="w-full h-full object-cover group-hover:scale-110 group-hover:brightness-110 transition-all duration-700 ease-out" 
+          className="w-full h-full object-cover" 
           alt={pkg.name}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/20 to-transparent" />

@@ -9,13 +9,27 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   ChevronRight, Play, FileText, CheckCircle, 
   Lock, Calendar, BookOpen, Clock, ChevronDown,
-  LayoutDashboard, PlayCircle, Eye, X
+  LayoutDashboard, PlayCircle, Eye, X, Sparkles
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { Package, Week, Lesson } from '../types';
 import { useAuth } from '../context/AuthContext';
 import Plyr from 'plyr';
 import 'plyr/dist/plyr.css';
+
+// --- حركات Framer Motion مجهزة مسبقاً ---
+const containerVariants = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: { staggerChildren: 0.1, delayChildren: 0.2 }
+  }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 24 } }
+};
 
 export default function PackageDetails() {
   const { id } = useParams();
@@ -35,7 +49,6 @@ export default function PackageDetails() {
   const fetchPackageData = async () => {
     if (!id || !profile) return;
     try {
-      // 1. Verify subscription
       const { data: subData, error: subError } = await supabase
         .from('subscriptions')
         .select('*')
@@ -48,7 +61,6 @@ export default function PackageDetails() {
         return;
       }
 
-      // 2. Load Package
       const { data: pkgData, error: pkgError } = await supabase
         .from('packages')
         .select('*')
@@ -58,7 +70,6 @@ export default function PackageDetails() {
       if (pkgError) throw pkgError;
       setPkg(pkgData as Package);
 
-      // 3. Load Weeks
       const { data: weeksList, error: weeksError } = await supabase
         .from('weeks')
         .select('*')
@@ -68,7 +79,6 @@ export default function PackageDetails() {
       if (weeksError) throw weeksError;
       setWeeks(weeksList as Week[]);
 
-      // 4. Load Lessons for all weeks
       const weekIds = weeksList.map(w => w.id);
       if (weekIds.length > 0) {
         const { data: lessonsData, error: lessonsError } = await supabase
@@ -84,6 +94,11 @@ export default function PackageDetails() {
           lMap[l.week_id].push(l as Lesson);
         });
         setLessonsMap(lMap);
+        
+        // فتح أول أسبوع تلقائياً إذا كان موجوداً
+        if (weeksList.length > 0) {
+          setExpandedWeek(weeksList[0].id);
+        }
       }
 
     } catch (err) {
@@ -94,79 +109,135 @@ export default function PackageDetails() {
   };
 
   if (loading) return (
-    <div className="min-h-screen flex items-center justify-center bg-white text-slate-900 font-black italic text-2xl animate-pulse">
-       جاري تحضير المحتوى...
+    <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 text-blue-600 gap-4">
+      <div className="relative flex items-center justify-center">
+        <div className="absolute inset-0 bg-blue-400 blur-xl opacity-20 rounded-full animate-pulse" />
+        <BookOpen size={48} className="animate-bounce relative z-10" />
+      </div>
+      <p className="font-black italic text-xl text-slate-800 animate-pulse">جاري تحضير المحتوى الساحر...</p>
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-white text-slate-900" dir="rtl">
-      {/* Background Hero */}
-      <div className="relative h-[40vh] md:h-[60vh] overflow-hidden bg-slate-50">
-        <img 
+    <div className="min-h-screen bg-[#F8FAFC] text-slate-900 overflow-x-hidden" dir="rtl">
+      
+      {/* Background Hero Section */}
+      <div className="relative h-[45vh] md:h-[65vh] overflow-hidden bg-slate-900">
+        <motion.img 
+          initial={{ scale: 1.1, opacity: 0 }}
+          animate={{ scale: 1, opacity: 0.6 }}
+          transition={{ duration: 1.5, ease: "easeOut" }}
           src={pkg?.image_url || "https://placehold.co/1200x800"} 
-          className="w-full h-full object-cover opacity-60 blur-sm scale-105" 
+          className="absolute inset-0 w-full h-full object-cover blur-[2px]" 
           alt="Package Background"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-white via-white/40 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#F8FAFC] via-[#F8FAFC]/60 to-transparent" />
         
-        <div className="absolute inset-0 flex items-end p-6 md:p-20">
+        <div className="absolute inset-0 flex items-end p-6 md:p-20 z-10">
           <div className="max-w-7xl mx-auto w-full">
-            <Link to="/dashboard" className="inline-flex items-center gap-2 text-blue-600 font-bold mb-6 md:mb-8 hover:text-blue-700 transition-colors">
-               <ChevronRight size={20} /> لوحة التحكم
-            </Link>
+            <motion.div 
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.2 }}
+            >
+              <Link to="/dashboard" className="inline-flex items-center gap-2 text-blue-600 bg-white/50 backdrop-blur-md px-4 py-2 rounded-full font-bold mb-6 md:mb-8 hover:bg-white hover:shadow-lg transition-all">
+                 <ChevronRight size={18} /> العودة للوحة التحكم
+              </Link>
+            </motion.div>
+
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 md:gap-8">
-              <div>
-                <span className="bg-blue-600 text-white px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest mb-3 md:mb-4 inline-block shadow-lg shadow-blue-100">
-                  {pkg?.type === 'offer' ? 'عرض خاص' : 'باقة تعليمية'}
-                </span>
-                <h1 className="text-3xl md:text-7xl font-black mb-3 md:mb-4 tracking-tighter leading-tight italic text-slate-900">
+              <motion.div 
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3, type: "spring" }}
+              >
+                <div className="flex items-center gap-3 mb-3 md:mb-4">
+                  <span className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-widest shadow-lg shadow-blue-600/30 flex items-center gap-2">
+                    <Sparkles size={14} />
+                    {pkg?.type === 'offer' ? 'عرض خاص' : 'باقة تعليمية'}
+                  </span>
+                </div>
+                <h1 className="text-4xl md:text-7xl font-black mb-3 md:mb-4 tracking-tighter leading-tight text-slate-900 drop-shadow-sm">
                   {pkg?.name}
                 </h1>
-                <p className="text-lg md:text-xl text-slate-600 max-w-2xl font-medium">{pkg?.description}</p>
-              </div>
+                <p className="text-lg md:text-xl text-slate-600 max-w-2xl font-medium leading-relaxed bg-white/40 backdrop-blur-sm p-4 rounded-2xl border border-white/50 inline-block">
+                  {pkg?.description}
+                </p>
+              </motion.div>
               
-              <div className="flex items-center gap-6 md:gap-8 bg-white/80 backdrop-blur-xl border border-slate-200/50 p-6 md:p-8 rounded-[32px] md:rounded-[40px] px-8 md:px-12 shadow-xl shadow-slate-200/20">
-                 <div className="text-center">
-                    <p className="text-xs md:text-sm font-bold text-slate-400 mb-1">الأسابيع</p>
-                    <p className="text-2xl md:text-3xl font-black tracking-tight text-slate-800">{weeks.length}</p>
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.5, type: "spring" }}
+                className="flex items-center gap-6 md:gap-10 bg-white/70 backdrop-blur-xl border border-white shadow-2xl p-6 md:p-8 rounded-[32px] md:rounded-[40px] px-8 md:px-12"
+              >
+                 <div className="text-center group">
+                    <div className="w-12 h-12 md:w-14 md:h-14 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform shadow-inner">
+                      <Calendar size={24} />
+                    </div>
+                    <p className="text-xs md:text-sm font-bold text-slate-500 mb-1">الأسابيع</p>
+                    <p className="text-2xl md:text-3xl font-black text-slate-800">{weeks.length}</p>
                  </div>
-                 <div className="w-px h-10 md:h-12 bg-slate-200" />
-                 <div className="text-center">
-                    <p className="text-xs md:text-sm font-bold text-slate-400 mb-1">المحاضرات</p>
-                    <p className="text-2xl md:text-3xl font-black tracking-tight text-slate-800">
+                 <div className="w-px h-20 md:h-24 bg-gradient-to-b from-transparent via-slate-300 to-transparent" />
+                 <div className="text-center group">
+                    <div className="w-12 h-12 md:w-14 md:h-14 bg-indigo-100 text-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform shadow-inner">
+                      <PlayCircle size={24} />
+                    </div>
+                    <p className="text-xs md:text-sm font-bold text-slate-500 mb-1">المحاضرات</p>
+                    <p className="text-2xl md:text-3xl font-black text-slate-800">
                       {Object.values(lessonsMap).reduce((acc: number, curr) => acc + (curr as Lesson[]).length, 0)}
                     </p>
                  </div>
-              </div>
+              </motion.div>
             </div>
           </div>
         </div>
       </div>
 
-      <main className="max-w-5xl mx-auto px-4 py-12 md:py-20">
-        <h3 className="text-2xl md:text-3xl font-black mb-8 md:mb-12 flex items-center gap-4 italic underline decoration-blue-500 decoration-4 underline-offset-8 text-slate-900">
-          محتوى الباقة
-        </h3>
+      {/* Main Content Area */}
+      <main className="max-w-5xl mx-auto px-4 py-12 md:py-20 relative z-20">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="flex items-center gap-4 mb-8 md:mb-12"
+        >
+          <div className="w-1.5 h-8 bg-blue-600 rounded-full" />
+          <h3 className="text-2xl md:text-3xl font-black text-slate-900">
+            المحتوى التعليمي
+          </h3>
+        </motion.div>
 
-        <div className="space-y-4">
+        <motion.div 
+          variants={containerVariants}
+          initial="hidden"
+          animate="show"
+          className="space-y-5"
+        >
           {weeks.map((week, index) => (
-            <div key={week.id} className="rounded-[24px] md:rounded-[28px] overflow-hidden border border-slate-100 bg-white shadow-sm hover:shadow-md transition-shadow">
+            <motion.div 
+              key={week.id} 
+              variants={itemVariants}
+              layout
+              className={`rounded-[24px] md:rounded-[32px] overflow-hidden border transition-all duration-300 ${expandedWeek === week.id ? 'bg-white border-blue-100 shadow-xl shadow-blue-900/5' : 'bg-white/60 border-slate-200/60 hover:bg-white hover:shadow-md'}`}
+            >
               <button 
                 onClick={() => setExpandedWeek(expandedWeek === week.id ? null : week.id)}
-                className="w-full flex items-center justify-between p-6 md:p-8 hover:bg-slate-50/50 transition-all text-right"
+                className="w-full flex items-center justify-between p-5 md:p-8 text-right focus:outline-none group"
               >
                 <div className="flex items-center gap-4 md:gap-6">
-                  <div className="w-10 h-10 md:w-12 md:h-12 bg-blue-50 rounded-xl md:rounded-2xl flex items-center justify-center font-black text-lg md:text-xl text-blue-600">
+                  <div className={`w-12 h-12 md:w-16 md:h-16 rounded-2xl md:rounded-[20px] flex items-center justify-center font-black text-xl md:text-2xl transition-all duration-300 ${expandedWeek === week.id ? 'bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/30 scale-105' : 'bg-blue-50 text-blue-600 group-hover:bg-blue-100'}`}>
                     {index + 1}
                   </div>
                   <div>
-                    <h4 className="text-xl md:text-2xl font-black text-slate-800">{week.name}</h4>
-                    <p className="text-slate-500 font-bold text-xs md:text-sm">{week.description}</p>
+                    <h4 className={`text-lg md:text-2xl font-black transition-colors ${expandedWeek === week.id ? 'text-blue-950' : 'text-slate-800'}`}>
+                      {week.name}
+                    </h4>
+                    <p className="text-slate-500 font-bold text-xs md:text-sm mt-1">{week.description}</p>
                   </div>
                 </div>
-                <div className={`transition-transform duration-300 ${expandedWeek === week.id ? 'rotate-180' : ''}`}>
-                  <ChevronDown className="text-slate-300" />
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${expandedWeek === week.id ? 'bg-blue-50 text-blue-600 rotate-180' : 'bg-slate-50 text-slate-400 group-hover:bg-slate-100'}`}>
+                  <ChevronDown size={20} />
                 </div>
               </button>
 
@@ -176,12 +247,18 @@ export default function PackageDetails() {
                     initial={{ height: 0, opacity: 0 }}
                     animate={{ height: 'auto', opacity: 1 }}
                     exit={{ height: 0, opacity: 0 }}
-                    className="overflow-hidden bg-slate-50/30"
+                    transition={{ duration: 0.3, ease: "easeInOut" }}
+                    className="overflow-hidden bg-slate-50/50 border-t border-slate-100/50"
                   >
-                    <div className="p-4 md:p-8 pt-0 space-y-2 md:space-y-3">
-                      {(lessonsMap[week.id] || []).map((lesson) => (
-                        <button 
+                    <div className="p-4 md:p-8 space-y-3 md:space-y-4">
+                      {(lessonsMap[week.id] || []).map((lesson, idx) => (
+                        <motion.button 
                           key={lesson.id}
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: idx * 0.05 }}
+                          whileHover={{ scale: 1.01, y: -2 }}
+                          whileTap={{ scale: 0.98 }}
                           onClick={() => {
                             if (lesson.type.startsWith('video')) {
                               navigate(`/video/${lesson.id}`);
@@ -189,111 +266,130 @@ export default function PackageDetails() {
                               setSelectedLesson(lesson);
                             }
                           }}
-                          className="w-full flex items-center justify-between p-4 md:p-6 bg-white hover:bg-white rounded-[18px] md:rounded-2xl transition-all group border border-slate-100/50 shadow-sm hover:shadow-md hover:-translate-y-0.5"
+                          className="w-full flex items-center justify-between p-4 md:p-6 bg-white rounded-[20px] md:rounded-2xl border border-slate-100 shadow-sm hover:shadow-lg hover:border-blue-100 transition-all group"
                         >
-                          <div className="flex items-center gap-3 md:gap-4">
-                             <div className={`p-2.5 md:p-3 rounded-lg md:rounded-xl transition-colors ${
-                               lesson.type.startsWith('video') ? 'bg-blue-50 text-blue-600' :
-                               lesson.type === 'pdf' ? 'bg-emerald-50 text-emerald-600' :
-                               'bg-orange-50 text-orange-600'
+                          <div className="flex items-center gap-4">
+                             <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-300 group-hover:scale-110 ${
+                               lesson.type.startsWith('video') ? 'bg-blue-50 text-blue-600 group-hover:bg-blue-600 group-hover:text-white' :
+                               lesson.type === 'pdf' ? 'bg-emerald-50 text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white' :
+                               'bg-orange-50 text-orange-600 group-hover:bg-orange-600 group-hover:text-white'
                              }`}>
-                                {lesson.type.startsWith('video') ? <PlayCircle size={22} /> :
-                                 lesson.type === 'pdf' ? <FileText size={22} /> :
-                                 <BookOpen size={22} />}
+                                {lesson.type.startsWith('video') ? <PlayCircle size={24} /> :
+                                 lesson.type === 'pdf' ? <FileText size={24} /> :
+                                 <BookOpen size={24} />}
                              </div>
                              <div className="text-right">
-                                <p className="text-sm md:text-base font-black group-hover:text-blue-600 transition-colors text-slate-800">{lesson.name}</p>
-                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">
-                                  {lesson.type === 'video_exp' ? 'فيديو شرح' :
-                                   lesson.type === 'video_hw' ? 'فيديو حل واجب' :
-                                   lesson.type === 'pdf' ? 'ملف PDF' :
-                                   lesson.type === 'exam_mcq' ? 'امتحان MCQ' : 'واجب MCQ'}
+                                <p className="text-sm md:text-lg font-black text-slate-800 group-hover:text-blue-700 transition-colors">{lesson.name}</p>
+                                <p className="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-wider mt-1 flex items-center gap-1">
+                                  <Clock size={12} className="inline" />
+                                  {lesson.type === 'video_exp' ? 'فيديو شرح تفصيلي' :
+                                   lesson.type === 'video_hw' ? 'فيديو حل وتطبيق' :
+                                   lesson.type === 'pdf' ? 'ملزمة PDF' :
+                                   lesson.type === 'exam_mcq' ? 'اختبار إلكتروني' : 'واجب إلكتروني'}
                                 </p>
                              </div>
                           </div>
-                          <div className="bg-slate-50 p-2 rounded-lg opacity-0 group-hover:opacity-100 transition-all">
-                             <Eye className="text-blue-600" size={18} />
+                          <div className="w-10 h-10 bg-slate-50 text-slate-400 rounded-full flex items-center justify-center group-hover:bg-blue-50 group-hover:text-blue-600 transition-colors">
+                             <Eye size={18} />
                           </div>
-                        </button>
+                        </motion.button>
                       ))}
                       {(!lessonsMap[week.id] || lessonsMap[week.id].length === 0) && (
-                        <div className="p-8 text-center text-slate-400 font-bold text-sm italic">لا يوجد محتوى متاح لهذا الأسبوع بعد.</div>
+                        <div className="p-8 text-center bg-white rounded-2xl border border-dashed border-slate-200">
+                          <BookOpen className="mx-auto text-slate-300 mb-3" size={32} />
+                          <p className="text-slate-500 font-bold text-sm italic">جاري تجهيز محتوى هذا الأسبوع، كن مستعداً يا بطل!</p>
+                        </div>
                       )}
                     </div>
                   </motion.div>
                 )}
               </AnimatePresence>
-            </div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       </main>
 
-      {/* Lesson Viewer Modal */}
+      {/* Modern Lesson Viewer Modal */}
       <AnimatePresence>
         {selectedLesson && (
-          <div className="fixed inset-0 z-[200] flex items-center justify-center p-0 md:p-8 lg:p-12">
+          <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 md:p-8 lg:p-12">
             <motion.div 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-slate-900/60 backdrop-blur-md"
+              className="absolute inset-0 bg-slate-900/40 backdrop-blur-xl"
               onClick={() => setSelectedLesson(null)}
             />
             
             <motion.div 
-              initial={{ scale: 0.95, opacity: 0, y: 20 }}
+              initial={{ scale: 0.9, opacity: 0, y: 50 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.95, opacity: 0, y: 20 }}
-              className="relative w-full h-full md:max-w-6xl md:h-[90vh] bg-white md:rounded-[32px] lg:rounded-[40px] overflow-hidden flex flex-col shadow-2xl border border-white/20"
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="relative w-full h-full md:max-w-6xl md:h-[90vh] bg-white md:rounded-[40px] overflow-hidden flex flex-col shadow-2xl shadow-blue-900/20 border border-white"
             >
               {/* Modal Header */}
-              <div className="p-5 md:p-8 flex items-center justify-between border-b border-slate-100 bg-white/80 backdrop-blur-md sticky top-0 z-10">
-                 <div className="flex items-center gap-3 md:gap-4">
-                    <div className="p-1 bg-blue-50 rounded-full shadow-sm shadow-blue-100/50">
-                      <img src="/logo.png" className="w-8 h-8 md:w-10 md:h-10 rounded-full" alt="Master" />
+              <div className="px-6 py-4 md:px-8 md:py-6 flex items-center justify-between border-b border-slate-100 bg-white/80 backdrop-blur-md sticky top-0 z-20">
+                 <div className="flex items-center gap-4">
+                    <div className="p-1.5 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl border border-blue-100">
+                      <img src="/logo.png" className="w-10 h-10 md:w-12 md:h-12 rounded-xl object-contain" alt="Master" />
                     </div>
                     <div>
-                      <h4 className="font-black text-lg md:text-xl truncate max-w-[180px] md:max-w-md text-slate-900">{selectedLesson.name}</h4>
-                      <p className="text-[10px] font-black text-blue-600 tracking-widest uppercase italic">محمود الديب - مادة اللغة العربية</p>
+                      <h4 className="font-black text-lg md:text-2xl text-slate-900 truncate max-w-[200px] md:max-w-md">{selectedLesson.name}</h4>
+                      <p className="text-xs font-bold text-blue-600 mt-1">البارع محمود الديب</p>
                     </div>
                  </div>
                  <button 
                   onClick={() => setSelectedLesson(null)}
-                  className="p-2.5 md:p-3 bg-slate-50 hover:bg-slate-100 text-slate-400 hover:text-slate-900 rounded-full transition-all hover:rotate-90"
+                  className="w-12 h-12 bg-slate-50 hover:bg-red-50 text-slate-400 hover:text-red-500 rounded-full flex items-center justify-center transition-all duration-300 hover:rotate-90"
                  >
-                   <X size={22} />
+                   <X size={24} strokeWidth={2.5} />
                  </button>
               </div>
 
               {/* Viewer Content */}
-              <div className="flex-1 overflow-hidden relative bg-slate-50 flex items-center justify-center">
+              <div className="flex-1 overflow-hidden relative bg-[#F8FAFC] flex items-center justify-center">
                  {selectedLesson.type.startsWith('video') ? (
                     <VideoPlayer url={selectedLesson.url} />
                  ) : selectedLesson.type === 'pdf' ? (
                     <PdfViewer url={selectedLesson.url} />
                  ) : (
                     <div className="flex flex-col items-center justify-center h-full p-6 md:p-12 text-center">
-                       <div className="w-20 h-20 md:w-24 md:h-24 bg-blue-50 rounded-full flex items-center justify-center mb-6 md:mb-8 shadow-sm">
-                          <BookOpen className="text-blue-600" size={40} />
-                       </div>
-                       <h3 className="text-2xl md:text-3xl font-black mb-3 md:mb-4 italic tracking-tight text-slate-900">نافذة الاختبارات</h3>
-                       <p className="text-lg md:text-xl text-slate-500 font-bold mb-8 md:mb-12 max-w-md">يرجى الضغط على الزر أدناه لفتح الاختبار في نافذة منفصلة أو اتباع التعليمات الممنوحة لك.</p>
-                       <a 
+                       <motion.div 
+                        initial={{ scale: 0, rotate: -180 }}
+                        animate={{ scale: 1, rotate: 0 }}
+                        transition={{ type: "spring", delay: 0.2 }}
+                        className="w-24 h-24 md:w-32 md:h-32 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-[32px] flex items-center justify-center mb-8 shadow-inner"
+                       >
+                          <BookOpen className="text-blue-600 w-12 h-12 md:w-16 md:h-16" />
+                       </motion.div>
+                       <h3 className="text-3xl md:text-4xl font-black mb-4 text-slate-900">نافذة الاختبار التفاعلي</h3>
+                       <p className="text-lg md:text-xl text-slate-500 font-medium mb-10 max-w-lg leading-relaxed">
+                         حان وقت تقييم مستواك! اضغط على الزر بالأسفل لبدء الاختبار في بيئة مخصصة.
+                       </p>
+                       <motion.a 
+                        whileHover={{ scale: 1.05, y: -5 }}
+                        whileTap={{ scale: 0.95 }}
                         href={selectedLesson.url} 
                         target="_blank" 
                         rel="noreferrer"
-                        className="bg-blue-600 text-white px-10 md:px-12 py-4 md:py-5 rounded-2xl text-lg md:text-xl font-black hover:bg-blue-700 shadow-xl shadow-blue-500/20 transition-all hover:scale-105 active:scale-95"
+                        className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-12 py-5 rounded-2xl text-xl font-black hover:shadow-xl hover:shadow-blue-500/30 transition-all flex items-center gap-3"
                        >
-                         بدء الاختبار الآن
-                       </a>
+                         بدء الاختبار الآن <ChevronRight size={24} />
+                       </motion.a>
                     </div>
                  )}
               </div>
 
               {/* Footer / Description */}
-              <div className="p-6 md:p-8 bg-white border-t border-slate-100 text-right hidden md:block">
-                 <p className="text-slate-500 font-bold leading-relaxed italic">{selectedLesson.description || "لا يوجد وصف إضافي لهذا المحتوى. بالتوفيق يا بطل!"}</p>
-              </div>
+              {selectedLesson.description && (
+                <div className="p-6 md:p-8 bg-white border-t border-slate-100 text-right">
+                   <div className="flex items-start gap-3">
+                     <Sparkles className="text-amber-400 mt-1 flex-shrink-0" size={20} />
+                     <p className="text-slate-600 font-medium leading-relaxed md:text-lg">{selectedLesson.description}</p>
+                   </div>
+                </div>
+              )}
             </motion.div>
           </div>
         )}
@@ -347,7 +443,7 @@ function VideoPlayer({ url }: { url: string }) {
         settings: ['quality', 'speed'],
         invertTime: true,
         autoplay: true,
-        muted: false, // Attempt unmuted first
+        muted: false,
         ratio: '16:9',
         clickToPlay: true,
         youtube: {
@@ -372,7 +468,6 @@ function VideoPlayer({ url }: { url: string }) {
 
       plyrInstance.on('ready', () => {
         setIsLoading(false);
-        // Fallback for strict browsers: if autoplay fails, try playing after a tiny delay
         const playPromise = plyrInstance?.play();
         if (playPromise && playPromise instanceof Promise) {
           playPromise.catch(() => {
@@ -404,7 +499,7 @@ function VideoPlayer({ url }: { url: string }) {
   };
 
   return (
-    <div className="w-full h-full flex items-center justify-center bg-slate-50 relative group overflow-hidden">
+    <div className="w-full h-full flex items-center justify-center bg-black relative group overflow-hidden">
       {isValid ? (
         <div className="w-full h-full relative cursor-pointer" onClick={handleManualToggle}>
           <div 
@@ -421,38 +516,46 @@ function VideoPlayer({ url }: { url: string }) {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-slate-50"
+                className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-slate-900/90 backdrop-blur-sm"
               >
-                <div className="w-12 h-12 border-4 border-blue-600/20 border-t-blue-600 rounded-full animate-spin mb-4" />
-                <p className="text-slate-400 font-bold animate-pulse italic">جاري تشغيل الفيديو...</p>
+                <div className="relative">
+                  <div className="w-16 h-16 border-4 border-blue-600/30 border-t-blue-500 rounded-full animate-spin" />
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <Play size={20} className="text-blue-500 ml-1 opacity-50" />
+                  </div>
+                </div>
+                <p className="text-white mt-6 font-bold tracking-widest text-sm animate-pulse">جاري التحميل...</p>
               </motion.div>
             )}
           </AnimatePresence>
 
-          {/* Central Play/Pause Indicator for UX */}
           {!isLoading && (
             <div 
-              className={`absolute inset-0 flex items-center justify-center pointer-events-none transition-opacity duration-300 ${player?.playing ? 'opacity-0 outline-none' : 'opacity-100'}`}
+              className={`absolute inset-0 flex items-center justify-center pointer-events-none transition-opacity duration-500 ${player?.playing ? 'opacity-0 scale-150' : 'opacity-100 scale-100'}`}
             >
-               <div className="w-16 h-16 md:w-20 md:h-20 bg-white/90 backdrop-blur-md rounded-full shadow-2xl flex items-center justify-center text-blue-600 transform transition-all border border-white">
-                  {player?.playing ? <div className="w-6 h-6 flex gap-1.5"><div className="w-2 h-full bg-blue-600 rounded-full"/><div className="w-2 h-full bg-blue-600 rounded-full"/></div> : <Play size={32} className="mr-1 md:w-10 md:h-10" />}
+               <div className="w-20 h-20 md:w-24 md:h-24 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white border border-white/30 shadow-[0_0_40px_rgba(0,0,0,0.3)]">
+                  {player?.playing ? (
+                    <div className="w-8 h-8 flex gap-2"><div className="w-2 h-full bg-white rounded-full"/><div className="w-2 h-full bg-white rounded-full"/></div>
+                  ) : (
+                    <Play size={40} className="ml-2 drop-shadow-md" fill="currentColor" />
+                  )}
                </div>
             </div>
           )}
         </div>
       ) : (
-        <div className="flex flex-col items-center justify-center p-12 text-center text-slate-400 gap-4">
-           <div className="w-20 h-20 bg-white rounded-3xl shadow-sm flex items-center justify-center">
-              <PlayCircle size={40} className="text-slate-200" />
+        <div className="flex flex-col items-center justify-center p-12 text-center text-slate-400 gap-4 bg-slate-50 w-full h-full">
+           <div className="w-24 h-24 bg-white rounded-3xl shadow-sm flex items-center justify-center border border-slate-100">
+              <PlayCircle size={48} className="text-slate-300" />
            </div>
-           <p className="font-bold italic">رابط الفيديو غير متاح حالياً.</p>
+           <p className="font-bold text-lg">عذراً، رابط الفيديو غير متاح حالياً.</p>
         </div>
       )}
 
       {/* Security Overlay */}
-      <div className="absolute top-4 right-4 z-20 pointer-events-none">
-        <div className="bg-white/10 backdrop-blur-md px-3 py-1 rounded-lg text-[8px] font-black tracking-widest text-white/20 uppercase">
-          PROTECTED CONTENT • BARA' PLATFORM
+      <div className="absolute top-6 right-6 z-20 pointer-events-none select-none">
+        <div className="bg-black/40 backdrop-blur-md px-4 py-1.5 rounded-full text-[10px] md:text-xs font-black tracking-widest text-white/80 uppercase border border-white/10 shadow-lg">
+          منصة البارع • حقوق النشر محفوظة
         </div>
       </div>
     </div>
@@ -460,7 +563,6 @@ function VideoPlayer({ url }: { url: string }) {
 }
 
 function PdfViewer({ url }: { url: string }) {
-  // Convert Google Drive link to direct viewer embed if possible
   let embedUrl = url;
   if (url.includes('drive.google.com/file/d/')) {
     const id = url.split('/d/')[1].split('/')[0];
@@ -468,19 +570,20 @@ function PdfViewer({ url }: { url: string }) {
   }
 
   return (
-    <div className="w-full h-full bg-slate-50">
+    <div className="w-full h-full bg-slate-100/50 relative">
+      <div className="absolute inset-0 flex items-center justify-center z-0">
+        <div className="flex flex-col items-center gap-4 animate-pulse">
+           <FileText size={48} className="text-slate-300" />
+           <p className="text-slate-400 font-bold">جاري تحميل الملف...</p>
+        </div>
+      </div>
       <iframe 
         src={embedUrl} 
-        className="w-full h-full border-none"
+        className="relative z-10 w-full h-full border-none shadow-inner"
         title="PDF Viewer"
         allow="autoplay"
+        loading="lazy"
       />
     </div>
-  );
-}
-
-function XIcon({ size }: { size: number }) {
-  return (
-    <X size={size} strokeWidth={3} />
   );
 }

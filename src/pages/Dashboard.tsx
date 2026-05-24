@@ -385,9 +385,9 @@ function QuickActionCard({ to, color, icon, label, variants }: { to: string, col
       <motion.div
         whileHover={{ scale: 1.05, rotate: -1 }}
         whileTap={{ scale: 0.95 }}
-        className={`group p-8 rounded-[32px] ${color} border border-transparent hover:border-current transition-all flex flex-col items-center justify-center text-center gap-4 shadow-sm hover:shadow-xl`}
+        className={`group rounded-[32px] ${color} border border-transparent hover:border-current transition-all shadow-sm hover:shadow-xl`}
       >
-        <Link to={to} className="flex flex-col items-center gap-4">
+        <Link to={to} className="flex h-full w-full flex-col items-center justify-center gap-4 p-8 text-center">
           <div className="text-4xl group-hover:scale-110 transition-transform">
             {React.cloneElement(icon as React.ReactElement, { size: 40 })}
           </div>
