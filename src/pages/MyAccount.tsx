@@ -1,6 +1,7 @@
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
+ * Single-file MyAccount page with embedded animations & responsive design.
  */
 
 import React, { useMemo } from 'react';
@@ -23,7 +24,6 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
-import '../styles/MyAccount.css';
 
 /* ───────────────────────────────────────────
    Animation Variants
@@ -220,6 +220,9 @@ export default function MyAccount() {
                 initial="hidden"
                 animate="visible"
             >
+                {/* Embedded CSS – one file, zero dependencies */}
+                <style>{myAccountCSS}</style>
+
                 {/* Floating decorative orbs */}
                 <FloatingOrbs />
 
@@ -270,7 +273,6 @@ export default function MyAccount() {
                         initial="hidden"
                         animate="visible"
                     >
-                        {/* Animated border glow */}
                         <motion.div
                             className="profile-card-glow"
                             animate={{
@@ -281,7 +283,6 @@ export default function MyAccount() {
                         />
 
                         <div className="profile-card">
-                            {/* Gradient banner */}
                             <div className="profile-banner">
                                 <div className="profile-banner-pattern" />
                                 <motion.div
@@ -307,7 +308,6 @@ export default function MyAccount() {
                                 </motion.div>
                             </div>
 
-                            {/* Profile info area */}
                             <div className="profile-body">
                                 <div className="profile-avatar-row">
                                     <motion.div
@@ -368,7 +368,6 @@ export default function MyAccount() {
                                     </motion.div>
                                 </div>
 
-                                {/* Info Grid */}
                                 <div className="info-grid">
                                     {infoItems.map((item, i) => (
                                         <InfoItem
@@ -384,7 +383,6 @@ export default function MyAccount() {
                         </div>
                     </motion.div>
 
-                    {/* Action Buttons */}
                     <motion.div
                         className="actions-row"
                         variants={fadeUp}
@@ -428,7 +426,6 @@ export default function MyAccount() {
                         </motion.div>
                     </motion.div>
 
-                    {/* Footer Note */}
                     <motion.p
                         className="footer-note"
                         variants={fadeUp}
@@ -444,3 +441,604 @@ export default function MyAccount() {
         </AnimatePresence>
     );
 }
+
+/* ───────────────────────────────────────────
+   Complete CSS (inline, no external files)
+   ─────────────────────────────────────────── */
+const myAccountCSS = `
+/* ═══════════════════════════════════════
+   MyAccount Embedded Styles
+   ═══════════════════════════════════════ */
+
+.my-account-page {
+  --primary: #4f46e5;
+  --primary-light: #6366f1;
+  --primary-soft: #eef2ff;
+  --primary-glow: rgba(99, 102, 241, 0.25);
+  --surface: #ffffff;
+  --surface-alt: #f8fafc;
+  --border: #e2e8f0;
+  --border-light: #f1f5f9;
+  --text: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 10px 30px -10px rgba(0, 0, 0, 0.08), 0 4px 6px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 25px 50px -12px rgba(0, 0, 0, 0.12);
+  --shadow-xl: 0 35px 60px -15px rgba(79, 70, 229, 0.18);
+  --radius-sm: 16px;
+  --radius-md: 24px;
+  --radius-lg: 32px;
+  --radius-xl: 40px;
+  --font-ar: 'Tajawal', 'Cairo', 'Almarai', system-ui, -apple-system, sans-serif;
+
+  position: relative;
+  min-height: 100vh;
+  background: linear-gradient(160deg, #f8fafc 0%, #f1f5f9 30%, #eef2ff 70%, #faf5ff 100%);
+  font-family: var(--font-ar);
+  overflow-x: hidden;
+  direction: rtl;
+}
+
+.floating-orbs {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.35;
+}
+
+.orb-1 {
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, #818cf8 0%, transparent 70%);
+  top: -120px;
+  left: -100px;
+}
+
+.orb-2 {
+  width: 350px;
+  height: 350px;
+  background: radial-gradient(circle, #a78bfa 0%, transparent 70%);
+  bottom: -100px;
+  right: -80px;
+}
+
+.orb-3 {
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, #60a5fa 0%, transparent 70%);
+  top: 50%;
+  left: 40%;
+}
+
+.account-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  border-bottom: 1px solid rgba(226, 232, 240, 0.6);
+  padding: 0 48px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+}
+
+@media (max-width: 768px) {
+  .account-header {
+    padding: 0 20px;
+    height: 72px;
+  }
+}
+
+.header-inner {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.header-logo {
+  width: 46px;
+  height: 46px;
+  border-radius: 16px;
+  object-fit: cover;
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
+  border: 2px solid rgba(255, 255, 255, 0.8);
+}
+
+.header-title-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.header-title {
+  font-size: 1.35rem;
+  font-weight: 900;
+  color: var(--text);
+  letter-spacing: -0.3px;
+  line-height: 1.2;
+}
+
+.header-subtitle {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--primary-light);
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+}
+
+.back-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  border-radius: 50px;
+  font-family: var(--font-ar);
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.back-button svg {
+  transform: rotate(180deg);
+}
+
+.back-button:hover {
+  background: var(--primary-soft);
+  border-color: var(--primary-light);
+  color: var(--primary);
+}
+
+@media (max-width: 480px) {
+  .back-button span {
+    display: none;
+  }
+  .back-button {
+    padding: 10px 14px;
+  }
+}
+
+.account-main {
+  position: relative;
+  z-index: 1;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 40px 24px 60px;
+  display: flex;
+  flex-direction: column;
+  gap: 36px;
+}
+
+@media (max-width: 768px) {
+  .account-main {
+    padding: 24px 16px 48px;
+    gap: 28px;
+  }
+}
+
+.profile-card-wrapper {
+  position: relative;
+}
+
+.profile-card-glow {
+  position: absolute;
+  inset: -6px;
+  border-radius: var(--radius-xl);
+  background: linear-gradient(135deg, #818cf8, #6366f1, #4f46e5, #818cf8);
+  background-size: 300% 300%;
+  z-index: -1;
+  filter: blur(18px);
+  opacity: 0.5;
+}
+
+.profile-card {
+  background: var(--surface);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border-light);
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+  position: relative;
+}
+
+.profile-banner {
+  height: 150px;
+  background: linear-gradient(135deg, #4f46e5 0%, #6366f1 30%, #818cf8 60%, #a78bfa 100%);
+  background-size: 200% 200%;
+  position: relative;
+  overflow: hidden;
+}
+
+.profile-banner-pattern {
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.06'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  opacity: 0.5;
+}
+
+.profile-banner-sparkle {
+  position: absolute;
+  pointer-events: none;
+}
+
+.sparkle-1 { top: 18px; left: 22%; }
+.sparkle-2 { top: 50px; right: 18%; }
+.sparkle-3 { bottom: 22px; left: 55%; }
+
+.profile-body {
+  padding: 0 40px 40px;
+  position: relative;
+  margin-top: -55px;
+}
+
+@media (max-width: 768px) {
+  .profile-body {
+    padding: 0 24px 32px;
+    margin-top: -50px;
+  }
+}
+
+@media (max-width: 480px) {
+  .profile-body {
+    padding: 0 16px 24px;
+  }
+}
+
+.profile-avatar-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 20px;
+  margin-bottom: 32px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 640px) {
+  .profile-avatar-row {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 16px;
+  }
+}
+
+.profile-avatar-container {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.profile-avatar-img {
+  width: 110px;
+  height: 110px;
+  border-radius: 28px;
+  border: 5px solid white;
+  box-shadow: 0 15px 35px -10px rgba(0, 0, 0, 0.18), 0 0 0 4px rgba(79, 70, 229, 0.1);
+  object-fit: cover;
+  position: relative;
+  z-index: 2;
+}
+
+.avatar-ring {
+  position: absolute;
+  inset: -8px;
+  border-radius: 36px;
+  border: 3px dashed rgba(99, 102, 241, 0.35);
+  z-index: 1;
+}
+
+.profile-name-area {
+  flex: 1;
+  min-width: 0;
+  padding-bottom: 12px;
+}
+
+.profile-name {
+  font-size: 2rem;
+  font-weight: 900;
+  color: var(--text);
+  letter-spacing: -0.5px;
+  line-height: 1.2;
+  margin: 0;
+}
+
+.profile-code {
+  display: inline-block;
+  margin-top: 6px;
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: var(--primary-light);
+  background: var(--primary-soft);
+  padding: 4px 14px;
+  border-radius: 50px;
+  letter-spacing: 0.3px;
+}
+
+@media (max-width: 640px) {
+  .profile-name {
+    font-size: 1.5rem;
+  }
+}
+
+.wallet-badge {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);
+  color: var(--primary);
+  padding: 14px 22px;
+  border-radius: 50px;
+  font-size: 1rem;
+  font-weight: 800;
+  border: 2px solid rgba(99, 102, 241, 0.15);
+  box-shadow: 0 8px 20px -8px rgba(79, 70, 229, 0.2);
+  position: relative;
+  overflow: hidden;
+  white-space: nowrap;
+  align-self: flex-end;
+  margin-bottom: 8px;
+}
+
+.wallet-badge strong {
+  font-weight: 900;
+  color: #3730a3;
+}
+
+.wallet-shimmer {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.5) 50%, transparent 100%);
+  pointer-events: none;
+}
+
+@media (max-width: 640px) {
+  .wallet-badge {
+    align-self: center;
+    margin-bottom: 0;
+    padding: 12px 20px;
+    font-size: 0.9rem;
+  }
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+@media (max-width: 600px) {
+  .info-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}
+
+.info-card {
+  background: var(--surface-alt);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  padding: 18px 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  position: relative;
+  overflow: hidden;
+  cursor: default;
+  transition: all 0.3s ease;
+}
+
+.info-card-icon {
+  width: 48px;
+  height: 48px;
+  background: white;
+  border-radius: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+  flex-shrink: 0;
+}
+
+.info-card-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.info-card-label {
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+}
+
+.info-card-value {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--text);
+  word-break: break-all;
+  line-height: 1.3;
+}
+
+.info-card-shimmer {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.5) 50%, transparent 60%);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.info-card:hover .info-card-shimmer {
+  opacity: 1;
+}
+
+.actions-row {
+  display: flex;
+  gap: 20px;
+}
+
+@media (max-width: 500px) {
+  .actions-row {
+    flex-direction: column;
+    gap: 14px;
+  }
+}
+
+.btn-signout,
+.btn-support {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 20px 28px;
+  border-radius: 50px;
+  font-family: var(--font-ar);
+  font-size: 1.05rem;
+  font-weight: 800;
+  cursor: pointer;
+  border: none;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-signout {
+  background: #fef2f2;
+  color: #dc2626;
+  border: 2px solid #fecaca;
+}
+
+.btn-signout:hover {
+  background: #fee2e2;
+  border-color: #f87171;
+  box-shadow: 0 15px 30px -10px rgba(220, 38, 38, 0.15);
+}
+
+.btn-support-wrapper {
+  flex: 1;
+}
+
+.btn-support {
+  background: var(--text);
+  color: white;
+  width: 100%;
+}
+
+.btn-support:hover {
+  background: #1e293b;
+  box-shadow: 0 15px 30px -10px rgba(15, 23, 42, 0.3);
+}
+
+.btn-icon-circle {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.btn-signout .btn-icon-circle {
+  color: #dc2626;
+}
+
+.btn-icon-circle-dark {
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+  box-shadow: none;
+}
+
+@media (max-width: 480px) {
+  .btn-signout,
+  .btn-support {
+    padding: 16px 22px;
+    font-size: 0.95rem;
+    gap: 10px;
+  }
+  .btn-icon-circle {
+    width: 36px;
+    height: 36px;
+  }
+}
+
+.footer-note {
+  text-align: center;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  padding: 8px 16px;
+  line-height: 1.7;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.footer-note-icon {
+  margin-left: 6px;
+}
+
+/* Scrollbar */
+.my-account-page::-webkit-scrollbar {
+  width: 6px;
+}
+
+.my-account-page::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.my-account-page::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 20px;
+}
+
+.my-account-page::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Selection */
+.my-account-page ::selection {
+  background: #c7d2fe;
+  color: #312e81;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .my-account-page *,
+  .my-account-page *::before,
+  .my-account-page *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+`;

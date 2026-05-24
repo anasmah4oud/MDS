@@ -80,15 +80,6 @@
   }
 }
 
-/* تحسينات البطاقة البنفسجية */
-.bg-gradient-to-br {
-  transition: all 0.3s ease;
-}
-
-.bg-gradient-to-br:hover {
-  box-shadow: 0 25px 50px -12px rgba(129, 140, 248, 0.4);
-}
-
 /* تأثير الظل المتوهج */
 .shadow-glow {
   box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
@@ -98,7 +89,7 @@
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
 }
 
-/* أنيميشن للعداد التصاعدي */
+/* أنيميشن للعداد */
 .animate-bounce {
   animation: bounce 1s infinite;
 }
@@ -114,17 +105,12 @@
   }
 }
 
-/* تأثير زجاجي للشريط العلوي */
+/* تأثير زجاجي */
 .backdrop-blur-md {
   backdrop-filter: blur(12px);
 }
 
-/* تحسينات للشريط الجانبي */
-.sidebar {
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* أنماط متجاوبة */
+/* تحسينات متجاوبة */
 @media (max-width: 640px) {
   .hero-card {
     padding: 2rem;
@@ -135,16 +121,6 @@
   }
 }
 
-/* مؤثرات خاصة للبطاقات عند التحويم */
-.group:hover .group-hover\:scale-105 {
-  transform: scale(1.05);
-}
-
-.group:hover .group-hover\:translate-x-\[-4px\] {
-  transform: translateX(-4px);
-}
-
-/* خطوط مخصصة */
 .font-display {
   font-family: 'Segoe UI', system-ui, sans-serif;
   letter-spacing: -0.5px;
