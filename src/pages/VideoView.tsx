@@ -3,9 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect, useRef } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
-import { ChevronRight, Shield, Clock, BookOpen, AlertCircle } from 'lucide-react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { ChevronRight, Shield, Clock, BookOpen, AlertCircle, Sparkles } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { initializeContentProtection } from '../lib/content-protection';
@@ -17,36 +17,23 @@ import '../styles/VideoView.css';
 export default function VideoView() {
   const { lessonId } = useParams();
   const navigate = useNavigate();
-  const { profile, user } = useAuth();
+  const { profile } = useAuth();
   const [lesson, setLesson] = useState<Lesson | null>(null);
   const [loading, setLoading] = useState(true);
+  const [playerReady, setPlayerReady] = useState(false);
+  const [sidebarMounted, setSidebarMounted] = useState(false);
   const [plyrSource, setPlyrSource] = useState<any>(null);
   const playerRef = useRef<any>(null);
-
-  // Simple obfuscation helper - تحويل الرابط إلى صيغة غير مباشرة
-  const obfuscateUrl = (url: string): string => {
-    return btoa(url).split('').reverse().join('');
-  };
-
-  const deobfuscateUrl = (obfuscated: string): string => {
-    try {
-      return atob(obfuscated.split('').reverse().join(''));
-    } catch {
-      return obfuscated;
-    }
-  };
 
   useEffect(() => {
     fetchLesson();
     
-    // ===== تفعيل جميع طبقات الحماية =====
-    // Activate all protection layers
+    // تفعيل جميع طبقات الحماية
     const protectionCleanup = initializeContentProtection();
 
-    // Disable right click and common dev shortcuts
+    // تعطيل القائمة المنسدلة واختصارات المطور
     const handleContextMenu = (e: MouseEvent) => e.preventDefault();
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Disable F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U
       if (
         e.key === 'F12' ||
         (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J')) ||
@@ -58,16 +45,16 @@ export default function VideoView() {
     document.addEventListener('contextmenu', handleContextMenu);
     document.addEventListener('keydown', handleKeyDown);
 
-    // Prevent iframe source inspection
-    const preventIframeExposure = () => {
-      const iframes = document.querySelectorAll('iframe');
-      iframes.forEach(iframe => {
+    // منع فحص الـ iframe
+    const observer = new MutationObserver(() => {
+      document.querySelectorAll('iframe').forEach(iframe => {
         iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-presentation');
       });
-    };
-
-    const observer = new MutationObserver(preventIframeExposure);
+    });
     observer.observe(document.body, { childList: true, subtree: true });
+
+    // تفعيل حركة ظهور العناصر بعد التحميل
+    setTimeout(() => setSidebarMounted(true), 100);
 
     return () => {
       document.removeEventListener('contextmenu', handleContextMenu);
@@ -86,8 +73,6 @@ export default function VideoView() {
       
       if (error) throw error;
       setLesson(data as Lesson);
-
-      // تحميل الفيديو ديناميكياً وليس مباشرة في الـ HTML
       await initializePlayer(data as Lesson);
     } catch (err) {
       console.error(err);
@@ -96,32 +81,22 @@ export default function VideoView() {
     }
   };
 
-  // تحميل بيانات الفيديو ديناميكياً
   const initializePlayer = async (lessonData: Lesson) => {
     try {
-      // محاكاة تأخير لجعل الرابط غير مرئي
+      // محاكاة تحميل سريع للفيديو
       await new Promise(resolve => setTimeout(resolve, 300));
-
       const videoId = getYouTubeId(lessonData.url);
       
-      // عدم إظهار الرابط مباشرة
-      const source = {
+      setPlyrSource({
         type: 'video',
-        sources: [
-          {
-            src: videoId,
-            provider: 'youtube',
-          },
-        ],
-      };
-
-      setPlyrSource(source);
+        sources: [{ src: videoId, provider: 'youtube' }],
+      });
+      setPlayerReady(true);
     } catch (err) {
       console.error('Error initializing player:', err);
     }
   };
 
-  // Robust video ID extraction
   const getYouTubeId = (url: string) => {
     const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
     const match = url.match(regExp);
@@ -135,14 +110,27 @@ export default function VideoView() {
     settings: ['quality', 'speed'],
     youtube: { noCookie: true, rel: 0, showinfo: 0, iv_load_policy: 3, modestbranding: 1 },
     ratio: '16:9',
-    // إخفاء عناصر YouTube العامة
     hideYoutubeSharing: true,
   };
 
+  // جسيمات عائمة للجمال وتشتيت التسجيل
+  const floatingDots = Array.from({ length: 8 }).map((_, i) => ({
+    id: i,
+    style: {
+      left: `${10 + (i * 12) % 85}%`,
+      top: `${10 + (i * 15) % 80}%`,
+      animationDelay: `${i * 0.7}s`,
+      animationDuration: `${4 + i % 3}s`,
+    }
+  }));
+
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-        <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50 flex items-center justify-center">
+        <div className="flex flex-col items-center gap-6">
+          <div className="video-loading-shimmer w-64 h-40 rounded-2xl"></div>
+          <p className="text-blue-600 font-bold text-sm animate-pulse">جاري تجهيز الدرس...</p>
+        </div>
       </div>
     );
   }
@@ -150,79 +138,109 @@ export default function VideoView() {
   if (!lesson) {
     return (
       <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-8 text-center" dir="rtl">
-        <AlertCircle size={64} className="text-red-500 mb-6" />
+        <AlertCircle size={64} className="text-red-500 mb-6 animate-bounce" />
         <h2 className="text-3xl font-black text-slate-900 mb-4">عفواً، الدرس غير موجود</h2>
-        <button onClick={() => navigate(-1)} className="bg-blue-600 text-white px-8 py-3 rounded-xl font-bold">العودة للخلف</button>
+        <button onClick={() => navigate(-1)} className="bg-blue-600 text-white px-8 py-3 rounded-xl font-bold hover:shadow-lg transition-all hover:scale-105">العودة للخلف</button>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 overflow-x-hidden font-sans" dir="rtl">
-      {/* Header */}
-      <header className="h-16 md:h-20 bg-white/80 backdrop-blur-xl border-b border-slate-200 flex items-center justify-between px-4 md:px-12 sticky top-0 z-50 shadow-sm">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 text-slate-900 overflow-x-hidden font-sans relative" dir="rtl">
+      {/* تأثير شبكة خلفية دقيقة */}
+      <div className="absolute inset-0 bg-grid-pattern opacity-[0.03] pointer-events-none"></div>
+
+      {/* Header زجاجي محسن */}
+      <header className="h-16 md:h-20 bg-white/70 backdrop-blur-2xl border-b border-white/50 flex items-center justify-between px-4 md:px-12 sticky top-0 z-50 shadow-sm transition-all duration-300">
         <div className="flex items-center gap-5">
-          <button onClick={() => navigate(-1)} className="p-2.5 hover:bg-slate-100 rounded-2xl transition-all active:scale-95 border border-slate-200 bg-white shadow-sm">
-            <ChevronRight className="text-blue-600" />
+          <button 
+            onClick={() => navigate(-1)} 
+            className="p-2.5 hover:bg-blue-50 rounded-2xl transition-all active:scale-95 border border-slate-200 bg-white/80 shadow-sm hover:shadow-md group"
+          >
+            <ChevronRight className="text-blue-600 transition-transform group-hover:-translate-x-1" />
           </button>
           <div className="text-right">
-            <h1 className="text-sm md:text-xl font-black tracking-tight text-slate-900 line-clamp-1 font-display">{lesson.name}</h1>
+            <h1 className="text-sm md:text-xl font-black tracking-tight text-slate-900 line-clamp-1">{lesson.name}</h1>
             <p className="text-[10px] md:text-xs font-bold text-blue-600 tracking-widest uppercase">البارع التعليمية • م/ محمود الديب</p>
           </div>
         </div>
         <div className="hidden md:flex items-center gap-4">
-           <div className="flex items-center gap-2 bg-blue-50 text-blue-600 px-4 py-2 rounded-full text-[10px] font-black border border-blue-100">
-              <Shield size={14} /> محتوى محمي برمجياً
-           </div>
+          <div className="flex items-center gap-2 bg-blue-50/80 text-blue-600 px-4 py-2 rounded-full text-[10px] font-black border border-blue-200/50 backdrop-blur-sm animate-pulse-slow">
+            <Shield size={14} className="text-blue-500" /> 
+            <span>محتوى محمي برمجياً</span>
+            <Sparkles size={12} className="text-yellow-500 animate-spin-slow" />
+          </div>
         </div>
       </header>
 
       <main className="flex flex-col lg:flex-row h-auto lg:h-[calc(100vh-5rem)]">
-        {/* Player Container */}
-        <div className="flex-1 bg-slate-900 flex items-center justify-center overflow-hidden relative group min-h-[300px] md:min-h-[500px]">
-           <div className="w-full h-full flex items-center justify-center bg-black">
-              <div className="w-full aspect-video shadow-2xl">
-                 {/* تحميل الفيديو ديناميكياً - لن يظهر الرابط في HTML */}
-                 {plyrSource && <Plyr ref={playerRef} source={plyrSource} options={plyrOptions} />}
-              </div>
-           </div>
-           
-           {/* Privacy Overlay Watermark */}
-           <div className="absolute top-1/4 right-1/4 opacity-10 pointer-events-none select-none text-xl md:text-2xl font-black italic tracking-tighter text-white">
-              البارع - {profile?.first_name} {profile?.last_name}
-           </div>
-        </div>
+        {/* Player Container مع تأثيرات جمالية */}
+        <div className="flex-1 bg-slate-900 flex items-center justify-center overflow-hidden relative group min-h-[300px] md:min-h-[500px] shadow-2xl">
+          {/* جسيمات عائمة للتمويه الجمالي */}
+          {floatingDots.map(dot => (
+            <div
+              key={dot.id}
+              className="floating-dot"
+              style={dot.style}
+            />
+          ))}
+          
+          {/* إطار التوهج حول المشغل */}
+          <div className="absolute inset-0 player-glow-border pointer-events-none"></div>
 
-        {/* Lesson Info Sidebar */}
-        <div className="w-full lg:w-[420px] bg-white border-r border-slate-100 p-6 md:p-10 flex flex-col overflow-y-auto shadow-sm">
-           <div className="bg-blue-50 border border-blue-100 rounded-3xl p-8 mb-10">
-              <h3 className="text-xl font-black text-blue-600 mb-4 inline-flex items-center gap-2">
-                 <BookOpen size={20} /> وصف الدرس
-              </h3>
-              <p className="text-slate-600 font-medium text-sm leading-relaxed text-right">
-                {lesson.description || "استمتع بمشاهدة شرح المبدع م/ محمود الديب. تأكد من تدوين ملاحظاتك الهامة والتركيز في كل دقيقة."}
-              </p>
-           </div>
-
-           <div className="space-y-6 flex-1 text-right">              
-              <div className="p-6 bg-yellow-50/50 border border-yellow-100 rounded-2xl">
-                 <div className="flex items-start gap-4">
-                    <AlertCircle className="text-yellow-600 shrink-0" size={24} />
-                    <div>
-                       <h4 className="font-black text-yellow-800 text-sm mb-1">تنبيه حماية</h4>
-                       <p className="text-xs font-bold text-yellow-700 leading-relaxed">
-                          يمنع منعاً باتاً تصوير الشاشة أو محاولة تحميل الفيديو، الحساب مراقب آلياً وسيتم حظر أي محاولة للتلاعب.
-                       </p>
-                    </div>
-                 </div>
-              </div>
-           </div>
-
-            <div className="mt-12 pt-8 border-t border-slate-100 text-center">
-              <p className="text-[10px] font-bold text-slate-400 mb-2 italic">جميع الحقوق محفوظة لمنصة البارع التعليمية © 2026</p>
+          <div className="w-full h-full flex items-center justify-center bg-black/90 backdrop-blur-sm">
+            <div className={`w-full aspect-video shadow-2xl transition-all duration-1000 transform ${playerReady ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}>
+              {plyrSource && <Plyr ref={playerRef} source={plyrSource} options={plyrOptions} />}
             </div>
           </div>
-        </main>
-       </div>
-      );
-    }
+          
+          {/* علامة مائية متحركة */}
+          <div className="absolute inset-0 pointer-events-none select-none overflow-hidden">
+            <div className="floating-watermark text-xl md:text-2xl font-black italic text-white/5">
+              البارع - {profile?.first_name} {profile?.last_name}
+            </div>
+          </div>
+        </div>
+
+        {/* Lesson Info Sidebar بتأثير انزلاقي ساحر */}
+        <div 
+          className={`w-full lg:w-[420px] bg-white/90 backdrop-blur-xl border-r border-white/50 p-6 md:p-10 flex flex-col overflow-y-auto shadow-xl transition-all duration-700 ease-out ${
+            sidebarMounted ? 'translate-x-0 opacity-100' : 'translate-x-10 opacity-0'
+          }`}
+        >
+          {/* وصف الدرس */}
+          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100/60 rounded-3xl p-8 mb-10 shadow-sm hover:shadow-md transition-shadow">
+            <h3 className="text-xl font-black text-blue-600 mb-4 inline-flex items-center gap-2">
+              <BookOpen size={20} className="text-blue-500" /> وصف الدرس
+            </h3>
+            <p className="text-slate-600 font-medium text-sm leading-relaxed text-right">
+              {lesson.description || "استمتع بمشاهدة شرح المبدع م/ محمود الديب. تأكد من تدوين ملاحظاتك الهامة والتركيز في كل دقيقة."}
+            </p>
+          </div>
+
+          <div className="space-y-6 flex-1 text-right">              
+            {/* تنبيه الحماية */}
+            <div className="p-6 bg-yellow-50/70 border border-yellow-200/60 rounded-2xl backdrop-blur-sm relative overflow-hidden group">
+              <div className="absolute inset-0 bg-yellow-100/10 animate-subtle-bg-shift"></div>
+              <div className="flex items-start gap-4 relative z-10">
+                <div className="p-2 bg-yellow-100 rounded-full animate-pulse-slow">
+                  <AlertCircle className="text-yellow-600 shrink-0" size={20} />
+                </div>
+                <div>
+                  <h4 className="font-black text-yellow-800 text-sm mb-1">تنبيه حماية</h4>
+                  <p className="text-xs font-bold text-yellow-700 leading-relaxed">
+                    يمنع منعاً باتاً تصوير الشاشة أو محاولة تحميل الفيديو، الحساب مراقب آلياً وسيتم حظر أي محاولة للتلاعب.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-12 pt-8 border-t border-slate-100/80 text-center">
+            <p className="text-[10px] font-bold text-slate-400 mb-2 italic">جميع الحقوق محفوظة لمنصة البارع التعليمية © 2026</p>
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+}
