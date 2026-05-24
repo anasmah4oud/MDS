@@ -116,10 +116,10 @@ export default function FreeClasses() {
           className="text-center md:text-right max-w-3xl space-y-4"
         >
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-amber-100 text-amber-700 rounded-2xl font-bold text-sm mb-2 shadow-sm">
-            <Sparkles size={16} /> محتوى مفتوح للجميع
+            <Sparkles size={16} /> محتوى مجاني للجميع
           </div>
           <h2 className="text-4xl md:text-5xl font-black text-slate-900 leading-tight tracking-tighter">
-            استكشف طريقة <span className="text-transparent bg-clip-text bg-gradient-to-l from-emerald-600 to-teal-400">البارع</span> مجاناً
+            ابدأ الآن  <span className="text-transparent bg-clip-text bg-gradient-to-l from-emerald-600 to-teal-400">مجانًا</span> 
           </h2>
           <p className="text-lg md:text-xl text-slate-500 font-medium leading-relaxed max-w-2xl">
             نقدم لك مجموعة مختارة من الدروس والمحاضرات الهامة بدون أي تكلفة، لتبدأ رحلتك نحو التفوق في اللغة العربية بثقة.

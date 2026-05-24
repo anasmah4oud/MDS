@@ -226,7 +226,7 @@ export default function Dashboard() {
               <div className="relative z-10">
                 <h4 className="text-2xl font-black mb-4 font-display">ابدأ الآن</h4>
                 <p className="text-indigo-100 font-bold leading-relaxed mb-10 text-balance italic">
-                  استغل عروض البارع الجديدة وابدأ صراعك مع المجهول في اللغة العربية لضمان الدرجة النهائية.
+                  ابدأ حصصك الآن لضمان الدرجة النهائية.
                 </p>
               </div>
               <Link 
