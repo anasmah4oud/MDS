@@ -2,7 +2,7 @@
  * @license
  * SPDX-License-Identifier: Apache-2.0
  */
-
+import { FaWhatsapp } from 'react-icons/fa'; // أيقونة واتساب الحقيقية
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronRight, Facebook, Youtube, MessageCircle } from 'lucide-react';
@@ -45,7 +45,6 @@ export default function Contact() {
           <ContactCard 
             icon={<Facebook size={36} className="text-white" />} 
             title="صفحة الفيسبوك" 
-            subtitle="تابع أحدث الأخبار والملازم"
             href="#" 
             gradient="from-blue-500 to-blue-700"
             shadowColor="shadow-blue-500/30"
@@ -54,16 +53,14 @@ export default function Contact() {
           <ContactCard 
             icon={<Youtube size={36} className="text-white" />} 
             title="قناة اليوتيوب" 
-            subtitle="شاهد أقوى المراجعات"
             href="https://www.youtube.com/channel/UCIW308efj12Q86_hV8LgsNw/" 
             gradient="from-red-500 to-red-700"
             shadowColor="shadow-red-500/30"
           />
 
           <ContactCard 
-            icon={<MessageCircle size={36} className="text-white" />} 
+icon={<FaWhatsapp className="text-[#25D366]" size={24} />}
             title="رقم الواتساب" 
-            subtitle="تواصل مع الدعم الفني مباشرة"
             href="https://wa.me/201023958772" 
             gradient="from-emerald-400 to-emerald-600"
             shadowColor="shadow-emerald-500/30"

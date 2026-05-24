@@ -54,7 +54,7 @@ export default function Support() {
               </span>
             </h2>
             <p className="text-lg md:text-xl text-slate-500 font-medium max-w-xl mx-auto leading-relaxed">
-              واجهتك أي مشكلة تقنية في الموقع أو الدخول؟ نحن هنا من أجلك، فريقنا متاح للرد وحل مشكلتك في أسرع وقت.
+              واجهتك أي مشكلة تقنية في المنصة أو الدخول لحسابك ؟ نحن هنا من أجلك، فريقنا متاح للرد وحل مشكلتك في أسرع وقت.
             </p>
           </div>
 
@@ -77,8 +77,7 @@ export default function Support() {
                   <WhatsAppIcon className="w-10 h-10" />
                 </div>
                 <div className="text-right">
-                  <h3 className="text-2xl font-black text-slate-900 mb-1 group-hover:text-green-700 transition-colors">تواصل عبر واتساب</h3>
-                  <p className="text-lg font-bold text-slate-500 font-mono tracking-wider" dir="ltr">+01100196131</p>
+                  <h3 className="text-2xl font-black text-slate-900 mb-1 group-hover:text-green-700 transition-colors">تواصل الآن</h3>
                 </div>
               </div>
             </a>
