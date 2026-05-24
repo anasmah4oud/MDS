@@ -172,14 +172,39 @@ export default function Classes() {
       </div>
 
       {/* الفلاتر العائمة */}
-      <div className="sticky top-6 z-40 flex justify-center -mt-10 mb-12">
-        <div className="filter-glass px-4 py-3 rounded-3xl border border-white/40 shadow-xl shadow-blue-100/20 flex gap-2 md:gap-3">
-          <FilterButton active={activeFilter === 'all'} onClick={() => setActiveFilter('all')}>الكل</FilterButton>
-          <FilterButton active={activeFilter === 'offer'} onClick={() => setActiveFilter('offer')}>العروض</FilterButton>
-          <FilterButton active={activeFilter === 'monthly'} onClick={() => setActiveFilter('monthly')}>شهرية</FilterButton>
-          <FilterButton active={activeFilter === 'weekly'} onClick={() => setActiveFilter('weekly')}>أسبوعية</FilterButton>
-        </div>
-      </div>
+<div className="sticky top-6 z-40 flex justify-center px-4 -mt-10 mb-12">
+  <div className="filter-glass w-full max-w-md md:max-w-lg px-2 py-2 rounded-3xl border border-white/40 shadow-xl shadow-blue-100/20 flex flex-wrap justify-center gap-2">
+    
+    <FilterButton
+      active={activeFilter === 'all'}
+      onClick={() => setActiveFilter('all')}
+    >
+      الكل
+    </FilterButton>
+
+    <FilterButton
+      active={activeFilter === 'offer'}
+      onClick={() => setActiveFilter('offer')}
+    >
+      العروض
+    </FilterButton>
+
+    <FilterButton
+      active={activeFilter === 'monthly'}
+      onClick={() => setActiveFilter('monthly')}
+    >
+      شهرية
+    </FilterButton>
+
+    <FilterButton
+      active={activeFilter === 'weekly'}
+      onClick={() => setActiveFilter('weekly')}
+    >
+      أسبوعية
+    </FilterButton>
+
+  </div>
+</div>
 
       {/* عرض الباقات */}
       <main className="max-w-7xl mx-auto px-6 pb-32">
