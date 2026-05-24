@@ -59,7 +59,7 @@ export default function Contact() {
           />
 
           <ContactCard 
-icon={<FaWhatsapp className="text-[#25D366]" size={24} />}
+icon={<FaWhatsapp className="text-white text-3xl" size={32} />}
             title="رقم الواتساب" 
             href="https://wa.me/201023958772" 
             gradient="from-emerald-400 to-emerald-600"
