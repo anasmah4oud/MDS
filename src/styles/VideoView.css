@@ -3,38 +3,38 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-/* --- 1. تخصيص وعزل مشغل Plyr لمنع اختراق روابط اليوتيوب وتأمين الحواف --- */
 .plyr-protection-wrapper {
   position: relative;
   width: 100%;
   height: 100%;
   border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+  background: #000;
 }
 
 @media (max-width: 768px) {
   .plyr-protection-wrapper {
-    border-radius: 0px; /* لتبدو سينمائية وممتدة بالكامل على الهواتف */
+    border-radius: 0px;
   }
 }
 
-/* رفع إطار اليوتيوب وتكبيره قليلاً للتخلص من الأزرار العلوية وشريط المشاركة الخاص بيوتيوب */
+/* تكبير وتعديل أبعاد الـ iframe لإخفاء الروابط والشعارات الخارجية خلف حدود الصندوق الأسود المخصص */
 .plyr__video-embed iframe {
-  top: -10% !important;
-  height: 120% !important;
-  transform: scale(1.02);
-  pointer-events: none !important; /* هذا السطر السحري يجبر الضغطات على التفاعل مع أزرار Plyr فقط ومنع يوتيوب */
+  top: -12% !important;
+  height: 124% !important;
+  transform: scale(1.05) !important;
   user-select: none !important;
 }
 
-/* تعديل ألوان أزرار تحكم Plyr لتطابق الهوية الفخمة لمنصة البارع */
+/* تلوين أشرطة التقدم والمشغلات بهوية "البارع" الفخمة */
 .plyr--full-ui input[type=range] {
-  color: #4f46e5 !important; /* Indigo 600 */
+  color: #4f46e5 !important;
 }
 
 .plyr__control--overlaid {
-  background: rgba(79, 70, 229, 0.9) !important;
+  background: rgba(79, 70, 229, 0.95) !important;
+  box-shadow: 0 8px 24px rgba(79, 70, 229, 0.3);
 }
 
 .plyr__control:hover {
@@ -42,15 +42,14 @@
   color: white !important;
 }
 
-/* --- 2. جزيئات التمويه الدقيقة المعززة للأداء (Background Micro-Particles) --- */
+/* تأثير الجزيئات الفنية المحسنة للأداء */
 .dot-particle {
   position: absolute;
-  border-radius: relative;
-  background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, rgba(99, 102, 241, 0) 70%);
   border-radius: 50%;
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.12) 0%, rgba(99, 102, 241, 0) 70%);
   pointer-events: none;
   filter: blur(40px);
-  will-change: transform; /* تحفز كارت الشاشة لتفادي استهلاك المعالج */
+  will-change: transform;
 }
 
 .dot-1 {
@@ -58,7 +57,7 @@
   height: 250px;
   left: -50px;
   top: -50px;
-  animation: floatParticleOne 18s infinite ease-in-out;
+  animation: floatParticleOne 20s infinite ease-in-out;
 }
 
 .dot-2 {
@@ -66,66 +65,49 @@
   height: 300px;
   right: -80px;
   bottom: -40px;
-  animation: floatParticleTwo 22s infinite ease-in-out;
-}
-
-.dot-3 {
-  width: 180px;
-  height: 180px;
-  left: 40%;
-  top: 30%;
-  animation: floatParticleOne 14s infinite ease-in-out;
-  animation-delay: 3s;
+  animation: floatParticleTwo 24s infinite ease-in-out;
 }
 
 @keyframes floatParticleOne {
   0%, 100% { transform: translate(0, 0) scale(1); }
-  50% { transform: translate(30px, 20px) scale(1.1); }
+  50% { transform: translate(25px, 15px) scale(1.08); }
 }
 
 @keyframes floatParticleTwo {
-  0%, 100% { transform: translate(0, 0) scale(1.1); }
-  50% { transform: translate(-40px, -30px) scale(0.9); }
+  0%, 100% { transform: translate(0, 0) scale(1.05); }
+  50% { transform: translate(-30px, -20px) scale(0.95); }
 }
 
-/* --- 3. حركة العلامة المائية العائمة لمكافحة برامج كاميرات التسجيل الخارجية --- */
+/* حركة حماية الشاشة للعلامة المائية الدورية */
 .floating-watermark {
   position: absolute;
   will-change: transform;
-  animation: premiumWatermarkMove 24s infinite ease-in-out;
+  animation: premiumWatermarkMove 26s infinite ease-in-out;
   white-space: nowrap;
   user-select: none;
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
 }
 
 @keyframes premiumWatermarkMove {
-  0% { transform: translate(15vw, 15vh); }
-  25% { transform: translate(65vw, 25vh); }
-  50% { transform: translate(20vw, 65vh); }
-  75% { transform: translate(60vw, 55vh); }
-  100% { transform: translate(15vw, 15vh); }
+  0% { transform: translate(10vw, 12vh); }
+  33% { transform: translate(60vw, 20vh); }
+  66% { transform: translate(15vw, 60vh); }
+  100% { transform: translate(10vw, 12vh); }
 }
 
-/* تأثير التباطؤ على الأجهزة المحمولة لضمان ثبات معدل الفريمات (FPS) */
 @media (max-width: 768px) {
   .floating-watermark {
-    animation: premiumWatermarkMoveMobile 30s infinite ease-in-out;
+    animation: premiumWatermarkMoveMobile 32s infinite ease-in-out;
   }
 }
 
 @keyframes premiumWatermarkMoveMobile {
-  0% { transform: translate(5vw, 10vh); }
-  50% { transform: translate(45vw, 50vh); }
-  100% { transform: translate(5vw, 10vh); }
+  0% { transform: translate(5vw, 8vh); }
+  50% { transform: translate(40vw, 45vh); }
+  100% { transform: translate(5vw, 8vh); }
 }
 
-/* --- 4. فئات إضافية لحركات بطيئة وممتعة (Utility Micro-animations) --- */
 .animate-spin-slow {
-  animation: spin 8s linear infinite;
-}
-
-.animate-pulse-slow {
-  animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  animation: spin 10s linear infinite;
 }
 
 @keyframes spin {
@@ -133,7 +115,6 @@
   to { transform: rotate(360deg); }
 }
 
-/* --- 5. خلفية شبكة النقاط الهندسية الفاخرة للوضع الفاتح --- */
 .bg-grid-pattern {
   background-image: radial-gradient(#4f46e5 0.75px, transparent 0.75px);
   background-size: 16px 16px;
