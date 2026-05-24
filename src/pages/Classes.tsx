@@ -144,7 +144,7 @@ export default function Classes() {
           className="relative z-10 text-center max-w-3xl px-6"
         >
           <motion.h1 className="text-5xl md:text-7xl font-black text-white mb-6 tracking-tight leading-tight">
-            منهج <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300">البارع</span> التعليمي
+             <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300">محمود الديب</span> البارع
           </motion.h1>
           <motion.p 
             initial={{ opacity: 0 }}

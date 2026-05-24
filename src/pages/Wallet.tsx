@@ -24,7 +24,7 @@ export default function Wallet() {
   const [chargeAmount, setChargeAmount] = useState<number>(0);
   const [copiedPhone, setCopiedPhone] = useState<string | null>(null);
 
-  const adminPhones = ['01100196131', '+201023958772'];
+  const adminPhones = ['01100196131', '01023958772'];
   const adminWhatsApp = '201023958772';
 
   const calculateTotal = (amount: number) => {
@@ -253,7 +253,7 @@ export default function Wallet() {
 
           <motion.div variants={itemVariants} className="space-y-6">
             <p className="text-lg md:text-xl font-bold text-slate-600 leading-relaxed">
-              قم بالتحويل إلى أحد الأرقام التالية عبر محفظة <span className="text-blue-600">فودافون كاش</span> أو{' '}
+              قم بالتحويل إلى أحد الأرقام التالية عبر محفظة <span className="text-red-600">فودافون كاش</span> أو{' '}
               <span className="text-orange-500">أورنج كاش</span> أو <span className="text-green-600">اتصالات كاش</span>
             </p>
 
@@ -316,7 +316,7 @@ export default function Wallet() {
             >
               {[
                 'صور سكرين شوت لرسالة التحويل',
-                'أرسل الصورة + الرقم المحول منه + اسمك + كود الطالب',
+                'أرسل الصورة + الرقم المحول منه + اسمك + رقم هاتف الطالب',
                 'تواصل مباشرة عبر الواتساب لتأكيد الشحن خلال دقائق',
               ].map((item, idx) => (
                 <motion.li
