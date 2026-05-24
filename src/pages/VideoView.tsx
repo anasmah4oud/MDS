@@ -204,15 +204,7 @@ export default function VideoView() {
               </p>
            </div>
 
-           <div className="space-y-6 flex-1 text-right">
-              <div className="flex items-center justify-between p-5 bg-slate-50 border border-slate-100 rounded-2xl">
-                 <div className="flex items-center gap-3">
-                    <Clock size={18} className="text-slate-400" />
-                    <span className="text-sm font-bold text-slate-500">مدة الدرس</span>
-                 </div>
-                 <span className="text-xs font-black text-slate-900">متغير حسب المحتوى</span>
-              </div>
-              
+           <div className="space-y-6 flex-1 text-right">              
               <div className="p-6 bg-yellow-50/50 border border-yellow-100 rounded-2xl">
                  <div className="flex items-start gap-4">
                     <AlertCircle className="text-yellow-600 shrink-0" size={24} />

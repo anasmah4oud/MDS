@@ -194,7 +194,7 @@ export default function Login() {
               className="w-full border-2 border-slate-200 text-slate-700 py-4 rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-slate-50 transition-colors"
             >
               ليس لديك حساب؟
-              <span className="text-blue-600 underline">أنشئ حساب الآن (Sign up)</span>
+              <span className="text-blue-600 underline">قم بإنشاء حساب </span>
             </Link>
             <Link 
               to="/support"

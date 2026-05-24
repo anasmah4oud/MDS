@@ -237,7 +237,7 @@ export default function Home() {
       <div className="bg-blue-600 py-8 overflow-hidden my-10 border-y-4 border-white/20">
         <div className="flex min-w-[200%] gap-12 animate-[marquee_10s_linear_infinite]" style={{ willChange: 'transform' }}>
           {[...Array(2)].map((_, j) =>
-            Array(12).fill('  وما توفيقي إلا بالله  ').map((text, i) => (
+            Array(12).fill('  وما توفيقي إلا باللَّه  ').map((text, i) => (
               <span
                 key={`${j}-${i}`}
                 className="text-white leading-normal text-3xl md:text-4xl font-black tracking-[0.45em] whitespace-nowrap shimmer-text pb-2"
@@ -341,7 +341,6 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-16">
-            <MotivationCard text="ابني أساسك صح في اللغة العربية" />
             <MotivationCard text="احلم بـ 80/80 واحنا هنساعدك" />
             <MotivationCard text="التفوق مش مستحيل مع البارع" />
             <MotivationCard text="اللغة العربية متعة مش بس مادة" />
@@ -366,12 +365,12 @@ export default function Home() {
           <div className="grid gap-12 lg:grid-cols-[1.8fr_1.2fr] items-center">
             <div>
               <h3 className="text-4xl md:text-5xl font-black text-slate-900 mb-6">البارع محمود الديب</h3>
-              <p className="text-2xl font-bold text-blue-600 mb-10 leading-relaxed">دي مش مجرد أرقام دي أدلة أنك في المكان الصح</p>
+              <p className="text-2xl font-bold text-blue-600 mb-10 leading-relaxed">دي مش مجرد أرقام ده دليل إنك في المكان الصح</p>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
                 {/* تم وضع الأرقام ثابتة مباشرة */}
                 <StatCard value={1200} label="حصة " accent="from-blue-500 to-cyan-500" suffix="+" />
-                <StatCard value={5000} label="طالب " accent="from-violet-500 to-blue-500" suffix="+" />
+                <StatCard value={5000} label="طالب " accent="from-blue-500 to-cyan-500" suffix="+" />
               </div>
             </div>
 
@@ -533,10 +532,10 @@ function FeatureItem({ icon, title, desc, fromLeft }: { icon: React.ReactNode; t
       <div className="relative z-10 flex flex-col items-center">
         {/* 3. تعديل لون خلفية الأيقونات (أحمر في أسود) */}
         <motion.div
-          className="w-16 h-16 rounded-2xl flex items-center justify-center mb-6 text-white bg-gradient-to-br from-red-600 to-black text-2xl shadow-lg shadow-red-500/20"
+          className="w-16 h-16 rounded-2xl flex items-center justify-center mb-6 text-white bg-gradient-to-br from-red-600 to-red-900 text-2xl shadow-lg shadow-red-500/20"
           whileInView={{ rotate: 360 }}
           viewport={{ once: true, amount: 0.5 }}
-          transition={{ duration: 1.2, ease: 'easeOut' }}
+          transition={{ duration: 0.9, ease: 'easeOut' }}
         >
           {icon}
         </motion.div>
@@ -566,7 +565,7 @@ function GradeCard({ grade, title, img }: { grade: number; title: string; img: s
         <motion.div
           className="absolute inset-0 rounded-[2.25rem]"
           style={{
-            background: 'conic-gradient(from 0deg, #ef4444, #1d4ed8, #ef4444)',
+            background: 'conic-gradient(from 0deg, #ff0000, #0800ff)',
             filter: 'blur(4px)',
           }}
           animate={{ rotate: 360 }}
