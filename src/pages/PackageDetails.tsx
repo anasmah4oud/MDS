@@ -1,17 +1,16 @@
 /**
- * @license SPDX-License-Identifier: Apache-2.0
- * ✦ تصميم ساحر وعصري لصفحة تفاصيل الباقة ✦
+ * @license
+ * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
-  ChevronRight, Play, FileText, Clock, ChevronDown,
+  ChevronRight, Play, FileText, CheckCircle,
+  Lock, Calendar, BookOpen, Clock, ChevronDown,
   LayoutDashboard, PlayCircle, Eye, X, Sparkles,
-  Star, Calendar, BookOpen, Search, Filter, Layers,
-  Target, Trophy, Flame, GraduationCap, Rocket, Wifi,
-  ArrowUpRight, Grid3X3, Sun, Zap
+  Star, Zap, ArrowLeft, Layers
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { Package, Week, Lesson } from '../types';
@@ -19,275 +18,468 @@ import { useAuth } from '../context/AuthContext';
 import Plyr from 'plyr';
 import 'plyr/dist/plyr.css';
 
-/* ── حركات Framer Motion مُعدة مسبقاً ── */
-const container = {
+// --- حركات Framer Motion ساحرة ---
+const containerVariants = {
   hidden: { opacity: 0 },
   show: {
     opacity: 1,
-    transition: { staggerChildren: 0.07, delayChildren: 0.1 }
+    transition: { staggerChildren: 0.08, delayChildren: 0.3 }
   }
 };
 
-const item = {
-  hidden: { opacity: 0, y: 30, scale: 0.96 },
+const itemVariants = {
+  hidden: { opacity: 0, y: 30, scale: 0.95 },
   show: {
     opacity: 1,
     y: 0,
     scale: 1,
-    transition: { type: 'spring', stiffness: 280, damping: 24 }
+    transition: { type: "spring", stiffness: 260, damping: 20 }
   }
 };
 
-const float = {
+const floatAnimation = {
   animate: {
-    y: [0, -8, 0],
-    rotate: [0, 2, -2, 0],
-    transition: { duration: 6, repeat: Infinity, ease: 'easeInOut' }
+    y: [0, -10, 0],
+    transition: { duration: 4, repeat: Infinity, ease: "easeInOut" }
   }
 };
 
-const pulseRing = {
-  animate: {
-    scale: [1, 1.1, 1],
-    opacity: [0.4, 0, 0.4],
-    transition: { duration: 2.5, repeat: Infinity, ease: 'easeInOut' }
-  }
-};
-
-/* ── جسيمات خلفية متحركة ── */
-const Particles = () => {
-  const items = useMemo(() =>
-    [...Array(18)].map((_, i) => ({
-      id: i,
-      size: Math.random() * 6 + 2,
-      x: Math.random() * 100,
-      y: Math.random() * 100,
-      duration: Math.random() * 20 + 10,
-      delay: Math.random() * 8,
-      opacity: Math.random() * 0.15 + 0.05,
-      color: ['#3B82F6', '#8B5CF6', '#EC4899', '#06B6D4', '#10B981'][Math.floor(Math.random() * 5)]
-    })), []);
-  return (
-    <div className="absolute inset-0 pointer-events-none overflow-hidden">
-      {items.map(p => (
-        <motion.div
-          key={p.id}
-          className="absolute rounded-full blur-[1px]"
-          style={{ width: p.size, height: p.size, left: `${p.x}%`, top: `${p.y}%`, backgroundColor: p.color, opacity: p.opacity }}
-          animate={{ y: [0, -50, 0, 30, 0], x: [0, 20, -10, 15, 0], scale: [1, 1.6, 1, 1.3, 1] }}
-          transition={{ duration: p.duration, delay: p.delay, repeat: Infinity, ease: 'easeInOut' }}
-        />
-      ))}
-    </div>
-  );
-};
-
-/* ── المكون الرئيسي ── */
 export default function PackageDetails() {
   const { id } = useParams();
   const { profile } = useAuth();
   const navigate = useNavigate();
-
   const [pkg, setPkg] = useState<Package | null>(null);
   const [weeks, setWeeks] = useState<Week[]>([]);
   const [lessonsMap, setLessonsMap] = useState<Record<number, Lesson[]>>({});
   const [loading, setLoading] = useState(true);
   const [expandedWeek, setExpandedWeek] = useState<number | null>(null);
   const [selectedLesson, setSelectedLesson] = useState<Lesson | null>(null);
-  const [search, setSearch] = useState('');
-  const [filter, setFilter] = useState('all');
-  const [tab, setTab] = useState<'content' | 'stats'>('content');
 
-  const ref = React.useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end end'] });
-  const heroY = useTransform(scrollYProgress, [0, 0.5], [0, 80]);
-  const heroOpacity = useTransform(scrollYProgress, [0, 0.4], [1, 0.2]);
+  useEffect(() => {
+    fetchPackageData();
+  }, [id, profile]);
 
-  useEffect(() => { fetchData(); }, [id, profile]);
-
-  const fetchData = async () => {
+  const fetchPackageData = async () => {
     if (!id || !profile) return;
     try {
-      const { data: sub } = await supabase.from('subscriptions').select('*').eq('user_id', profile.id).eq('package_id', id).maybeSingle();
-      if (!sub) { navigate('/classes'); return; }
-      const { data: pkgData } = await supabase.from('packages').select('*').eq('id', id).single();
-      setPkg(pkgData);
-      const { data: wks } = await supabase.from('weeks').select('*').eq('package_id', id).order('id');
-      setWeeks(wks || []);
-      if (wks?.length) {
-        const { data: less } = await supabase.from('lessons').select('*').in('week_id', wks.map(w => w.id));
-        const map: Record<number, Lesson[]> = {};
-        less?.forEach(l => { if (!map[l.week_id]) map[l.week_id] = []; map[l.week_id].push(l); });
-        setLessonsMap(map);
-        setExpandedWeek(wks[0].id);
+      const { data: subData, error: subError } = await supabase
+        .from('subscriptions')
+        .select('*')
+        .eq('user_id', profile.id)
+        .eq('package_id', id)
+        .maybeSingle();
+
+      if (subError || !subData) {
+        navigate('/classes');
+        return;
       }
-    } catch (e) { console.error(e); } finally { setLoading(false); }
-  };
 
-  const totalLessons = useMemo(() => Object.values(lessonsMap).reduce((a, b) => a + b.length, 0), [lessonsMap]);
+      const { data: pkgData, error: pkgError } = await supabase
+        .from('packages')
+        .select('*')
+        .eq('id', id)
+        .single();
 
-  const filteredWeeks = useMemo(() => {
-    return weeks.filter(w => {
-      const weekLessons = lessonsMap[w.id] || [];
-      const matchSearch = !search || w.name.includes(search) || weekLessons.some(l => l.name.includes(search));
-      const matchFilter = filter === 'all' || weekLessons.some(l => l.type === filter);
-      return matchSearch && matchFilter;
-    });
-  }, [weeks, lessonsMap, search, filter]);
+      if (pkgError) throw pkgError;
+      setPkg(pkgData as Package);
 
-  const lessonTypeInfo = (type: string) => {
-    const map: any = {
-      video_exp: { label: 'شرح', icon: <PlayCircle size={14} />, grad: 'from-blue-500 to-cyan-500' },
-      video_hw: { label: 'تطبيق', icon: <Flame size={14} />, grad: 'from-orange-500 to-red-500' },
-      pdf: { label: 'ملزمة', icon: <FileText size={14} />, grad: 'from-emerald-500 to-teal-500' },
-      exam_mcq: { label: 'اختبار', icon: <Target size={14} />, grad: 'from-purple-500 to-pink-500' },
-      exam_write: { label: 'واجب', icon: <Zap size={14} />, grad: 'from-amber-500 to-yellow-500' }
-    };
-    return map[type] || { label: type, icon: <BookOpen size={14} />, grad: 'from-slate-500 to-slate-600' };
+      const { data: weeksList, error: weeksError } = await supabase
+        .from('weeks')
+        .select('*')
+        .eq('package_id', id)
+        .order('id', { ascending: true });
+
+      if (weeksError) throw weeksError;
+      setWeeks(weeksList as Week[]);
+
+      const weekIds = weeksList.map(w => w.id);
+      if (weekIds.length > 0) {
+        const { data: lessonsData, error: lessonsError } = await supabase
+          .from('lessons')
+          .select('*')
+          .in('week_id', weekIds);
+
+        if (lessonsError) throw lessonsError;
+
+        const lMap: Record<number, Lesson[]> = {};
+        lessonsData.forEach(l => {
+          if (!lMap[l.week_id]) lMap[l.week_id] = [];
+          lMap[l.week_id].push(l as Lesson);
+        });
+        setLessonsMap(lMap);
+
+        if (weeksList.length > 0) {
+          setExpandedWeek(weeksList[0].id);
+        }
+      }
+
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (loading) return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50/40 to-indigo-50/60 relative overflow-hidden">
-      <Particles />
-      <motion.div animate={float} className="relative z-10 flex flex-col items-center gap-6">
-        <div className="w-24 h-24 bg-white rounded-3xl shadow-2xl flex items-center justify-center">
-          <GraduationCap size={44} className="text-blue-600" />
-        </div>
-        <p className="text-xl font-bold text-slate-700">جاري تحميل المحتوى...</p>
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/40 gap-6">
+      <motion.div
+        animate={{ rotate: 360, scale: [1, 1.2, 1] }}
+        transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+        className="relative"
+      >
+        <div className="absolute inset-0 bg-blue-400 blur-2xl opacity-30 rounded-full" />
+        <BookOpen size={52} className="text-blue-600 relative z-10 drop-shadow-lg" />
       </motion.div>
+      <motion.p
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.3 }}
+        className="font-black italic text-2xl text-slate-700 tracking-tight"
+      >
+        جاري تحضير المحتوى الساحر...
+      </motion.p>
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-slate-900 overflow-x-hidden" dir="rtl" ref={ref}>
-      {/* ═══════════ Hero Section ═══════════ */}
-      <motion.div style={{ y: heroY, opacity: heroOpacity }} className="relative h-[55vh] md:h-[75vh] overflow-hidden">
-        <motion.img initial={{ scale: 1.2 }} animate={{ scale: 1 }} transition={{ duration: 1.8 }} src={pkg?.image_url || 'https://placehold.co/1200x800/1e293b/f8fafc?text=🎓'} className="absolute inset-0 w-full h-full object-cover opacity-50" alt="" />
-        <div className="absolute inset-0 bg-gradient-to-b from-slate-900/50 via-transparent to-[#F8FAFC]" />
-        <Particles />
-        <div className="absolute inset-0 flex items-end p-4 md:p-12 lg:p-16 z-10">
-          <div className="max-w-6xl mx-auto w-full space-y-4 md:space-y-6">
-            <Link to="/dashboard" className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-lg px-4 py-2 rounded-full text-sm font-bold shadow-lg hover:bg-white transition"><ChevronRight size={16} /> لوحة التحكم</Link>
-            <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
-              <div>
-                <span className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-4 py-1.5 rounded-full text-xs font-black mb-3"><Sparkles size={14} /> {pkg?.type === 'offer' ? 'عرض خاص' : 'باقة تعليمية'}</span>
-                <h1 className="text-3xl md:text-6xl lg:text-7xl font-black tracking-tight leading-tight">{pkg?.name}</h1>
-                <p className="text-slate-600 text-lg mt-2 bg-white/60 backdrop-blur-sm p-3 rounded-2xl inline-block">{pkg?.description}</p>
-              </div>
-              <div className="flex gap-6 bg-white/80 backdrop-blur-xl p-4 md:p-6 rounded-[28px] shadow-2xl border border-white/60">
-                <div className="text-center"><Calendar size={24} className="mx-auto text-blue-600 mb-2" /><p className="text-2xl font-black">{weeks.length}</p><p className="text-xs text-slate-500">أسبوع</p></div>
-                <div className="w-px bg-slate-200" />
-                <div className="text-center"><PlayCircle size={24} className="mx-auto text-indigo-600 mb-2" /><p className="text-2xl font-black">{totalLessons}</p><p className="text-xs text-slate-500">درس</p></div>
-                <div className="w-px bg-slate-200" />
-                <div className="text-center"><Star size={24} className="mx-auto text-amber-500 mb-2" fill="#f59e0b" /><p className="text-2xl font-black">4.9</p><p className="text-xs text-slate-500">تقييم</p></div>
-              </div>
+    <div className="min-h-screen bg-gradient-to-b from-[#F8FAFC] via-white to-[#F0F4FF] text-slate-900 overflow-x-hidden relative" dir="rtl">
+      
+      {/* عناصر متحركة في الخلفية */}
+      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+        <motion.div
+          animate={{ x: [0, 20, 0], y: [0, -15, 0], scale: [1, 1.1, 1] }}
+          transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute top-20 left-10 w-72 h-72 bg-blue-100/40 rounded-full blur-3xl"
+        />
+        <motion.div
+          animate={{ x: [0, -25, 0], y: [0, 20, 0], scale: [1, 1.15, 1] }}
+          transition={{ duration: 15, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+          className="absolute bottom-20 right-10 w-96 h-96 bg-indigo-100/30 rounded-full blur-3xl"
+        />
+        <motion.div
+          animate={{ rotate: [0, 360] }}
+          transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
+          className="absolute top-1/2 left-1/3 w-40 h-40 bg-amber-100/20 rounded-full blur-2xl"
+        />
+      </div>
+
+      {/* الهيدر البطولي */}
+      <div className="relative h-[50vh] md:h-[70vh] overflow-hidden bg-slate-900 rounded-b-[3rem] md:rounded-b-[5rem] shadow-2xl shadow-blue-900/10 z-10">
+        <motion.img
+          initial={{ scale: 1.2, opacity: 0 }}
+          animate={{ scale: 1, opacity: 0.55 }}
+          transition={{ duration: 1.8, ease: "easeOut" }}
+          src={pkg?.image_url || "https://placehold.co/1200x800"}
+          className="absolute inset-0 w-full h-full object-cover blur-[1px]"
+          alt="Package Background"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#F8FAFC] via-[#F8FAFC]/80 to-transparent" />
+
+        <div className="absolute inset-0 flex items-end p-6 md:p-20 z-20">
+          <div className="max-w-7xl mx-auto w-full">
+            <motion.div
+              initial={{ opacity: 0, x: 30 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.2, type: "spring" }}
+            >
+              <Link
+                to="/dashboard"
+                className="inline-flex items-center gap-2 text-blue-700 bg-white/80 backdrop-blur-lg px-5 py-2.5 rounded-full font-bold mb-6 md:mb-8 hover:bg-white hover:shadow-xl transition-all border border-white/50"
+              >
+                <ArrowLeft size={18} /> العودة للوحة التحكم
+              </Link>
+            </motion.div>
+
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 md:gap-10">
+              <motion.div
+                initial={{ opacity: 0, y: 40 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4, type: "spring", stiffness: 200 }}
+              >
+                <div className="flex items-center gap-3 mb-4">
+                  <span className="bg-gradient-to-r from-amber-400 to-orange-500 text-white px-5 py-2 rounded-full text-xs font-black uppercase tracking-widest shadow-lg shadow-amber-500/30 flex items-center gap-2">
+                    <Zap size={16} className="fill-current" />
+                    {pkg?.type === 'offer' ? 'عرض خاص ✨' : 'باقة تعليمية'}
+                  </span>
+                </div>
+                <h1 className="text-5xl md:text-8xl font-black mb-4 tracking-tighter leading-[1.1] text-slate-900 drop-shadow-sm">
+                  {pkg?.name}
+                </h1>
+                <p className="text-lg md:text-2xl text-slate-600 max-w-xl font-medium leading-relaxed bg-white/70 backdrop-blur-md p-5 rounded-3xl border border-white/60 inline-block shadow-sm">
+                  {pkg?.description}
+                </p>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                transition={{ delay: 0.6, type: "spring", stiffness: 180 }}
+                className="flex items-center gap-6 md:gap-12 bg-white/80 backdrop-blur-2xl border border-white/80 shadow-2xl p-6 md:p-10 rounded-[2.5rem] md:rounded-[3rem]"
+              >
+                <div className="text-center group cursor-default">
+                  <motion.div variants={floatAnimation} animate="animate" className="w-14 h-14 md:w-16 md:h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-inner group-hover:bg-blue-100 transition-colors">
+                    <Calendar size={26} />
+                  </motion.div>
+                  <p className="text-xs font-bold text-slate-500 mb-1">الأسابيع</p>
+                  <p className="text-3xl md:text-4xl font-black text-slate-800">{weeks.length}</p>
+                </div>
+                <div className="w-px h-20 md:h-24 bg-gradient-to-b from-transparent via-slate-300 to-transparent" />
+                <div className="text-center group cursor-default">
+                  <motion.div variants={floatAnimation} animate="animate" className="w-14 h-14 md:w-16 md:h-16 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-inner group-hover:bg-indigo-100 transition-colors">
+                    <PlayCircle size={26} />
+                  </motion.div>
+                  <p className="text-xs font-bold text-slate-500 mb-1">المحاضرات</p>
+                  <p className="text-3xl md:text-4xl font-black text-slate-800">
+                    {Object.values(lessonsMap).reduce((acc: number, curr) => acc + (curr as Lesson[]).length, 0)}
+                  </p>
+                </div>
+              </motion.div>
             </div>
           </div>
         </div>
-      </motion.div>
+      </div>
 
-      {/* ═══════════ شريط الأدوات ═══════════ */}
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="max-w-5xl mx-auto px-4 -mt-8 md:-mt-12 relative z-20">
-        <div className="bg-white/90 backdrop-blur-2xl rounded-2xl p-3 shadow-xl border border-white/60 flex flex-col sm:flex-row gap-3">
-          <div className="flex bg-slate-100 rounded-xl p-1 gap-1">
-            {[{ id: 'content', icon: <Layers size={14} />, label: 'المحتوى' }, { id: 'stats', icon: <Trophy size={14} />, label: 'الإحصائيات' }].map(t => (
-              <motion.button key={t.id} onClick={() => setTab(t.id)} className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold transition ${tab === t.id ? 'bg-white shadow text-blue-700' : 'text-slate-500'}`} whileTap={{ scale: 0.95 }}>{t.icon} {t.label}</motion.button>
-            ))}
-          </div>
-          <div className="relative flex-1">
-            <Search size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" />
-            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="ابحث..." className="w-full bg-slate-100 rounded-xl py-2 pr-9 pl-4 text-sm font-medium outline-none focus:ring-2 focus:ring-blue-200 transition" />
-          </div>
-          <div className="flex gap-1 overflow-x-auto">
-            {['all', 'video_exp', 'video_hw', 'pdf', 'exam_mcq'].map(f => {
-              const info = f === 'all' ? { label: 'الكل', icon: <Grid3X3 size={12} />, grad: '' } : lessonTypeInfo(f);
-              return (
-                <motion.button key={f} onClick={() => setFilter(filter === f ? 'all' : f)} className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[10px] font-bold whitespace-nowrap transition ${filter === f ? 'bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow' : 'bg-slate-100 text-slate-500'}`} whileTap={{ scale: 0.9 }}>{info.icon} {info.label}</motion.button>
-              );
-            })}
-          </div>
-        </div>
-      </motion.div>
+      {/* المحتوى الرئيسي */}
+      <main className="max-w-5xl mx-auto px-4 py-16 md:py-24 relative z-20">
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-50px" }}
+          className="flex items-center gap-4 mb-10 md:mb-14"
+        >
+          <motion.div
+            animate={{ scale: [1, 1.2, 1], rotate: [0, 10, -10, 0] }}
+            transition={{ duration: 3, repeat: Infinity }}
+            className="w-2 h-10 bg-gradient-to-b from-blue-500 to-indigo-600 rounded-full"
+          />
+          <h3 className="text-3xl md:text-4xl font-black text-slate-800 tracking-tight">
+            المحتوى التعليمي <Sparkles className="inline text-amber-400 ml-2" size={28} />
+          </h3>
+        </motion.div>
 
-      {/* ═══════════ المحتوى ═══════════ */}
-      <main className="max-w-5xl mx-auto px-4 py-8 md:py-12">
-        <AnimatePresence mode="wait">
-          {tab === 'content' ? (
-            <motion.div key="content" variants={container} initial="hidden" animate="show" exit="hidden" className="space-y-4">
-              {filteredWeeks.map((week, i) => {
-                const weekLessons = lessonsMap[week.id] || [];
-                const isOpen = expandedWeek === week.id;
-                return (
-                  <motion.div key={week.id} variants={item} layout className={`rounded-2xl md:rounded-3xl border-2 transition-all duration-500 overflow-hidden ${isOpen ? 'bg-white border-blue-100 shadow-2xl shadow-blue-500/5' : 'bg-white/70 border-slate-100 hover:shadow-lg'}`}>
-                    <button onClick={() => setExpandedWeek(isOpen ? null : week.id)} className="w-full flex items-center justify-between p-4 md:p-5 text-right group">
-                      <div className="flex items-center gap-3 md:gap-4">
-                        <motion.div className={`w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center text-lg font-black transition ${isOpen ? 'bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-lg' : 'bg-blue-50 text-blue-600'}`} animate={isOpen ? { scale: [1, 1.08, 1] } : {}} transition={{ repeat: Infinity, duration: 2 }}>{i + 1}</motion.div>
-                        <div className="text-right">
-                          <h4 className="font-bold md:text-lg">{week.name}</h4>
-                          <p className="text-xs text-slate-500">{weekLessons.length} دروس</p>
-                        </div>
-                      </div>
-                      <motion.div animate={{ rotate: isOpen ? 180 : 0 }} className="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center"><ChevronDown size={16} /></motion.div>
-                    </button>
-                    <AnimatePresence>
-                      {isOpen && (
-                        <motion.div initial={{ height: 0 }} animate={{ height: 'auto' }} exit={{ height: 0 }} transition={{ duration: 0.35 }} className="overflow-hidden bg-slate-50/50">
-                          <div className="p-3 md:p-5 space-y-2">
-                            {weekLessons.map((lesson, j) => {
-                              const info = lessonTypeInfo(lesson.type);
-                              return (
-                                <motion.button key={lesson.id} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: j * 0.05 }} onClick={() => lesson.type.startsWith('video') ? navigate(`/video/${lesson.id}`) : setSelectedLesson(lesson)} className="w-full flex items-center justify-between p-3 bg-white rounded-xl border border-slate-100 shadow-sm hover:shadow-md transition group" whileHover={{ scale: 1.01 }}>
-                                  <div className="flex items-center gap-3">
-                                    <div className={`w-9 h-9 rounded-lg bg-gradient-to-br ${info.grad} text-white flex items-center justify-center`}>{info.icon}</div>
-                                    <div className="text-right"><p className="text-sm font-bold">{lesson.name}</p><p className="text-[10px] text-slate-400">{info.label}</p></div>
-                                  </div>
-                                  <div className="w-8 h-8 bg-slate-50 rounded-full flex items-center justify-center text-slate-400 group-hover:text-blue-600"><Eye size={14} /></div>
-                                </motion.button>
-                              );
-                            })}
+        <motion.div
+          variants={containerVariants}
+          initial="hidden"
+          animate="show"
+          className="space-y-6"
+        >
+          {weeks.map((week, index) => (
+            <motion.div
+              key={week.id}
+              variants={itemVariants}
+              layout
+              className={`rounded-[2.5rem] overflow-hidden border transition-all duration-500 ${
+                expandedWeek === week.id
+                  ? 'bg-white border-blue-200/80 shadow-2xl shadow-blue-100/50 scale-[1.02]'
+                  : 'bg-white/80 border-slate-200/50 hover:bg-white hover:shadow-xl hover:border-blue-200/60 backdrop-blur-sm'
+              }`}
+            >
+              <button
+                onClick={() => setExpandedWeek(expandedWeek === week.id ? null : week.id)}
+                className="w-full flex items-center justify-between p-5 md:p-8 text-right focus:outline-none group"
+              >
+                <div className="flex items-center gap-5 md:gap-7">
+                  <motion.div
+                    whileHover={{ scale: 1.05 }}
+                    className={`w-14 h-14 md:w-16 md:h-16 rounded-2xl md:rounded-[1.5rem] flex items-center justify-center font-black text-2xl md:text-3xl transition-all duration-300 ${
+                      expandedWeek === week.id
+                        ? 'bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-xl shadow-blue-400/30'
+                        : 'bg-blue-50 text-blue-600 group-hover:bg-blue-100'
+                    }`}
+                  >
+                    {index + 1}
+                  </motion.div>
+                  <div>
+                    <h4 className={`text-xl md:text-2xl font-black transition-colors ${expandedWeek === week.id ? 'text-blue-950' : 'text-slate-800'}`}>
+                      {week.name}
+                    </h4>
+                    <p className="text-slate-500 font-semibold text-sm mt-1">{week.description}</p>
+                  </div>
+                </div>
+                <motion.div
+                  animate={{ rotate: expandedWeek === week.id ? 180 : 0 }}
+                  className={`w-12 h-12 rounded-full flex items-center justify-center transition-all ${
+                    expandedWeek === week.id ? 'bg-blue-50 text-blue-600' : 'bg-slate-100 text-slate-400 group-hover:bg-slate-200'
+                  }`}
+                >
+                  <ChevronDown size={22} />
+                </motion.div>
+              </button>
+
+              <AnimatePresence>
+                {expandedWeek === week.id && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.4, ease: [0.25, 0.8, 0.25, 1] }}
+                    className="overflow-hidden bg-gradient-to-b from-slate-50/80 to-white border-t border-slate-100"
+                  >
+                    <div className="p-4 md:p-8 space-y-4">
+                      {(lessonsMap[week.id] || []).map((lesson, idx) => (
+                        <motion.button
+                          key={lesson.id}
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: idx * 0.04 }}
+                          whileHover={{ scale: 1.02, y: -3, boxShadow: "0 20px 25px -5px rgba(0,0,0,0.05)" }}
+                          whileTap={{ scale: 0.97 }}
+                          onClick={() => {
+                            if (lesson.type.startsWith('video')) {
+                              navigate(`/video/${lesson.id}`);
+                            } else {
+                              setSelectedLesson(lesson);
+                            }
+                          }}
+                          className="w-full flex items-center justify-between p-5 md:p-7 bg-white rounded-[2rem] border border-slate-100/80 shadow-sm hover:shadow-xl hover:border-blue-200 transition-all group"
+                        >
+                          <div className="flex items-center gap-4 md:gap-5">
+                            <motion.div
+                              whileHover={{ rotate: 5 }}
+                              className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-300 ${
+                                lesson.type.startsWith('video')
+                                  ? 'bg-blue-50 text-blue-600 group-hover:bg-blue-600 group-hover:text-white shadow-blue-100'
+                                  : lesson.type === 'pdf'
+                                  ? 'bg-emerald-50 text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white shadow-emerald-100'
+                                  : 'bg-amber-50 text-amber-600 group-hover:bg-amber-600 group-hover:text-white shadow-amber-100'
+                              }`}
+                            >
+                              {lesson.type.startsWith('video') ? <PlayCircle size={28} /> : lesson.type === 'pdf' ? <FileText size={28} /> : <BookOpen size={28} />}
+                            </motion.div>
+                            <div className="text-right">
+                              <p className="text-lg md:text-xl font-black text-slate-800 group-hover:text-blue-700 transition-colors">{lesson.name}</p>
+                              <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mt-1 flex items-center gap-1.5">
+                                <Clock size={12} />
+                                {lesson.type === 'video_exp'
+                                  ? 'فيديو شرح تفصيلي'
+                                  : lesson.type === 'video_hw'
+                                  ? 'فيديو حل وتطبيق'
+                                  : lesson.type === 'pdf'
+                                  ? 'ملزمة PDF'
+                                  : lesson.type === 'exam_mcq'
+                                  ? 'اختبار إلكتروني'
+                                  : 'واجب إلكتروني'}
+                              </p>
+                            </div>
                           </div>
+                          <motion.div
+                            whileHover={{ scale: 1.1 }}
+                            className="w-12 h-12 bg-slate-50 text-slate-400 rounded-full flex items-center justify-center group-hover:bg-blue-50 group-hover:text-blue-600 transition-colors"
+                          >
+                            <Eye size={20} />
+                          </motion.div>
+                        </motion.button>
+                      ))}
+                      {(!lessonsMap[week.id] || lessonsMap[week.id].length === 0) && (
+                        <motion.div
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          className="p-10 text-center bg-white/80 backdrop-blur-sm rounded-3xl border border-dashed border-slate-200"
+                        >
+                          <BookOpen className="mx-auto text-slate-300 mb-4" size={36} />
+                          <p className="text-slate-500 font-bold text-base italic">جاري تجهيز محتوى هذا الأسبوع، كن مستعداً يا بطل! 🚀</p>
                         </motion.div>
                       )}
-                    </AnimatePresence>
+                    </div>
                   </motion.div>
-                );
-              })}
+                )}
+              </AnimatePresence>
             </motion.div>
-          ) : (
-            <motion.div key="stats" variants={container} initial="hidden" animate="show" exit="hidden" className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              {[{ label: 'فيديوهات', value: Object.values(lessonsMap).flat().filter(l => l.type.startsWith('video')).length, icon: <PlayCircle size={20} />, grad: 'from-blue-500 to-cyan-500' },
-                { label: 'ملازم', value: Object.values(lessonsMap).flat().filter(l => l.type === 'pdf').length, icon: <FileText size={20} />, grad: 'from-emerald-500 to-teal-500' },
-                { label: 'اختبارات', value: Object.values(lessonsMap).flat().filter(l => l.type.includes('exam')).length, icon: <Target size={20} />, grad: 'from-purple-500 to-pink-500' },
-                { label: 'تقييم', value: '4.9', icon: <Star size={20} fill="#f59e0b" />, grad: 'from-amber-500 to-yellow-500' }].map((s, i) => (
-                <motion.div key={s.label} variants={item} className="bg-white rounded-2xl p-4 border border-slate-100 hover:shadow-lg transition" whileHover={{ y: -4 }}>
-                  <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${s.grad} text-white flex items-center justify-center mb-3`}>{s.icon}</div>
-                  <p className="text-2xl font-black">{s.value}</p>
-                  <p className="text-xs text-slate-500">{s.label}</p>
-                </motion.div>
-              ))}
-            </motion.div>
-          )}
-        </AnimatePresence>
+          ))}
+        </motion.div>
       </main>
 
-      {/* ═══════════ نافذة منبثقة ═══════════ */}
+      {/* نافذة عرض الدرس الساحرة */}
       <AnimatePresence>
         {selectedLesson && (
-          <div className="fixed inset-0 z-[200] flex items-center justify-center p-2 md:p-6">
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-slate-900/60 backdrop-blur-md" onClick={() => setSelectedLesson(null)} />
-            <motion.div initial={{ scale: 0.9, opacity: 0, y: 30 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0 }} className="relative w-full max-w-5xl h-[90vh] bg-white rounded-3xl overflow-hidden flex flex-col shadow-2xl">
-              <div className="px-4 py-3 flex items-center justify-between border-b bg-white/80 backdrop-blur">
-                <h4 className="font-bold truncate">{selectedLesson.name}</h4>
-                <button onClick={() => setSelectedLesson(null)} className="w-8 h-8 bg-red-50 text-red-500 rounded-full flex items-center justify-center hover:bg-red-100"><X size={16} /></button>
+          <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 md:p-8 lg:p-12">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-slate-900/50 backdrop-blur-xl"
+              onClick={() => setSelectedLesson(null)}
+            />
+
+            <motion.div
+              initial={{ scale: 0.85, opacity: 0, y: 80, rotateX: 10 }}
+              animate={{ scale: 1, opacity: 1, y: 0, rotateX: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 30, rotateX: -5 }}
+              transition={{ type: "spring", damping: 25, stiffness: 280 }}
+              className="relative w-full h-full md:max-w-6xl md:h-[90vh] bg-white/95 backdrop-blur-2xl md:rounded-[4rem] overflow-hidden flex flex-col shadow-2xl shadow-blue-900/10 border border-white/50"
+            >
+              {/* رأس النافذة */}
+              <div className="px-6 py-4 md:px-10 md:py-6 flex items-center justify-between border-b border-slate-100/80 bg-white/90 backdrop-blur-md sticky top-0 z-20">
+                <div className="flex items-center gap-4">
+                  <motion.div
+                    whileHover={{ rotate: -5 }}
+                    className="p-1.5 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl border border-blue-100 shadow-sm"
+                  >
+                    <img src="/logo.png" className="w-11 h-11 md:w-14 md:h-14 rounded-xl object-contain" alt="Master" />
+                  </motion.div>
+                  <div>
+                    <h4 className="font-black text-xl md:text-2xl text-slate-900 truncate max-w-[180px] md:max-w-md">{selectedLesson.name}</h4>
+                    <p className="text-xs font-bold text-blue-600 mt-1 flex items-center gap-1"><Star size={12} className="fill-amber-400 text-amber-400" /> البارع محمود الديب</p>
+                  </div>
+                </div>
+                <motion.button
+                  whileHover={{ scale: 1.1, rotate: 90 }}
+                  onClick={() => setSelectedLesson(null)}
+                  className="w-12 h-12 bg-slate-100 hover:bg-red-50 text-slate-400 hover:text-red-500 rounded-full flex items-center justify-center transition-all duration-300"
+                >
+                  <X size={24} strokeWidth={2.5} />
+                </motion.button>
               </div>
-              <div className="flex-1 bg-slate-900 flex items-center justify-center">
-                {selectedLesson.type.startsWith('video') ? <VideoPlayer url={selectedLesson.url} /> :
-                 selectedLesson.type === 'pdf' ? <PdfViewer url={selectedLesson.url} /> :
-                 <div className="text-center text-white p-8">
-                   <Target size={48} className="mx-auto mb-4" />
-                   <a href={selectedLesson.url} target="_blank" className="bg-blue-600 px-6 py-3 rounded-xl font-bold hover:bg-blue-700 transition">بدء الاختبار</a>
-                 </div>}
+
+              {/* محتوى العرض */}
+              <div className="flex-1 overflow-hidden relative bg-gradient-to-b from-slate-50 to-white flex items-center justify-center">
+                {selectedLesson.type.startsWith('video') ? (
+                  <VideoPlayer url={selectedLesson.url} />
+                ) : selectedLesson.type === 'pdf' ? (
+                  <PdfViewer url={selectedLesson.url} />
+                ) : (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="flex flex-col items-center justify-center h-full p-6 md:p-12 text-center"
+                  >
+                    <motion.div
+                      animate={{ scale: [1, 1.1, 1], rotate: [0, 5, -5, 0] }}
+                      transition={{ duration: 4, repeat: Infinity }}
+                      className="w-28 h-28 md:w-36 md:h-36 bg-gradient-to-br from-amber-100 to-orange-100 rounded-[2.5rem] flex items-center justify-center mb-8 shadow-inner"
+                    >
+                      <BookOpen className="text-amber-600 w-14 h-14 md:w-18 md:h-18" />
+                    </motion.div>
+                    <h3 className="text-3xl md:text-4xl font-black mb-4 text-slate-900">نافذة الاختبار التفاعلي</h3>
+                    <p className="text-lg md:text-xl text-slate-500 font-medium mb-10 max-w-lg leading-relaxed">
+                      حان وقت تقييم مستواك! اضغط على الزر بالأسفل لبدء الاختبار في بيئة مخصصة.
+                    </p>
+                    <motion.a
+                      whileHover={{ scale: 1.05, y: -5 }}
+                      whileTap={{ scale: 0.95 }}
+                      href={selectedLesson.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-14 py-5 rounded-2xl text-xl font-black hover:shadow-2xl hover:shadow-blue-500/30 transition-all flex items-center gap-3"
+                    >
+                      بدء الاختبار الآن <Zap size={22} className="fill-white" />
+                    </motion.a>
+                  </motion.div>
+                )}
               </div>
+
+              {selectedLesson.description && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="p-6 md:p-8 bg-white border-t border-slate-100 text-right"
+                >
+                  <div className="flex items-start gap-3">
+                    <Sparkles className="text-amber-400 mt-1 flex-shrink-0" size={22} />
+                    <p className="text-slate-600 font-medium leading-relaxed md:text-lg">{selectedLesson.description}</p>
+                  </div>
+                </motion.div>
+              )}
             </motion.div>
           </div>
         )}
@@ -296,58 +488,170 @@ export default function PackageDetails() {
   );
 }
 
-/* ── مشغل فيديو Plyr ── */
+// مكون مشغل الفيديو المحسن
 function VideoPlayer({ url }: { url: string }) {
-  const ref = React.useRef<HTMLDivElement>(null);
-  const [player, setPlayer] = useState<Plyr | null>(null);
-  const [videoId, setVideoId] = useState('');
-  const [provider, setProvider] = useState<'youtube'|'vimeo'>('youtube');
-  const [loading, setLoading] = useState(true);
+  const containerRef = React.useRef<HTMLDivElement | null>(null);
+  const [videoId, setVideoId] = React.useState('');
+  const [provider, setProvider] = React.useState<'youtube' | 'vimeo'>('youtube');
+  const [isValid, setIsValid] = React.useState(true);
+  const [isLoading, setIsLoading] = React.useState(true);
+  const [player, setPlayer] = React.useState<Plyr | null>(null);
 
   useEffect(() => {
-    let vid = ''; let prov: 'youtube'|'vimeo' = 'youtube';
-    if (url.includes('youtube.com/') || url.includes('youtu.be/')) {
-      vid = url.includes('v=') ? url.split('v=')[1]?.split('&')[0] : url.split('youtu.be/')[1]?.split('?')[0] || '';
-      prov = 'youtube';
-    } else if (url.includes('vimeo.com/')) {
-      vid = url.split('vimeo.com/')[1]?.split('?')[0]?.split('/').pop() || '';
-      prov = 'vimeo';
+    let vid = '';
+    let prov: 'youtube' | 'vimeo' = 'youtube';
+    let valid = false;
+
+    try {
+      if (url.includes('youtube.com/') || url.includes('youtu.be/')) {
+        const ytId = url.includes('v=') ? url.split('v=')[1].split('&')[0] :
+                     url.includes('embed/') ? url.split('embed/')[1].split('?')[0] :
+                     url.split('youtu.be/')[1].split('?')[0];
+        vid = ytId;
+        prov = 'youtube';
+        valid = !!vid;
+      } else if (url.includes('vimeo.com/')) {
+        const parts = url.split('vimeo.com/')[1].split('?')[0].split('/');
+        vid = parts[parts.length - 1];
+        prov = 'vimeo';
+        valid = !!vid;
+      }
+    } catch (e) {
+      console.error("Video ID extraction error", e);
     }
-    setVideoId(vid); setProvider(prov);
+
+    setVideoId(vid);
+    setProvider(prov);
+    setIsValid(valid);
+    setIsLoading(true);
   }, [url]);
 
   useEffect(() => {
-    if (!videoId || !ref.current) return;
-    const plyr = new Plyr(ref.current, {
-      autoplay: true, muted: false, ratio: '16:9',
-      youtube: { noCookie: true, rel: 0, showinfo: 0, modestbranding: 1 },
-      vimeo: { byline: false, portrait: false, title: false }
-    });
-    setPlayer(plyr);
-    plyr.on('ready', () => setLoading(false));
-    return () => plyr.destroy();
+    let plyrInstance: Plyr | null = null;
+
+    if (videoId && containerRef.current) {
+      plyrInstance = new Plyr(containerRef.current, {
+        settings: ['quality', 'speed'],
+        invertTime: true,
+        autoplay: true,
+        muted: false,
+        ratio: '16:9',
+        clickToPlay: true,
+        youtube: { noCookie: true, rel: 0, showinfo: 0, iv_load_policy: 3, modestbranding: 1, autoplay: 1 },
+        vimeo: { byline: false, portrait: false, title: false, transparent: false, autoplay: true, muted: false }
+      });
+
+      setPlayer(plyrInstance);
+
+      plyrInstance.on('ready', () => {
+        setIsLoading(false);
+        const playPromise = plyrInstance?.play();
+        if (playPromise && playPromise instanceof Promise) {
+          playPromise.catch(() => console.log("Autoplay blocked"));
+        }
+      });
+
+      plyrInstance.on('play', () => setIsLoading(false));
+
+      const preventDefault = (e: Event) => e.preventDefault();
+      document.body.addEventListener('contextmenu', preventDefault);
+
+      return () => {
+        if (plyrInstance) plyrInstance.destroy();
+        document.body.removeEventListener('contextmenu', preventDefault);
+      };
+    }
   }, [videoId, provider]);
 
+  const handleManualToggle = () => {
+    if (player) {
+      player.playing ? player.pause() : player.play();
+    }
+  };
+
   return (
-    <div className="w-full h-full relative bg-black">
-      {loading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-slate-900 z-10">
-          <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1.5 }} className="w-12 h-12 border-4 border-blue-500/30 border-t-blue-500 rounded-full" />
+    <div className="w-full h-full flex items-center justify-center bg-black relative group overflow-hidden rounded-b-[3rem] md:rounded-b-[4rem]">
+      {isValid ? (
+        <div className="w-full h-full relative cursor-pointer" onClick={handleManualToggle}>
+          <div
+            key={`${provider}-${videoId}`}
+            ref={containerRef}
+            data-plyr-provider={provider}
+            data-plyr-embed-id={videoId}
+            className="w-full h-full pointer-events-none"
+          />
+
+          <AnimatePresence>
+            {isLoading && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-slate-900/95 backdrop-blur-md"
+              >
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+                  className="w-20 h-20 border-4 border-blue-500/30 border-t-blue-400 rounded-full"
+                />
+                <p className="text-white mt-6 font-bold tracking-widest text-sm">جاري التحميل...</p>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {!isLoading && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: player?.playing ? 0 : 1 }}
+              className="absolute inset-0 flex items-center justify-center pointer-events-none transition-opacity duration-700"
+            >
+              <div className="w-24 h-24 md:w-28 md:h-28 bg-white/10 backdrop-blur-xl rounded-full flex items-center justify-center text-white border border-white/20 shadow-2xl">
+                <Play size={48} className="ml-1 drop-shadow-lg" fill="white" />
+              </div>
+            </motion.div>
+          )}
+
+          <div className="absolute top-6 right-6 z-20 pointer-events-none select-none">
+            <div className="bg-black/30 backdrop-blur-lg px-4 py-1.5 rounded-full text-[10px] md:text-xs font-black tracking-widest text-white/90 uppercase border border-white/10">
+              منصة البارع • حقوق النشر محفوظة
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="flex flex-col items-center justify-center p-12 text-center text-slate-400 gap-4 bg-slate-50 w-full h-full">
+          <PlayCircle size={52} className="text-slate-300" />
+          <p className="font-bold text-xl">عذراً، رابط الفيديو غير متاح حالياً.</p>
         </div>
       )}
-      <div ref={ref} data-plyr-provider={provider} data-plyr-embed-id={videoId} className="w-full h-full" />
     </div>
   );
 }
 
-/* ── عارض PDF ── */
+// عارض PDF محسن
 function PdfViewer({ url }: { url: string }) {
   let embedUrl = url;
   if (url.includes('drive.google.com/file/d/')) {
-    const id = url.split('/d/')[1]?.split('/')[0];
-    if (id) embedUrl = `https://drive.google.com/file/d/${id}/preview`;
+    const id = url.split('/d/')[1].split('/')[0];
+    embedUrl = `https://drive.google.com/file/d/${id}/preview`;
   }
+
   return (
-    <iframe src={embedUrl} className="w-full h-full border-none" title="PDF" />
+    <div className="w-full h-full bg-slate-100/50 relative rounded-b-[3rem] md:rounded-b-[4rem] overflow-hidden">
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: [0.3, 0.6, 0.3] }}
+        transition={{ duration: 2, repeat: Infinity }}
+        className="absolute inset-0 flex items-center justify-center z-0"
+      >
+        <FileText size={52} className="text-slate-300" />
+      </motion.div>
+      <iframe
+        src={embedUrl}
+        className="relative z-10 w-full h-full border-none shadow-inner"
+        title="PDF Viewer"
+        allow="autoplay"
+        loading="lazy"
+      />
+    </div>
   );
 }
