@@ -7,8 +7,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  ChevronRight, Shield, BookOpen, AlertCircle, 
-  Sparkles, ShieldAlert, Copyright, Smartphone, Play, Pause, GraduationCap, Award
+  ChevronRight, Shield, BookOpen, AlertCircle, Sparkles, ShieldAlert, 
+  Copyright, Smartphone, Play, Pause, GraduationCap, Award,
+  RotateCw, RotateCcw, Maximize, Minimize, FastForward, Sliders
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
@@ -16,7 +17,6 @@ import { initializeContentProtection } from '../lib/content-protection';
 import { Lesson } from '../types';
 import '../styles/VideoView.css';
 
-// تمديد واجهة Window لدعم سكريبت يوتيوب الآلي
 declare global {
   interface Window {
     onYouTubeIframeAPIReady: () => void;
@@ -28,62 +28,92 @@ export default function VideoView() {
   const { lessonId } = useParams();
   const navigate = useNavigate();
   const { profile } = useAuth();
+  
+  // حالات الفيديو والبيانات
   const [lesson, setLesson] = useState<Lesson | null>(null);
   const [loading, setLoading] = useState(true);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isVideoStarted, setIsVideoStarted] = useState(false);
   const [youtubeId, setYoutubeId] = useState<string>('');
   
+  // حالات التحكم المتزامنة
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [playbackRate, setPlaybackRate] = useState(1);
+  const [showRatesMenu, setShowRatesMenu] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
   const playerRef = useRef<any>(null);
+  const videoBoxRef = useRef<HTMLDivElement>(null);
+  const timeIntervalRef = useRef<any>(null);
   const iframeId = "barie-secure-player";
 
   useEffect(() => {
     fetchLesson();
-    
-    // تفعيل جدار حماية المحتوى لتعطيل الاختصارات
     const protectionCleanup = initializeContentProtection();
     const handleContextMenu = (e: MouseEvent) => e.preventDefault();
     document.addEventListener('contextmenu', handleContextMenu);
 
+    // متابعة تغيرات ملء الشاشة لربط الأزرار
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+
     return () => {
       document.removeEventListener('contextmenu', handleContextMenu);
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      clearInterval(timeIntervalRef.current);
       if (protectionCleanup && typeof protectionCleanup === 'function') protectionCleanup();
     };
   }, [lessonId]);
 
-  // استدعاء الـ API الخاص بيوتيوب للتحكم الخارجي الآمن
+  // بناء وحقن سكربت يوتيوب بدون أخطاء رندرة
   useEffect(() => {
     if (!youtubeId || !isVideoStarted) return;
 
-    // تحميل السكريبت إذا لم يكن موجوداً
-    if (!window.YT) {
-      const tag = document.createElement('script');
-      tag.src = "https://www.youtube.com/iframe_api";
-      const firstScriptTag = document.getElementsByTagName('script')[0];
-      firstScriptTag.parentNode?.insertBefore(tag, firstScriptTag);
-    }
-
-    const initPlayer = () => {
-      playerRef.current = new window.YT.Player(iframeId, {
-        events: {
-          'onReady': (event: any) => {
-            event.target.playVideo();
-            setIsPlaying(true);
-          },
-          'onStateChange': (event: any) => {
-            // تحديث حالة الأزرار الخارجية بناءً على حالة الفيديو الداخلية
-            if (event.data === window.YT.PlayerState.PLAYING) setIsPlaying(true);
-            if (event.data === window.YT.PlayerState.PAUSED) setIsPlaying(false);
-          }
-        }
-      });
+    const loadAPI = () => {
+      if (!window.YT) {
+        const tag = document.createElement('script');
+        tag.src = "https://www.youtube.com/iframe_api";
+        const firstScriptTag = document.getElementsByTagName('script')[0];
+        firstScriptTag.parentNode?.insertBefore(tag, firstScriptTag);
+        window.onYouTubeIframeAPIReady = initPlayer;
+      } else {
+        initPlayer();
+      }
     };
 
-    if (window.YT && window.YT.Player) {
-      initPlayer();
-    } else {
-      window.onYouTubeIframeAPIReady = initPlayer;
-    }
+    const initPlayer = () => {
+      // التأكد التام من وجود العنصر في الـ DOM أولاً لمنع خطأ Invalid Video ID
+      setTimeout(() => {
+        if (!document.getElementById(iframeId)) return;
+        
+        playerRef.current = new window.YT.Player(iframeId, {
+          events: {
+            'onReady': (event: any) => {
+              event.target.playVideo();
+              setIsPlaying(true);
+              setDuration(event.target.getDuration());
+              startTrackingTime();
+            },
+            'onStateChange': (event: any) => {
+              if (event.data === window.YT.PlayerState.PLAYING) {
+                setIsPlaying(true);
+                startTrackingTime();
+              } else {
+                setIsPlaying(false);
+                clearInterval(timeIntervalRef.current);
+              }
+            }
+          }
+        });
+      }, 100);
+    };
+
+    loadAPI();
+
+    return () => clearInterval(timeIntervalRef.current);
   }, [youtubeId, isVideoStarted]);
 
   const fetchLesson = async () => {
@@ -110,15 +140,67 @@ export default function VideoView() {
     return (match && match[2].length === 11) ? match[2] : url;
   };
 
-  // وظائف التحكم الخارجية المشفرة
+  // تتبع الوقت الحقيقي للفيديو وتحديث الـ Timeline
+  const startTrackingTime = () => {
+    clearInterval(timeIntervalRef.current);
+    timeIntervalRef.current = setInterval(() => {
+      if (playerRef.current && playerRef.current.getCurrentTime) {
+        setCurrentTime(playerRef.current.getCurrentTime());
+        if (duration === 0) setDuration(playerRef.current.getDuration());
+      }
+    }, 500);
+  };
+
+  // تنسيق الوقت بصيغة دقيقة:ثانية
+  const formatTime = (timeInSeconds: number) => {
+    const mins = Math.floor(timeInSeconds / 60);
+    const secs = Math.floor(timeInSeconds % 60);
+    return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+  };
+
+  // التعامل مع تحريك الـ Timeline يدوياً
+  const handleTimelineChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newTime = parseFloat(e.target.value);
+    setCurrentTime(newTime);
+    if (playerRef.current && playerRef.current.seekTo) {
+      playerRef.current.seekTo(newTime, true);
+    }
+  };
+
+  // أزرار التقديم والتأخير 10 ثواني
+  const handleSeek = (amount: number) => {
+    if (!playerRef.current || !playerRef.current.getCurrentTime) return;
+    const newTime = Math.max(0, Math.min(duration, playerRef.current.getCurrentTime() + amount));
+    setCurrentTime(newTime);
+    playerRef.current.seekTo(newTime, true);
+  };
+
+  // التحكم بالسرعة
+  const handleRateChange = (rate: number) => {
+    setPlaybackRate(rate);
+    setShowRatesMenu(false);
+    if (playerRef.current && playerRef.current.setPlaybackRate) {
+      playerRef.current.setPlaybackRate(rate);
+    }
+  };
+
+  // تشغيل / إيقاف مؤقت
   const togglePlayPause = () => {
     if (!playerRef.current) return;
     if (isPlaying) {
       playerRef.current.pauseVideo();
-      setIsPlaying(false);
     } else {
       playerRef.current.playVideo();
-      setIsPlaying(true);
+    }
+  };
+
+  // زر ملء الشاشة والتصغير المخصص
+  const toggleFullscreen = () => {
+    if (!videoBoxRef.current) return;
+    if (!isFullscreen) {
+      if (videoBoxRef.current.requestFullscreen) videoBoxRef.current.requestFullscreen();
+    } else {
+      if (document.exitFullscreen) document.exitFullscreen();
     }
   };
 
@@ -126,7 +208,7 @@ export default function VideoView() {
     return (
       <div className="min-h-screen bg-[#F8FAFC] flex flex-col items-center justify-center gap-4">
         <div className="w-12 h-12 border-4 border-indigo-100 border-t-indigo-600 rounded-full animate-spin" />
-        <p className="font-black text-slate-700 text-sm animate-pulse">جاري فحص جدار الحماية المجاني...</p>
+        <p className="font-black text-slate-700 text-sm animate-pulse">جاري فحص وتأمين بيئة اللاب توب المعاصرة...</p>
       </div>
     );
   }
@@ -147,7 +229,7 @@ export default function VideoView() {
     <div className="min-h-screen bg-[#F8FAFC] text-slate-900 font-sans relative flex flex-col antialiased overflow-x-hidden" dir="rtl">
       <div className="absolute inset-0 bg-premium-mesh-pattern opacity-40 pointer-events-none" />
 
-      {/* الهيدر الفخم */}
+      {/* الهيدر الفاخر الزجاجي */}
       <header className="h-16 md:h-20 bg-white/70 backdrop-blur-md border-b border-slate-200/60 flex items-center justify-between px-4 md:px-8 sticky top-0 z-50 shadow-sm">
         <div className="flex items-center gap-3.5 min-w-0">
           <button onClick={() => navigate(-1)} className="p-2.5 hover:bg-indigo-50/80 text-slate-600 hover:text-indigo-600 rounded-xl transition-all border border-slate-200/60 bg-white shadow-sm shrink-0">
@@ -170,15 +252,17 @@ export default function VideoView() {
         </div>
       </header>
 
-      {/* المحتوى الأساسي */}
+      {/* المحتوى الرئيسي */}
       <main className="flex-1 flex flex-col lg:flex-row max-w-[1450px] w-full mx-auto p-4 md:p-6 gap-6 h-auto lg:h-[calc(100vh-5rem)] overflow-hidden">
         
-        {/* صندوق السينما الذكي */}
-        <div className="flex-1 bg-slate-950 rounded-2xl md:rounded-3xl border border-slate-800/80 shadow-2xl relative overflow-hidden flex flex-col justify-between lg:h-full group">
-          
+        {/* حاوية سينما الفيديو الحصري وجهاز التحكم */}
+        <div 
+          ref={videoBoxRef}
+          className="flex-1 bg-slate-950 rounded-2xl md:rounded-3xl border border-slate-800/80 shadow-2xl relative overflow-hidden flex flex-col justify-between lg:h-full group"
+        >
           <div className="w-full flex-1 relative flex items-center justify-center overflow-hidden bg-black">
             
-            {/* واجهة البدء المخصصة */}
+            {/* واجهة البدء الكبرى */}
             <AnimatePresence>
               {!isVideoStarted && (
                 <motion.div 
@@ -196,18 +280,18 @@ export default function VideoView() {
                     <Play size={26} className="fill-current translate-x-[-2px]" />
                     <span className="absolute inset-0 rounded-full bg-indigo-600/30 animate-ping" style={{ animationDuration: '3s' }} />
                   </motion.button>
-                  <h3 className="text-white font-black text-sm md:text-base mt-5">اضغط لبدء تشغيل الحصة الآمنة</h3>
-                  <p className="text-slate-400 font-medium text-[11px] md:text-xs mt-1">مشغل ذكي ومحمي كلياً ضد النسخ العشوائي</p>
+                  <h3 className="text-white font-black text-sm md:text-base mt-5">اضغط لبدء فك تشفير الحصة</h3>
+                  <p className="text-slate-400 font-medium text-[11px] md:text-xs mt-1">مشغل ذكي ومحمي كلياً يمنع استخراج الروابط</p>
                 </motion.div>
               )}
             </AnimatePresence>
 
-            {/* الخدعة الكبرى: جدار حماية شفاف (Overlay) يغطي الفيديو بالكامل ويمنع النقر عليه */}
+            {/* جدار الحماية المجاني الشفاف: يمنع الضغط أو النسخ نهائياً على الفيديو */}
             {isVideoStarted && (
               <div className="absolute inset-0 z-30 bg-transparent cursor-default" />
             )}
 
-            {/* إطار الفيديو المشفر */}
+            {/* إطار الفيديو الجغرافي المعزز */}
             {isVideoStarted && (
               <div className="barie-video-container w-full aspect-video">
                 <iframe
@@ -221,20 +305,85 @@ export default function VideoView() {
             )}
           </div>
           
-          {/* شريط التحكم الخارجي الأنيق التابع للمنصة (بديل أزرار يوتيوب) */}
+          {/* لوحة تحكم البارع المتزامنة برمجياً بالكامل مع مشغل اليوتيوب المخفي */}
           {isVideoStarted && (
-            <div className="bg-slate-900/90 border-t border-slate-800 px-4 py-3 flex items-center justify-between z-40">
-              <button 
-                onClick={togglePlayPause}
-                className="p-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl transition-all shadow-md active:scale-95 flex items-center justify-center"
-              >
-                {isPlaying ? <Pause size={16} className="fill-current" /> : <Play size={16} className="fill-current" />}
-              </button>
-              <span className="text-[10px] md:text-xs font-black text-slate-400">لوحة تحكم مشفرة خاصة بمنصة البارع</span>
+            <div className="bg-slate-900/95 backdrop-blur-md border-t border-slate-800 px-4 py-3 flex flex-col gap-2.5 z-40 transition-transform duration-300">
+              
+              {/* شريط الـ Time Line التفاعلي الفاخر */}
+              <div className="flex items-center gap-3 w-full">
+                <span className="text-[10px] font-mono text-slate-400 select-none min-w-[32px] text-left">{formatTime(currentTime)}</span>
+                <input 
+                  type="range"
+                  min="0"
+                  max={duration || 100}
+                  value={currentTime}
+                  onChange={handleTimelineChange}
+                  className="barie-timeline-slider flex-1 h-1.5 rounded-lg appearance-none cursor-pointer bg-slate-700 accent-indigo-500"
+                />
+                <span className="text-[10px] font-mono text-slate-400 select-none min-w-[32px] text-right">{formatTime(duration)}</span>
+              </div>
+
+              {/* أزرار التحكم والعمليات المتقدمة (تقديم وتأخير وسرعة وملء شاشة) */}
+              <div className="flex items-center justify-between w-full">
+                <div className="flex items-center gap-2">
+                  {/* زر تشغيل / إيقاف */}
+                  <button onClick={togglePlayPause} className="p-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl transition-all shadow-md active:scale-95">
+                    {isPlaying ? <Pause size={15} className="fill-current" /> : <Play size={15} className="fill-current" />}
+                  </button>
+
+                  {/* تأخير 10 ثواني */}
+                  <button onClick={() => handleSeek(-10)} className="p-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl transition-all active:scale-95" title="تأخير 10 ثواني">
+                    <RotateCcw size={15} />
+                  </button>
+
+                  {/* تقديم 10 ثواني */}
+                  <button onClick={() => handleSeek(10)} className="p-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl transition-all active:scale-95" title="تقديم 10 ثواني">
+                    <RotateCw size={15} />
+                  </button>
+                </div>
+
+                <div className="flex items-center gap-3 relative">
+                  {/* قائمة اختيار سرعة الفيديو الذكية */}
+                  <button 
+                    onClick={() => setShowRatesMenu(!showRatesMenu)}
+                    className="flex items-center gap-1.5 px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-bold transition-all"
+                  >
+                    <Sliders size={13} />
+                    <span>{playbackRate}x</span>
+                  </button>
+
+                  <AnimatePresence>
+                    {showRatesMenu && (
+                      <motion.div 
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 10 }}
+                        className="absolute bottom-10 left-0 bg-slate-800 border border-slate-700 rounded-xl p-1 flex flex-col gap-0.5 min-w-[70px] shadow-xl z-50"
+                      >
+                        {[0.5, 1, 1.25, 1.5, 1.75, 2].map((rate) => (
+                          <button
+                            key={rate}
+                            onClick={() => handleRateChange(rate)}
+                            className={`px-2 py-1 text-[11px] font-mono font-bold rounded-lg text-center transition-colors ${playbackRate === rate ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:bg-slate-700 hover:text-white'}`}
+                          >
+                            {rate}x
+                          </button>
+                        ))}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
+                  {/* زر التكبير لملء الشاشة الكامل أو التصغير */}
+                  <button onClick={toggleFullscreen} className="p-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl transition-all active:scale-95" title="شاشة كاملة">
+                    {isFullscreen ? <Minimize size={15} /> : <Maximize size={15} />}
+                  </button>
+                </div>
+              </div>
+
             </div>
           )}
 
-          {/* العلامة المائية الديناميكية */}
+          {/* العلامة المائية الديناميكية لحفظ الحقوق */}
           <div className="absolute inset-0 pointer-events-none select-none overflow-hidden z-20">
             <div className="barie-floating-watermark text-[10px] md:text-xs font-black text-white/5 bg-white/[0.01] border border-white/[0.03] px-3 py-1.5 rounded-xl shadow-lg">
               سلسلة البارع الرقمية • {profile?.first_name || 'طالب'} {profile?.last_name || 'متميز'}
@@ -268,22 +417,4 @@ export default function VideoView() {
             </div>
           </div>
 
-          <div className="bg-white border border-slate-200/60 rounded-2xl p-4 flex items-center gap-3.5 shadow-sm mt-auto">
-            <div className="w-9 h-9 rounded-xl bg-indigo-50 border border-indigo-100/30 text-indigo-600 flex items-center justify-center shrink-0">
-              <Smartphone size={15} />
-            </div>
-            <div className="text-right">
-              <h5 className="text-xs font-black text-slate-700">المشاهدة السينمائية</h5>
-              <p className="text-[10px] text-slate-400 font-semibold mt-0.5">اقلب الهاتف أفقياً لملء شاشة العرض تلقائياً.</p>
-            </div>
-          </div>
-
-          <div className="pt-1 text-center flex items-center justify-center gap-1 text-[9px] font-black text-slate-400 uppercase tracking-wider select-none">
-            <Copyright size={10} />
-            <span>جميع الحقوق محفوظة لمنصة البارع التعليمية 2026</span>
-          </div>
-        </div>
-      </main>
-    </div>
-  );
-}
+          <div className="pt-1 text-center flex items-center justify-center gap-1 text-[9px] font-black text-slate-400 uppercase tracking-wider

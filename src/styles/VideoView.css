@@ -3,7 +3,6 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-/* حاوية العرض المخصصة */
 .barie-video-container {
   position: relative;
   width: 100%;
@@ -12,7 +11,7 @@
   background: #000;
 }
 
-/* رفع وتكبير الأبعاد بشكل يخفي العناوين وشريط يوتيوب السفلي تحت حواف الصندوق الأسود */
+/* رفع وتكبير الأبعاد بشكل هندسي متناسق لإخفاء معالم مشغل يوتيوب بالكامل */
 .barie-video-container iframe {
   position: absolute;
   top: -12% !important;
@@ -20,9 +19,31 @@
   width: 100% !important;
   height: 124% !important;
   transform: scale(1.02) !important;
+  pointer-events: none; /* حظر تفاعل الماوس المباشر مع اليوتيوب */
 }
 
-/* حركة العلامة المائية الآمنة لمنع تصوير الكاميرات الخارجية */
+/* تخصيص وتجميل شريط التمرير الزمني (Timeline) */
+.barie-timeline-slider {
+  background: #334155;
+  outline: none;
+  transition: background 0.2s;
+}
+
+.barie-timeline-slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #6366f1;
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+
+.barie-timeline-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.3);
+}
+
+/* العلامة المائية الآمنة لحماية البث */
 .barie-floating-watermark {
   position: absolute;
   will-change: transform;
@@ -51,7 +72,6 @@
   100% { transform: translate(5vw, 8vh); }
 }
 
-/* تصميم نقوش الخلفية المبهجة والحديثة للوضع الفاتح */
 .bg-premium-mesh-pattern {
   background-image: radial-gradient(#4f46e5 0.65px, transparent 0.65px);
   background-size: 20px 20px;
