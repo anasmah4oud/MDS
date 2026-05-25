@@ -160,7 +160,7 @@ export default function Register() {
           <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
             <CheckCircle2 size={60} className="text-green-500" />
           </div>
-          <h2 className="text-3xl font-black text-slate-900 mb-4 tracking-tight">أهلاً بك يا بطل!</h2>
+          <h2 className="text-3xl font-black text-slate-900 mb-4 tracking-tight">أهلاً بك يا عزيزي الطالب!</h2>
           <p className="text-xl text-slate-600 font-bold mb-8">تم إنشاء حسابك بنجاح. جاري توجيهك لصفحة الدخول خلال 5 ثواني...</p>
           <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
             <motion.div 

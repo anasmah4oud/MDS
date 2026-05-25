@@ -90,7 +90,7 @@ export default function MyClasses() {
           <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
             <div className="space-y-4 text-center md:text-right flex-1">
               <h2 className="text-3xl md:text-4xl font-black text-white tracking-tight flex items-center justify-center md:justify-start gap-3">
-                 مرحباً بك يا بطل <GraduationCap className="text-yellow-400" size={36} />
+                 مرحباً بك يا عزيزي الطالب <GraduationCap className="text-yellow-400" size={36} />
               </h2>
               <p className="text-blue-100 text-lg md:text-xl font-medium max-w-2xl leading-relaxed">
                 اللغة العربية هي مفتاح تفوقك. كل درس تدرسه هنا يقربك خطوة نحو الدرجة النهائية. نحن معك في رحلتك!

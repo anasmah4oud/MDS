@@ -418,7 +418,7 @@ export default function VideoView() {
               <Award size={15} className="text-indigo-500" /> محتوى ومحاور الشرح
             </h3>
             <p className="text-slate-500 font-bold text-xs leading-relaxed text-right relative z-10">
-              {lesson.description || "أهلاً بك يا بطل في هذه المحاضرة مع م/ محمود الديب. يرجى التركيز التام وتدوين كافة الملاحظات ."}
+              {lesson.description || "أهلاً بك يا عزيزي الطالب في هذه المحاضرة مع م/ محمود الديب. يرجى التركيز التام وتدوين كافة الملاحظات ."}
             </p>
           </div>
 
