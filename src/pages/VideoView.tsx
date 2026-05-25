@@ -58,7 +58,6 @@ export default function VideoView() {
     document.addEventListener('contextmenu', handleContextMenu);
     document.addEventListener('keydown', handleKeyDown);
 
-    // فرض قيود الحماية على الأكواد المضمنة تلقائياً دون تعطيل النقر الأساسي
     const observer = new MutationObserver(() => {
       document.querySelectorAll('iframe').forEach(iframe => {
         if (!iframe.getAttribute('sandbox')) {
@@ -98,12 +97,12 @@ export default function VideoView() {
     try {
       const videoId = getYouTubeId(lessonData.url);
       
-      // تمرير بارامترات الأمان الصارمة مباشرة إلى رابط المشغل لقطع أزرار يوتيوب من الجذور
+      // نرسل الـ ID ناصعاً ونظيفاً لتجنب خطأ الـ Invalid video id
       setPlyrSource({
         type: 'video',
         sources: [
           { 
-            src: `${videoId}?autoplay=0&controls=0&rel=0&showinfo=0&iv_load_policy=3&modestbranding=1&enablejsapi=1&widgetid=1`, 
+            src: videoId, 
             provider: 'youtube' 
           }
         ],
@@ -120,12 +119,22 @@ export default function VideoView() {
     return (match && match[2].length === 11) ? match[2] : url;
   };
 
-  // إعدادات لوحة التحكم الخاصة بـ Plyr فقط
+  // الطريقة القياسية لفرض بارامترات حجب هوية يوتيوب بدون كسر كود المكتبة
   const plyrOptions = {
     controls: [
       'play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'settings', 'fullscreen'
     ],
     settings: ['quality', 'speed'],
+    youtube: { 
+      // هذه الخصائص تدمجها المكتبة تلقائياً في رابط الإطار الخلفي بأمان
+      noCookie: true, 
+      rel: 0, 
+      showinfo: 0, 
+      iv_load_policy: 3, 
+      modestbranding: 1,
+      controls: 0,
+      disablekb: 1
+    },
     ratio: '16:9',
     keyboard: { focused: true, global: false }
   };
@@ -201,7 +210,7 @@ export default function VideoView() {
             <div className="dot-particle dot-2" />
           </div>
 
-          <div className="w-full h-full flex items-center justify-center relative z-10">
+          <div className="w-full h-full flex items-center justify-center relative z-10 px-0 sm:px-4">
             <div className={`w-full aspect-video transition-all duration-700 transform ${playerReady ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}>
               {plyrSource && (
                 <div className="plyr-protection-wrapper w-full h-full relative">

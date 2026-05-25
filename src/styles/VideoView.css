@@ -19,15 +19,15 @@
   }
 }
 
-/* تكبير وتعديل أبعاد الـ iframe لإخفاء الروابط والشعارات الخارجية خلف حدود الصندوق الأسود المخصص */
+/* إخفاء ذكي لشعارات يوتيوب الخارجية عن طريق دفع الأطراف خارج حدود الصندوق المظلم */
 .plyr__video-embed iframe {
-  top: -12% !important;
-  height: 124% !important;
-  transform: scale(1.05) !important;
+  top: -10.5% !important;
+  height: 121% !important;
+  transform: scale(1.02) !important;
   user-select: none !important;
 }
 
-/* تلوين أشرطة التقدم والمشغلات بهوية "البارع" الفخمة */
+/* تخصيص مظهر الألوان للمشغل لتطابق الهوية الفخمة والحديثة للمنصة */
 .plyr--full-ui input[type=range] {
   color: #4f46e5 !important;
 }
@@ -42,7 +42,7 @@
   color: white !important;
 }
 
-/* تأثير الجزيئات الفنية المحسنة للأداء */
+/* جزيئات الخلفية الفنية الانسيابية والناعمة */
 .dot-particle {
   position: absolute;
   border-radius: 50%;
@@ -78,7 +78,7 @@
   50% { transform: translate(-30px, -20px) scale(0.95); }
 }
 
-/* حركة حماية الشاشة للعلامة المائية الدورية */
+/* حركة حماية الشاشة للعلامة المائية المتحركة الدورية */
 .floating-watermark {
   position: absolute;
   will-change: transform;
