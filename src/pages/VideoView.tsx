@@ -7,8 +7,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  ChevronRight, Shield, BookOpen, AlertCircle, Sparkles, ShieldAlert, 
-  Copyright, Smartphone, Play, Pause, GraduationCap, Award,
+  ChevronRight, Shield, AlertCircle, Sparkles, ShieldAlert, 
+  Copyright, Play, Pause, GraduationCap, Award,
   RotateCw, RotateCcw, Maximize, Minimize, Sliders
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
@@ -55,7 +55,17 @@ export default function VideoView() {
     document.addEventListener('contextmenu', handleContextMenu);
 
     const handleFullscreenChange = () => {
-      setIsFullscreen(!!document.fullscreenElement);
+      const isCurrentlyFull = !!document.fullscreenElement;
+      setIsFullscreen(isCurrentlyFull);
+      
+      // توجيه الشاشة أفقياً تلقائياً عند الدخول لوضع ملء الشاشة في الموبايل
+      if (isCurrentlyFull && window.screen && window.screen.orientation) {
+        window.screen.orientation.lock('landscape').catch(() => {
+          // يتطلب أحياناً تفاعلاً مباشراً أو قد لا تدعمه بعض المتصفحات القديمة
+        });
+      } else if (!isCurrentlyFull && window.screen && window.screen.orientation) {
+        window.screen.orientation.unlock();
+      }
     };
     document.addEventListener('fullscreenchange', handleFullscreenChange);
 
@@ -144,7 +154,7 @@ export default function VideoView() {
         setCurrentTime(playerRef.current.getCurrentTime());
         if (duration === 0) setDuration(playerRef.current.getDuration());
       }
-    }, 500);
+    }, 400);
   };
 
   const formatTime = (timeInSeconds: number) => {
@@ -188,11 +198,18 @@ export default function VideoView() {
   const toggleFullscreen = () => {
     if (!videoBoxRef.current) return;
     if (!isFullscreen) {
-      if (videoBoxRef.current.requestFullscreen) videoBoxRef.current.requestFullscreen();
+      if (videoBoxRef.current.requestFullscreen) {
+        videoBoxRef.current.requestFullscreen();
+      }
     } else {
-      if (document.exitFullscreen) document.exitFullscreen();
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      }
     }
   };
+
+  // احتساب النسبة المئوية للمرور الزمني لتلوين شريط التحكم ديناميكياً
+  const progressPercent = duration > 0 ? (currentTime / duration) * 100 : 0;
 
   if (loading) {
     return (
@@ -243,12 +260,12 @@ export default function VideoView() {
       </header>
 
       {/* المحتوى الرئيسي */}
-      <main className="flex-1 flex flex-col lg:flex-row max-w-[1450px] w-full mx-auto p-4 md:p-6 gap-6 h-auto lg:h-[calc(100vh-5rem)] overflow-hidden">
+      <main className="flex-1 flex flex-col lg:flex-row max-w-[1450px] w-full mx-auto p-4 md:p-6 gap-6 h-auto lg:h-[calc(100vh-6rem)] overflow-hidden">
         
-        {/* حاوية سينما الفيديو الحصري وجهاز التحكم */}
+        {/* حاوية سينما الفيديو وعناصر التحكم المحدثة للأبعاد */}
         <div 
           ref={videoBoxRef}
-          className="flex-1 bg-slate-950 rounded-2xl md:rounded-3xl border border-slate-800/80 shadow-2xl relative overflow-hidden flex flex-col justify-between lg:h-full group"
+          className="flex-[2] bg-slate-950 rounded-2xl md:rounded-3xl border border-slate-800/80 shadow-2xl relative overflow-hidden flex flex-col justify-between w-full min-h-[350px] md:min-h-[480px] lg:h-full group"
         >
           <div className="w-full flex-1 relative flex items-center justify-center overflow-hidden bg-black">
             
@@ -276,14 +293,14 @@ export default function VideoView() {
               )}
             </AnimatePresence>
 
-            {/* جدار الحماية المجاني الشفاف */}
+            {/* جدار الحماية المجاني الشفاف الحامي للنقرات */}
             {isVideoStarted && (
               <div className="absolute inset-0 z-30 bg-transparent cursor-default" />
             )}
 
-            {/* إطار الفيديو */}
+            {/* إطار الفيديو المتطور */}
             {isVideoStarted && (
-              <div className="barie-video-container w-full aspect-video">
+              <div className="barie-video-container w-full h-full min-h-[240px] md:min-h-[400px]">
                 <iframe
                   id={iframeId}
                   src={`https://www.youtube-nocookie.com/embed/${youtubeId}?enablejsapi=1&autoplay=1&controls=0&rel=0&modestbranding=1&iv_load_policy=3&showinfo=0&disablekb=1&origin=${window.location.origin}`}
@@ -295,36 +312,39 @@ export default function VideoView() {
             )}
           </div>
           
-          {/* لوحة تحكم البارع المتزامنة برمجياً */}
+          {/* لوحة تحكم البارع المتزامنة برمجياً وملونة بالكامل بالأزرق */}
           {isVideoStarted && (
-            <div className="bg-slate-900/95 backdrop-blur-md border-t border-slate-800 px-4 py-3 flex flex-col gap-2.5 z-40">
+            <div className="bg-slate-900/95 backdrop-blur-md border-t border-slate-800 px-4 py-3.5 flex flex-col gap-3 z-40 shrink-0">
               
-              {/* شريط الـ Time Line التفاعلي */}
+              {/* شريط الـ Time Line التفاعلي الملون مسبقاً */}
               <div className="flex items-center gap-3 w-full">
-                <span className="text-[10px] font-mono text-slate-400 select-none min-w-[32px] text-left">{formatTime(currentTime)}</span>
+                <span className="text-[10px] font-mono text-slate-400 select-none min-w-[35px] text-left">{formatTime(currentTime)}</span>
                 <input 
                   type="range"
                   min="0"
                   max={duration || 100}
                   value={currentTime}
                   onChange={handleTimelineChange}
-                  className="barie-timeline-slider flex-1 h-1.5 rounded-lg appearance-none cursor-pointer bg-slate-700 accent-indigo-500"
+                  style={{
+                    background: `linear-width(rgba(0,0,0,0)), linear-gradient(to right, #3b82f6 0%, #3b82f6 ${progressPercent}%, #334155 ${progressPercent}%, #334155 100%)`
+                  }}
+                  className="barie-timeline-slider flex-1 h-1.5 rounded-lg appearance-none cursor-pointer"
                 />
-                <span className="text-[10px] font-mono text-slate-400 select-none min-w-[32px] text-right">{formatTime(duration)}</span>
+                <span className="text-[10px] font-mono text-slate-400 select-none min-w-[35px] text-right">{formatTime(duration)}</span>
               </div>
 
               {/* أزرار التحكم والعمليات المتقدمة */}
               <div className="flex items-center justify-between w-full">
-                <div className="flex items-center gap-2">
-                  <button onClick={togglePlayPause} className="p-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl transition-all shadow-md active:scale-95">
+                <div className="flex items-center gap-2.5">
+                  <button onClick={togglePlayPause} className="p-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl transition-all shadow-md active:scale-95">
                     {isPlaying ? <Pause size={15} className="fill-current" /> : <Play size={15} className="fill-current" />}
                   </button>
 
-                  <button onClick={() => handleSeek(-10)} className="p-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl transition-all active:scale-95" title="تأخير 10 ثواني">
+                  <button onClick={() => handleSeek(-10)} className="p-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl transition-all active:scale-95" title="تأخير 10 ثواني">
                     <RotateCcw size={15} />
                   </button>
 
-                  <button onClick={() => handleSeek(10)} className="p-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl transition-all active:scale-95" title="تقديم 10 ثواني">
+                  <button onClick={() => handleSeek(10)} className="p-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl transition-all active:scale-95" title="تقديم 10 ثواني">
                     <RotateCw size={15} />
                   </button>
                 </div>
@@ -332,7 +352,7 @@ export default function VideoView() {
                 <div className="flex items-center gap-3 relative">
                   <button 
                     onClick={() => setShowRatesMenu(!showRatesMenu)}
-                    className="flex items-center gap-1.5 px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-bold transition-all"
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-bold transition-all"
                   >
                     <Sliders size={13} />
                     <span>{playbackRate}x</span>
@@ -344,13 +364,13 @@ export default function VideoView() {
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: 10 }}
-                        className="absolute bottom-10 left-0 bg-slate-800 border border-slate-700 rounded-xl p-1 flex flex-col gap-0.5 min-w-[70px] shadow-xl z-50"
+                        className="absolute bottom-12 left-0 bg-slate-800 border border-slate-700 rounded-xl p-1 flex flex-col gap-0.5 min-w-[75px] shadow-xl z-50"
                       >
                         {[0.5, 1, 1.25, 1.5, 1.75, 2].map((rate) => (
                           <button
                             key={rate}
                             onClick={() => handleRateChange(rate)}
-                            className={`px-2 py-1 text-[11px] font-mono font-bold rounded-lg text-center transition-colors ${playbackRate === rate ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:bg-slate-700 hover:text-white'}`}
+                            className={`px-2 py-1 text-[11px] font-mono font-bold rounded-lg text-center transition-colors ${playbackRate === rate ? 'bg-blue-600 text-white' : 'text-slate-400 hover:bg-slate-700 hover:text-white'}`}
                           >
                             {rate}x
                           </button>
@@ -359,7 +379,7 @@ export default function VideoView() {
                     )}
                   </AnimatePresence>
 
-                  <button onClick={toggleFullscreen} className="p-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl transition-all active:scale-95" title="شاشة كاملة">
+                  <button onClick={toggleFullscreen} className="p-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl transition-all active:scale-95" title={isFullscreen ? "تصغير الشاشة" : "ملء الشاشة"}>
                     {isFullscreen ? <Minimize size={15} /> : <Maximize size={15} />}
                   </button>
                 </div>
@@ -376,8 +396,8 @@ export default function VideoView() {
           </div>
         </div>
 
-        {/* الشريط الجانبي */}
-        <div className="w-full lg:w-[360px] flex flex-col gap-4 shrink-0 lg:h-full overflow-y-auto pb-4 lg:pb-0">
+        {/* الشريط الجانبي الفاخر الكروت الفاتحة */}
+        <div className="w-full lg:w-[350px] flex flex-col gap-4 shrink-0 lg:h-full overflow-y-auto pb-4 lg:pb-0">
           <div className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-sm relative overflow-hidden group">
             <div className="absolute -left-6 -bottom-6 w-20 h-20 bg-indigo-50/50 rounded-full blur-xl group-hover:scale-125 transition-transform duration-500" />
             <h3 className="text-xs font-black text-indigo-600 mb-2.5 flex items-center gap-1.5">
@@ -399,16 +419,6 @@ export default function VideoView() {
                   تم حجب روابط البث الخارجية وتأمين المشغل برمجياً لحماية مجهودك وضمان خصوصية المحاضرات المدفوعة.
                 </p>
               </div>
-            </div>
-          </div>
-
-          <div className="bg-white border border-slate-200/60 rounded-2xl p-4 flex items-center gap-3.5 shadow-sm">
-            <div className="w-9 h-9 rounded-xl bg-indigo-50 border border-indigo-100/30 text-indigo-600 flex items-center justify-center shrink-0">
-              <Smartphone size={15} />
-            </div>
-            <div className="text-right">
-              <h5 className="text-xs font-black text-slate-700">المشاهدة السينمائية</h5>
-              <p className="text-[10px] text-slate-400 font-semibold mt-0.5">اقلب الهاتف أفقياً لملء شاشة العرض تلقائياً.</p>
             </div>
           </div>
 
