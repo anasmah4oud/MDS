@@ -35,7 +35,7 @@ export default function VideoView() {
   const [isVideoStarted, setIsVideoStarted] = useState(false);
   const [youtubeId, setYoutubeId] = useState<string>('');
   
-  // حالات التحكم المتزامنة
+  // حالات التحكم
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [playbackRate, setPlaybackRate] = useState(1);
@@ -59,7 +59,6 @@ export default function VideoView() {
       const isCurrentlyFull = !!document.fullscreenElement;
       setIsFullscreen(isCurrentlyFull);
       
-      // التشغيل الأفقي التلقائي في الموبايل عند ملء الشاشة برمجياً
       if (isCurrentlyFull && window.screen && window.screen.orientation) {
         window.screen.orientation.lock('landscape').catch(() => {});
       } else if (!isCurrentlyFull && window.screen && window.screen.orientation) {
@@ -113,7 +112,7 @@ export default function VideoView() {
               } else {
                 setIsPlaying(false);
                 clearInterval(timeIntervalRef.current);
-                setShowControls(true); // إبقاء عناصر التحكم ظاهرة عند الإيقاف المؤقت
+                setShowControls(true);
               }
             }
           }
@@ -138,7 +137,7 @@ export default function VideoView() {
       setYoutubeId(getYouTubeId(data.url));
     } catch (err) {
       console.error(err);
-    } finaly {
+    } finally {
       setLoading(false);
     }
   };
@@ -156,7 +155,7 @@ export default function VideoView() {
         setCurrentTime(playerRef.current.getCurrentTime());
         if (duration === 0) setDuration(playerRef.current.getDuration());
       }
-    }, 250); // تسريع التحديث لضمان تلوين الـ Timeline بسلاسة تامة دون تقطيع
+    }, 200);
   };
 
   const formatTime = (timeInSeconds: number) => {
@@ -211,7 +210,6 @@ export default function VideoView() {
     resetControlsTimeout();
   };
 
-  // وظيفة إخفاء أزرار التحكم تلقائياً بعد 3 ثوانٍ من عدم النشاط لتوفير رؤية كاملة
   const resetControlsTimeout = () => {
     setShowControls(true);
     clearTimeout(controlsTimeoutRef.current);
@@ -219,7 +217,7 @@ export default function VideoView() {
       controlsTimeoutRef.current = setTimeout(() => {
         setShowControls(false);
         setShowRatesMenu(false);
-      }, 3000);
+      }, 3500);
     }
   };
 
@@ -276,12 +274,12 @@ export default function VideoView() {
       {/* المحتوى الرئيسي */}
       <main className="flex-1 flex flex-col lg:flex-row max-w-[1450px] w-full mx-auto p-4 md:p-6 gap-6 h-auto lg:h-[calc(100vh-6rem)] overflow-hidden">
         
-        {/* حاوية سينما الفيديو الحصري ذو الأبعاد الكاملة بدون اقتطاع */}
+        {/* حاوية سينما الفيديو الحصري الأبعاد الكاملة */}
         <div 
           ref={videoBoxRef}
           onMouseMove={resetControlsTimeout}
           onTouchStart={resetControlsTimeout}
-          className="flex-[2] bg-black rounded-2xl md:rounded-3xl border border-slate-800/80 shadow-2xl relative overflow-hidden flex items-center justify-center w-full aspect-video lg:h-full lg:w-auto group"
+          className="flex-[2] bg-black rounded-2xl md:rounded-3xl border border-slate-800/80 shadow-2xl relative overflow-hidden flex items-center justify-center w-full aspect-video lg:h-full lg:w-auto group select-none"
         >
           
           {/* واجهة البدء الكبرى */}
@@ -308,12 +306,12 @@ export default function VideoView() {
             )}
           </AnimatePresence>
 
-          {/* جدار حماية شفاف للنقرات */}
+          {/* حماية شفافة مخصصة تمنع نقرات يوتيوب الجانبية */}
           {isVideoStarted && (
             <div className="absolute inset-0 z-30 bg-transparent cursor-default" />
           )}
 
-          {/* إطار الفيديو المتكامل بأبعاده الأصلية */}
+          {/* إطار الفيديو الأصلي بالكامل 100% بدون اقتطاع حواف الشرح */}
           {isVideoStarted && (
             <div className="barie-video-wrapper w-full h-full">
               <iframe
@@ -326,11 +324,11 @@ export default function VideoView() {
             </div>
           )}
           
-          {/* لوحة تحكم تطفو بشكل زجاجي ذكي وتختفي تلقائياً لعدم أكل مساحة الفيديو */}
+          {/* لوحة تحكم تطفو بشكل زجاجي وتتحكم بالتلوين الأزرق */}
           {isVideoStarted && (
             <div className={`barie-floating-controls-panel ${showControls ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'}`}>
               
-              {/* شريط الـ Time Line التفاعلي المحاكي ليوتيوب بالأزرق الفاخر */}
+              {/* شريط الـ Time Line الأزرق النقي المتكامل */}
               <div className="flex items-center gap-3 w-full">
                 <span className="text-[11px] font-mono font-bold text-white select-none min-w-[35px] text-left">{formatTime(currentTime)}</span>
                 <div className="flex-1 relative flex items-center">
@@ -340,16 +338,16 @@ export default function VideoView() {
                     max={duration || 100}
                     value={currentTime}
                     onChange={handleTimelineChange}
-                    className="barie-timeline-slider flex-1 h-1.5 rounded-lg appearance-none cursor-pointer relative z-10 bg-transparent"
+                    className="barie-timeline-slider flex-1 h-1.5 rounded-lg appearance-none cursor-pointer relative z-10"
                     style={{
-                      background: `linear-gradient(to right, #2563eb 0%, #2563eb ${progressPercent}%, rgba(255,255,255,0.2) ${progressPercent}%, rgba(255,255,255,0.2) 100%)`
+                      ['--barie-progress' as any]: `${progressPercent}%`
                     }}
                   />
                 </div>
                 <span className="text-[11px] font-mono font-bold text-white select-none min-w-[35px] text-right">{formatTime(duration)}</span>
               </div>
 
-              {/* أزرار التشغيل والسرعات والملء الأفقية */}
+              {/* أزرار العمليات والسرعات وسينما ملء الشاشة */}
               <div className="flex items-center justify-between w-full mt-1">
                 <div className="flex items-center gap-3">
                   <button onClick={togglePlayPause} className="p-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl transition-all shadow-md active:scale-95">
@@ -395,7 +393,7 @@ export default function VideoView() {
                     )}
                   </AnimatePresence>
 
-                  <button onClick={toggleFullscreen} className="p-2 bg-white/10 hover:bg-white/20 text-white rounded-xl transition-all active:scale-95" title={isFullscreen ? "تصغير" : "تطوير العرض كامل"}>
+                  <button onClick={toggleFullscreen} className="p-2 bg-white/10 hover:bg-white/20 text-white rounded-xl transition-all active:scale-95" title={isFullscreen ? "تصغير الشاشة" : "تكبير الشاشة ملء كامل"}>
                     {isFullscreen ? <Minimize size={16} /> : <Maximize size={16} />}
                   </button>
                 </div>

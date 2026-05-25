@@ -11,25 +11,24 @@
   background: #000;
 }
 
-/* تكبير امتداد إطار iframe لمنع رؤية عناصر التحكم المضمنة لليوتيوب */
+/* تعديل الأبعاد لتعود أصلية تماماً 100% لعرض كامل محتوى السبورة بدون أي اقتطاع */
 .barie-video-wrapper iframe {
   position: absolute;
-  top: -12% !important;
+  top: 0 !important;
   left: 0;
   width: 100% !important;
-  height: 124% !important;
-  transform: scale(1.02) !important;
+  height: 100% !important;
+  transform: none !important;
   pointer-events: none;
 }
 
-/* لوحة التحكم العائمة والذكية المخفية - لا تؤثر نهائياً على مساحة الفيديو الأساسية */
+/* لوحة التحكم العائمة والذكية المخفية تلقائياً */
 .barie-floating-controls-panel {
   position: absolute;
   bottom: 0;
   left: 0;
   right: 0;
   background: linear-gradient(to top, rgba(15, 23, 42, 0.95) 0%, rgba(15, 23, 42, 0.6) 70%, transparent 100%);
-  backdrop-blur-sm;
   padding: 24px 16px 14px 16px;
   display: flex;
   flex-direction: column;
@@ -38,11 +37,12 @@
   transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* تعديل الـ Timeline وتنسيق المقبض البصري */
+/* تلوين شريط الـ Timeline التفاعلي بالأزرق الفاخر بالتزامن مع التقدم */
 .barie-timeline-slider {
   outline: none;
+  background: linear-gradient(to right, #2563eb 0%, #2563eb var(--barie-progress, 0%), rgba(255, 255, 255, 0.2) var(--barie-progress, 0%), rgba(255, 255, 255, 0.2) 100%);
   border-radius: 8px;
-  transition: all 0.2s ease;
+  transition: background 0.05s linear;
 }
 
 .barie-timeline-slider::-webkit-slider-thumb {
@@ -50,7 +50,7 @@
   width: 14px;
   height: 14px;
   border-radius: 50%;
-  background: #2563eb; /* لون أزرق فخم متطابق مع طلبك */
+  background: #2563eb;
   cursor: pointer;
   border: 2px solid #ffffff;
   box-shadow: 0 0 6px rgba(0, 0, 0, 0.5);
@@ -62,13 +62,13 @@
   background: #3b82f6;
 }
 
-/* لمتصفحات فايرفوكس */
+/* دعم متصفحات فايرفوكس لتلوين الـ Timeline */
 .barie-timeline-slider::-moz-range-progress {
   background-color: #2563eb;
   border-radius: 8px;
 }
 
-/* العلامة المائية المتحركة */
+/* العلامة المائية الديناميكية */
 .barie-floating-watermark {
   position: absolute;
   will-change: transform;
