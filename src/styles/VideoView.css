@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+/* حاوية مشغل الفيديو وتثبيت الأبعاد */
 .barie-video-wrapper {
   position: relative;
   width: 100%;
@@ -11,7 +12,7 @@
   background: #000;
 }
 
-/* تعديل الأبعاد لتعود أصلية تماماً 100% لعرض كامل محتوى السبورة بدون أي اقتطاع */
+/* إطار iframe الأصلي 100% لعرض كامل مساحة ومحتوى المذكرة والسبورة بدون اقتطاع حواف */
 .barie-video-wrapper iframe {
   position: absolute;
   top: 0 !important;
@@ -22,7 +23,7 @@
   pointer-events: none;
 }
 
-/* لوحة التحكم العائمة والذكية المخفية تلقائياً */
+/* لوحة التحكم العائمة والذكية - تطفو فوق الفيديو ولا تأكل مساحة العرض الرأسية للأبعاد */
 .barie-floating-controls-panel {
   position: absolute;
   bottom: 0;
@@ -37,15 +38,25 @@
   transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* تلوين شريط الـ Timeline التفاعلي بالأزرق الفاخر بالتزامن مع التقدم */
+/* شريط الـ Timeline التفاعلي متناسق مع اتجاه اليمين إلى اليسار RTL بكسل ببكسل */
 .barie-timeline-slider {
   outline: none;
-  background: linear-gradient(to right, #2563eb 0%, #2563eb var(--barie-progress, 0%), rgba(255, 255, 255, 0.2) var(--barie-progress, 0%), rgba(255, 255, 255, 0.2) 100%);
+  /* التعديل الجوهري: جعل التدرج اللوني يبدأ من اليسار (to left) ليلتحم مع حركة النقطة تماماً */
+  background: linear-gradient(to left, 
+    #2563eb 0%, 
+    #2563eb var(--barie-progress, 0%), 
+    rgba(255, 255, 255, 0.2) var(--barie-progress, 0%), 
+    rgba(255, 255, 255, 0.2) 100%
+  );
   border-radius: 8px;
   transition: background 0.05s linear;
+  -webkit-appearance: none;
+  appearance: none;
 }
 
+/* تصميم مقبض التحكم الدائري المتزامن والمطابق لمشغل يوتيوب الاحترافي */
 .barie-timeline-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
   appearance: none;
   width: 14px;
   height: 14px;
@@ -53,22 +64,24 @@
   background: #2563eb;
   cursor: pointer;
   border: 2px solid #ffffff;
-  box-shadow: 0 0 6px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.6);
   transition: transform 0.15s ease;
+  position: relative;
+  z-index: 30;
 }
 
 .barie-timeline-slider::-webkit-slider-thumb:hover {
-  transform: scale(1.4);
+  transform: scale(1.3);
   background: #3b82f6;
 }
 
-/* دعم متصفحات فايرفوكس لتلوين الـ Timeline */
+/* دعم متصفحات فايرفوكس الصارم لشريط التقدم */
 .barie-timeline-slider::-moz-range-progress {
   background-color: #2563eb;
   border-radius: 8px;
 }
 
-/* العلامة المائية الديناميكية */
+/* شريط العلامة المائية المتحرك ذو الأداء العالي */
 .barie-floating-watermark {
   position: absolute;
   will-change: transform;
