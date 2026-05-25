@@ -3,119 +3,57 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-.plyr-protection-wrapper {
+/* حاوية العرض المخصصة لحجب الأشرطة الخارجية وزر المشاهدة على يوتيوب */
+.premium-cinema-holder {
   position: relative;
   width: 100%;
   height: 100%;
-  border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
   background: #000;
 }
 
-@media (max-width: 768px) {
-  .plyr-protection-wrapper {
-    border-radius: 0px;
-  }
-}
-
-/* إخفاء ذكي لشعارات يوتيوب الخارجية عن طريق دفع الأطراف خارج حدود الصندوق المظلم */
-.plyr__video-embed iframe {
-  top: -10.5% !important;
-  height: 121% !important;
+/* رفع وتكبير الأبعاد بشكل هندسي متناسق لإخفاء الروابط والشعارات العلوية والسفلية تماماً */
+.premium-cinema-holder iframe {
+  position: absolute;
+  top: -11% !important;
+  left: 0;
+  width: 100% !important;
+  height: 122% !important;
   transform: scale(1.02) !important;
-  user-select: none !important;
+  z-index: 5;
 }
 
-/* تخصيص مظهر الألوان للمشغل لتطابق الهوية الفخمة والحديثة للمنصة */
-.plyr--full-ui input[type=range] {
-  color: #4f46e5 !important;
-}
-
-.plyr__control--overlaid {
-  background: rgba(79, 70, 229, 0.95) !important;
-  box-shadow: 0 8px 24px rgba(79, 70, 229, 0.3);
-}
-
-.plyr__control:hover {
-  background: #4f46e5 !important;
-  color: white !important;
-}
-
-/* جزيئات الخلفية الفنية الانسيابية والناعمة */
-.dot-particle {
-  position: absolute;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(99, 102, 241, 0.12) 0%, rgba(99, 102, 241, 0) 70%);
-  pointer-events: none;
-  filter: blur(40px);
-  will-change: transform;
-}
-
-.dot-1 {
-  width: 250px;
-  height: 250px;
-  left: -50px;
-  top: -50px;
-  animation: floatParticleOne 20s infinite ease-in-out;
-}
-
-.dot-2 {
-  width: 300px;
-  height: 300px;
-  right: -80px;
-  bottom: -40px;
-  animation: floatParticleTwo 24s infinite ease-in-out;
-}
-
-@keyframes floatParticleOne {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  50% { transform: translate(25px, 15px) scale(1.08); }
-}
-
-@keyframes floatParticleTwo {
-  0%, 100% { transform: translate(0, 0) scale(1.05); }
-  50% { transform: translate(-30px, -20px) scale(0.95); }
-}
-
-/* حركة حماية الشاشة للعلامة المائية المتحركة الدورية */
-.floating-watermark {
+/* حركة العلامة المائية الآمنة لحماية المحتوى الفني وبث المعلم */
+.premium-watermark {
   position: absolute;
   will-change: transform;
-  animation: premiumWatermarkMove 26s infinite ease-in-out;
+  animation: watermarkMove 30s infinite ease-in-out;
   white-space: nowrap;
   user-select: none;
+  z-index: 30;
 }
 
-@keyframes premiumWatermarkMove {
-  0% { transform: translate(10vw, 12vh); }
-  33% { transform: translate(60vw, 20vh); }
-  66% { transform: translate(15vw, 60vh); }
-  100% { transform: translate(10vw, 12vh); }
+@keyframes watermarkMove {
+  0% { transform: translate(10vw, 15vh); }
+  33% { transform: translate(60vw, 25vh); }
+  66% { transform: translate(15vw, 55vh); }
+  100% { transform: translate(10vw, 15vh); }
 }
 
 @media (max-width: 768px) {
-  .floating-watermark {
-    animation: premiumWatermarkMoveMobile 32s infinite ease-in-out;
+  .premium-watermark {
+    animation: watermarkMoveMobile 35s infinite ease-in-out;
   }
 }
 
-@keyframes premiumWatermarkMoveMobile {
-  0% { transform: translate(5vw, 8vh); }
-  50% { transform: translate(40vw, 45vh); }
-  100% { transform: translate(5vw, 8vh); }
+@keyframes watermarkMoveMobile {
+  0% { transform: translate(5vw, 10vh); }
+  50% { transform: translate(45vw, 40vh); }
+  100% { transform: translate(5vw, 10vh); }
 }
 
-.animate-spin-slow {
-  animation: spin 10s linear infinite;
-}
-
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-.bg-grid-pattern {
-  background-image: radial-gradient(#4f46e5 0.75px, transparent 0.75px);
-  background-size: 16px 16px;
+/* شبكة هندسية خلفية ناعمة وجذابة تمنح التصميم الفاتح فخامة بصرية */
+.bg-grid-premium {
+  background-image: radial-gradient(#6366f1 0.75px, transparent 0.75px);
+  background-size: 24px 24px;
 }
