@@ -380,7 +380,7 @@ export default function VideoView() {
                         exit={{ opacity: 0, y: 10 }}
                         className="absolute bottom-12 left-0 bg-slate-900/95 backdrop-blur-md border border-slate-700/50 rounded-xl p-1 flex flex-col gap-0.5 min-w-[80px] shadow-2xl z-50"
                       >
-                        {[0.5, 1, 1.25, 1.5, 1.75, 2].map((rate) => (
+                        {[1, 1.25, 1.5, 1.75, 2].map((rate) => (
                           <button
                             key={rate}
                             onClick={() => handleRateChange(rate)}
