@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
+import { normalizePackageImageUrl, handleBrokenPackageImage } from '../lib/image-url';
 import { Package } from '../types';
 
 export default function FreeClasses() {
@@ -152,9 +153,10 @@ export default function FreeClasses() {
                   {/* Image & Badges */}
                   <div className="relative h-56 overflow-hidden">
                     <img 
-                      src={p.image_url || '/placeholder-course.jpg'} 
-                      alt={p.name} 
-                      className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700 ease-out" 
+                      src={normalizePackageImageUrl(p.image_url)}
+                      alt={p.name}
+                      className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700 ease-out"
+                      onError={handleBrokenPackageImage}
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/20 to-transparent"></div>
                     

@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
+import { normalizePackageImageUrl, handleBrokenPackageImage } from '../lib/image-url';
 import { Package as PackageType } from '../types';
 import '../styles/Classes.css';
 
@@ -411,9 +412,10 @@ function PackageCard({ pkg, isSubscribed, onBuy }: { pkg: PackageType; isSubscri
     >
       <div className="relative aspect-video overflow-hidden bg-slate-900">
         <img 
-          src={pkg.image_url || "https://placehold.co/1920x1080/0f172a/3b82f6?text=البارع"} 
-          className="w-full h-full object-cover" 
+          src={normalizePackageImageUrl(pkg.image_url)}
+          className="w-full h-full object-cover"
           alt={pkg.name}
+          onError={handleBrokenPackageImage}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/20 to-transparent" />
         {isSubscribed && (

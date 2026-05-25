@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
+import { normalizePackageImageUrl, handleBrokenPackageImage } from '../lib/image-url';
 import { Package } from '../types';
 import '../styles/MyClasses.css';
 
@@ -147,9 +148,10 @@ export default function MyClasses() {
                       {/* Image Container */}
                       <div className="relative aspect-[4/3] overflow-hidden bg-slate-100">
                         <img 
-                           src={p.image_url || '/placeholder-course.jpg'} 
-                           alt={p.name} 
-                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+                           src={normalizePackageImageUrl(p.image_url)}
+                           alt={p.name}
+                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                           onError={handleBrokenPackageImage}
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity" />
                         
