@@ -9,7 +9,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   ChevronRight, Shield, BookOpen, AlertCircle, Sparkles, ShieldAlert, 
   Copyright, Smartphone, Play, Pause, GraduationCap, Award,
-  RotateCw, RotateCcw, Maximize, Minimize, FastForward, Sliders
+  RotateCw, RotateCcw, Maximize, Minimize, Sliders
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
@@ -54,7 +54,6 @@ export default function VideoView() {
     const handleContextMenu = (e: MouseEvent) => e.preventDefault();
     document.addEventListener('contextmenu', handleContextMenu);
 
-    // متابعة تغيرات ملء الشاشة لربط الأزرار
     const handleFullscreenChange = () => {
       setIsFullscreen(!!document.fullscreenElement);
     };
@@ -68,7 +67,6 @@ export default function VideoView() {
     };
   }, [lessonId]);
 
-  // بناء وحقن سكربت يوتيوب بدون أخطاء رندرة
   useEffect(() => {
     if (!youtubeId || !isVideoStarted) return;
 
@@ -85,7 +83,6 @@ export default function VideoView() {
     };
 
     const initPlayer = () => {
-      // التأكد التام من وجود العنصر في الـ DOM أولاً لمنع خطأ Invalid Video ID
       setTimeout(() => {
         if (!document.getElementById(iframeId)) return;
         
@@ -140,7 +137,6 @@ export default function VideoView() {
     return (match && match[2].length === 11) ? match[2] : url;
   };
 
-  // تتبع الوقت الحقيقي للفيديو وتحديث الـ Timeline
   const startTrackingTime = () => {
     clearInterval(timeIntervalRef.current);
     timeIntervalRef.current = setInterval(() => {
@@ -151,14 +147,12 @@ export default function VideoView() {
     }, 500);
   };
 
-  // تنسيق الوقت بصيغة دقيقة:ثانية
   const formatTime = (timeInSeconds: number) => {
     const mins = Math.floor(timeInSeconds / 60);
     const secs = Math.floor(timeInSeconds % 60);
     return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
   };
 
-  // التعامل مع تحريك الـ Timeline يدوياً
   const handleTimelineChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newTime = parseFloat(e.target.value);
     setCurrentTime(newTime);
@@ -167,7 +161,6 @@ export default function VideoView() {
     }
   };
 
-  // أزرار التقديم والتأخير 10 ثواني
   const handleSeek = (amount: number) => {
     if (!playerRef.current || !playerRef.current.getCurrentTime) return;
     const newTime = Math.max(0, Math.min(duration, playerRef.current.getCurrentTime() + amount));
@@ -175,7 +168,6 @@ export default function VideoView() {
     playerRef.current.seekTo(newTime, true);
   };
 
-  // التحكم بالسرعة
   const handleRateChange = (rate: number) => {
     setPlaybackRate(rate);
     setShowRatesMenu(false);
@@ -184,7 +176,6 @@ export default function VideoView() {
     }
   };
 
-  // تشغيل / إيقاف مؤقت
   const togglePlayPause = () => {
     if (!playerRef.current) return;
     if (isPlaying) {
@@ -194,7 +185,6 @@ export default function VideoView() {
     }
   };
 
-  // زر ملء الشاشة والتصغير المخصص
   const toggleFullscreen = () => {
     if (!videoBoxRef.current) return;
     if (!isFullscreen) {
@@ -286,12 +276,12 @@ export default function VideoView() {
               )}
             </AnimatePresence>
 
-            {/* جدار الحماية المجاني الشفاف: يمنع الضغط أو النسخ نهائياً على الفيديو */}
+            {/* جدار الحماية المجاني الشفاف */}
             {isVideoStarted && (
               <div className="absolute inset-0 z-30 bg-transparent cursor-default" />
             )}
 
-            {/* إطار الفيديو الجغرافي المعزز */}
+            {/* إطار الفيديو */}
             {isVideoStarted && (
               <div className="barie-video-container w-full aspect-video">
                 <iframe
@@ -305,11 +295,11 @@ export default function VideoView() {
             )}
           </div>
           
-          {/* لوحة تحكم البارع المتزامنة برمجياً بالكامل مع مشغل اليوتيوب المخفي */}
+          {/* لوحة تحكم البارع المتزامنة برمجياً */}
           {isVideoStarted && (
-            <div className="bg-slate-900/95 backdrop-blur-md border-t border-slate-800 px-4 py-3 flex flex-col gap-2.5 z-40 transition-transform duration-300">
+            <div className="bg-slate-900/95 backdrop-blur-md border-t border-slate-800 px-4 py-3 flex flex-col gap-2.5 z-40">
               
-              {/* شريط الـ Time Line التفاعلي الفاخر */}
+              {/* شريط الـ Time Line التفاعلي */}
               <div className="flex items-center gap-3 w-full">
                 <span className="text-[10px] font-mono text-slate-400 select-none min-w-[32px] text-left">{formatTime(currentTime)}</span>
                 <input 
@@ -323,27 +313,23 @@ export default function VideoView() {
                 <span className="text-[10px] font-mono text-slate-400 select-none min-w-[32px] text-right">{formatTime(duration)}</span>
               </div>
 
-              {/* أزرار التحكم والعمليات المتقدمة (تقديم وتأخير وسرعة وملء شاشة) */}
+              {/* أزرار التحكم والعمليات المتقدمة */}
               <div className="flex items-center justify-between w-full">
                 <div className="flex items-center gap-2">
-                  {/* زر تشغيل / إيقاف */}
                   <button onClick={togglePlayPause} className="p-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl transition-all shadow-md active:scale-95">
                     {isPlaying ? <Pause size={15} className="fill-current" /> : <Play size={15} className="fill-current" />}
                   </button>
 
-                  {/* تأخير 10 ثواني */}
                   <button onClick={() => handleSeek(-10)} className="p-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl transition-all active:scale-95" title="تأخير 10 ثواني">
                     <RotateCcw size={15} />
                   </button>
 
-                  {/* تقديم 10 ثواني */}
                   <button onClick={() => handleSeek(10)} className="p-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl transition-all active:scale-95" title="تقديم 10 ثواني">
                     <RotateCw size={15} />
                   </button>
                 </div>
 
                 <div className="flex items-center gap-3 relative">
-                  {/* قائمة اختيار سرعة الفيديو الذكية */}
                   <button 
                     onClick={() => setShowRatesMenu(!showRatesMenu)}
                     className="flex items-center gap-1.5 px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-bold transition-all"
@@ -373,7 +359,6 @@ export default function VideoView() {
                     )}
                   </AnimatePresence>
 
-                  {/* زر التكبير لملء الشاشة الكامل أو التصغير */}
                   <button onClick={toggleFullscreen} className="p-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl transition-all active:scale-95" title="شاشة كاملة">
                     {isFullscreen ? <Minimize size={15} /> : <Maximize size={15} />}
                   </button>
@@ -383,7 +368,7 @@ export default function VideoView() {
             </div>
           )}
 
-          {/* العلامة المائية الديناميكية لحفظ الحقوق */}
+          {/* العلامة المائية الديناميكية */}
           <div className="absolute inset-0 pointer-events-none select-none overflow-hidden z-20">
             <div className="barie-floating-watermark text-[10px] md:text-xs font-black text-white/5 bg-white/[0.01] border border-white/[0.03] px-3 py-1.5 rounded-xl shadow-lg">
               سلسلة البارع الرقمية • {profile?.first_name || 'طالب'} {profile?.last_name || 'متميز'}
@@ -391,7 +376,7 @@ export default function VideoView() {
           </div>
         </div>
 
-        {/* الشريط الجانبي الفاخر الكروت الفاتحة */}
+        {/* الشريط الجانبي */}
         <div className="w-full lg:w-[360px] flex flex-col gap-4 shrink-0 lg:h-full overflow-y-auto pb-4 lg:pb-0">
           <div className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-sm relative overflow-hidden group">
             <div className="absolute -left-6 -bottom-6 w-20 h-20 bg-indigo-50/50 rounded-full blur-xl group-hover:scale-125 transition-transform duration-500" />
@@ -417,4 +402,22 @@ export default function VideoView() {
             </div>
           </div>
 
-          <div className="pt-1 text-center flex items-center justify-center gap-1 text-[9px] font-black text-slate-400 uppercase tracking-wider
+          <div className="bg-white border border-slate-200/60 rounded-2xl p-4 flex items-center gap-3.5 shadow-sm">
+            <div className="w-9 h-9 rounded-xl bg-indigo-50 border border-indigo-100/30 text-indigo-600 flex items-center justify-center shrink-0">
+              <Smartphone size={15} />
+            </div>
+            <div className="text-right">
+              <h5 className="text-xs font-black text-slate-700">المشاهدة السينمائية</h5>
+              <p className="text-[10px] text-slate-400 font-semibold mt-0.5">اقلب الهاتف أفقياً لملء شاشة العرض تلقائياً.</p>
+            </div>
+          </div>
+
+          <div className="pt-1 text-center flex items-center justify-center gap-1 text-[9px] font-black text-slate-400 uppercase tracking-wider select-none mt-auto">
+            <Copyright size={10} />
+            <span>جميع الحقوق محفوظة لمنصة البارع التعليمية 2026</span>
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+}
