@@ -422,14 +422,6 @@ export default function VideoView() {
             </p>
           </div>
 
-          <div className="bg-gradient-to-br from-amber-50/60 to-orange-50/20 border border-amber-100/80 rounded-2xl p-5 shadow-sm">
-            <div className="flex items-start gap-3">
-              <div className="p-2 bg-amber-100/80 text-amber-600 rounded-xl shrink-0 shadow-sm">
-                <AlertCircle size={15} />
-              </div>
-            </div>
-          </div>
-
           <div className="pt-1 text-center flex items-center justify-center gap-1 text-[9px] font-black text-slate-400 uppercase tracking-wider select-none mt-auto">
             <Copyright size={10} />
             <span>جميع الحقوق محفوظة لمنصة البارع التعليمية 2026</span>
