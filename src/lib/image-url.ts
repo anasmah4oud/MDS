@@ -1,6 +1,6 @@
 import type { SyntheticEvent } from 'react';
 
-const DEFAULT_PACKAGE_IMAGE = 'https://placehold.co/1920x1080/0f172a/3b82f6?text=البارع';
+const DEFAULT_PACKAGE_IMAGE = '/logo.png';
 
 function extractGoogleDriveFileId(url: string): string | null {
   const fileMatch = url.match(/\/file\/d\/([^/]+)/);
