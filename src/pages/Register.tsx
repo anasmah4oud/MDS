@@ -9,8 +9,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { 
   User, Phone, MapPin, Mail, Lock, 
   GraduationCap, Calendar, UserCircle, 
-  ChevronLeft, ChevronRight, Camera,
-  CheckCircle2, AlertCircle
+  ChevronLeft, ChevronRight, CheckCircle2, AlertCircle
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
@@ -96,42 +95,30 @@ export default function Register() {
         throw new Error('رقم الهاتف مسجل مسبقاً');
       }
 
-      // 2. Create Auth User
+      // 2. Create Auth User & Send Meta Data mapped perfectly to the DB Trigger
       const { data: authData, error: signUpError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
-options: {
-  data: {
-    student_code: Math.floor(5000 + Math.random() * 95000),
-
-    first_name: formData.firstName,
-    last_name: formData.lastName,
-
-    phone: formData.phone,
-    parent_phone: formData.parentPhone,
-
-    governorate: formData.governorate,
-    city: formData.city,
-
-    grade: Number(formData.grade),
-    track: formData.track,
-
-    birth_date: formData.birthDate,
-    gender: formData.gender,
-
-    photo_url: formData.photoUrl || ''
-  }
-}
+        options: {
+          data: {
+            student_code: String(Math.floor(5000 + Math.random() * 95000)),
+            first_name: formData.firstName,
+            last_name: formData.lastName,
+            phone: formData.phone,
+            parent_phone: formData.parentPhone,
+            governorate: formData.governorate,
+            city: formData.city,
+            grade: String(formData.grade), // Sent as string to safely handle DB transformation
+            track: formData.track,
+            birth_date: formData.birthDate,
+            gender: formData.gender,
+            photo_url: formData.photoUrl || ''
+          }
+        }
       });
 
       if (signUpError) throw signUpError;
       if (!authData.user) throw new Error('فشل إنشاء المستخدم');
-
-      const user = authData.user;
-
-      // 3. Create User Profile
-      const studentCode = Math.floor(5000 + Math.random() * 95000);
-      const isAdminEmail = ['anasmd2026@gmail.com', 'anasmah4oud@gmail.com'].includes(formData.email.toLowerCase());
       
       setSuccess(true);
       setTimeout(() => navigate('/login'), 5000);
