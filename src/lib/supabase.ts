@@ -9,13 +9,5 @@ if (!supabaseUrl || !supabaseAnonKey) {
 
 export const supabase = createClient(
   supabaseUrl || 'https://placeholder.supabase.co',
-  supabaseAnonKey || 'placeholder',
-  {
-    auth: {
-      autoRefreshToken: true,   // السماح بالتحديث ولكن بشكل منضبط
-      persistSession: true,     // حفظ الجلسة في المتصفح لمنع تسجيل الخروج المفاجئ
-      detectSessionInUrl: true, // التعرف على الجلسة القادمة من روابط التأكيد الإلكتروني
-      flowType: 'pkce'          // استخدام تدفق PKCE الأكثر أماناً واستقراراً مع المتصفحات الحديثة
-    }
-  }
+  supabaseAnonKey || 'placeholder'
 );

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { createContext, useContext, useEffect, useState, useRef } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
 import { UserProfile } from '../types';
@@ -27,51 +27,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // لمنع التكرار نهائياً: نتذكر آخر ID تم إرساله لطلب البروفايل، ونتذكر إذا كان الطلب قيد التنفيذ حالياً
-  const lastFetchedUserId = useRef<string | null>(null);
-  const isFetching = useRef<boolean>(false);
-
-  const fetchProfile = async (userId: string) => {
-    // 🛑 حظر مطلق: إذا كان الطلب يجري الآن، أو كنا قد حاولنا جلب هذا الـ ID مسبقاً، اخرج فوراً لمنع الـ Loop
-    if (isFetching.current || lastFetchedUserId.current === userId) {
-      return;
-    }
-
-    try {
-      isFetching.current = true;
-      lastFetchedUserId.current = userId;
-
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .maybeSingle(); // 🟢 maybeSingle تمنع كسر الكود عند وجود 0 صفوف
-
-      if (error) {
-        console.error('Error fetching profile from DB:', error);
-        setProfile(null);
-      } else {
-        setProfile(data as UserProfile);
-      }
-    } catch (err) {
-      console.error('Unexpected error in fetchProfile:', err);
-      setProfile(null);
-    } finally {
-      isFetching.current = false;
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
     let isMounted = true;
 
-    // 1. فحص الجلسة لمرة واحدة عند تحميل الصفحة أول مرة
+    // Check initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!isMounted) return;
-
+      
       const currentUser = session?.user ?? null;
       setUser(currentUser);
-
       if (currentUser) {
         fetchProfile(currentUser.id);
       } else {
@@ -79,25 +43,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     });
 
-    // 2. الاستماع للأحداث الحقيقية فقط (تسجيل الدخول الفعلي أو الخروج)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (!isMounted) return;
-
+      
       const currentUser = session?.user ?? null;
-
-      // إذا خرج المستخدم أو انتهت الجلسة تماماً
-      if (event === 'SIGNED_OUT' || !currentUser) {
-        lastFetchedUserId.current = null;
-        setUser(null);
+      setUser(currentUser);
+      if (currentUser) {
+        fetchProfile(currentUser.id);
+      } else {
         setProfile(null);
         setLoading(false);
-        return;
-      }
-
-      // إذا حدث دخول جديد أو تغير المستخدم الفعلي المسجل
-      if (event === 'SIGNED_IN' || event === 'USER_UPDATED' || lastFetchedUserId.current !== currentUser.id) {
-        setUser(currentUser);
-        fetchProfile(currentUser.id);
       }
     });
 
@@ -106,6 +62,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       subscription.unsubscribe();
     };
   }, []);
+
+  const fetchProfile = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+      if (error) {
+        console.error('Error fetching profile:', error);
+        setProfile(null);
+      } else {
+        setProfile(data as UserProfile);
+      }
+    } catch (err) {
+      console.error('Unexpected error fetching profile:', err);
+      setProfile(null);
+    } finally {
+      // Only set loading to false if this is the most recent profile fetch
+      setLoading(false);
+    }
+  };
 
   const value = {
     user,
