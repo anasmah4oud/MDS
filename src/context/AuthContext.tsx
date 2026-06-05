@@ -29,7 +29,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchProfile = async (userId: string): Promise<UserProfile | null> => {
+  // دالة جلب البروفايل منفصلة ومحمية
+  const fetchProfileData = async (userId: string) => {
     try {
       const { data, error } = await supabase
         .from('profiles')
@@ -37,59 +38,43 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .eq('id', userId)
         .maybeSingle();
 
-      if (error) {
-        console.error('Error fetching profile:', error);
-        return null;
+      if (!error && data) {
+        setProfile(data as UserProfile);
+      } else {
+        setProfile(null);
       }
-      return data as UserProfile;
     } catch (err) {
       console.error('Unexpected error fetching profile:', err);
-      return null;
+      setProfile(null);
+    } finally {
+      setLoading(false);
     }
   };
 
   useEffect(() => {
     let isMounted = true;
 
-    const initializeAuth = async () => {
-      try {
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-        if (sessionError) throw sessionError;
-
-        if (session?.user && isMounted) {
-          setUser(session.user);
-          const prof = await fetchProfile(session.user.id);
-          if (isMounted) setProfile(prof);
-        }
-      } catch (err) {
-        console.error('Auth initialization error:', err);
-      } finally {
-        if (isMounted) setLoading(false);
+    // 1. الفحص المبدئي للجلسة عند فتح الموقع لأول مرة
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!isMounted) return;
+      if (session?.user) {
+        setUser(session.user);
+        fetchProfileData(session.user.id);
+      } else {
+        setLoading(false);
       }
-    };
+    });
 
-    initializeAuth();
-
-    // الاستماع الآمن لتغيرات الجلسة ومنع Loops الـ Token Refresh
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+    // 2. مراقبة التغيرات (تسجيل دخول أو خروج) بدون أي Loops
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (!isMounted) return;
 
-      const currentUser = session?.user ?? null;
-
-      if (event === 'SIGNED_OUT' || !currentUser) {
+      if (session?.user) {
+        setUser(session.user);
+        fetchProfileData(session.user.id);
+      } else {
         setUser(null);
         setProfile(null);
-        setLoading(false);
-        return;
-      }
-
-      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-        setUser(currentUser);
-        // لا تجلب البروفايل مجدداً إذا كان موجوداً بالفعل ومطابقاً للمستخدم الحالي لتقليل الضغط
-        if (!profile || profile.id !== currentUser.id) {
-          const prof = await fetchProfile(currentUser.id);
-          if (isMounted) setProfile(prof);
-        }
         setLoading(false);
       }
     });
@@ -98,7 +83,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       isMounted = false;
       subscription.unsubscribe();
     };
-  }, [profile]);
+  }, []); // 👈 مصفوفة فارغة تماماً لمنع اللوب النهائي
 
   const logout = async () => {
     setLoading(true);

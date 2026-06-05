@@ -23,7 +23,7 @@ export default function Login() {
     password: ''
   });
 
-  // التوجيه المركزي والآمن: يتم فقط وفقط عندما يستقر الـ Context ويجلب البروفايل الفعلي بنجاح
+  // التوجيه التلقائي والآمن فور اكتمال الجلسة والبروفايل معاً
   useEffect(() => {
     if (!authLoading && user && profile) {
       if (profile.role === 'admin') {
@@ -33,6 +33,45 @@ export default function Login() {
       }
     }
   }, [user, profile, authLoading, navigate]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+
+    try {
+      // 1. جلب البريد الإلكتروني للطالب بواسطة رقم هاتفه
+      const { data: localProfile, error: profileError } = await supabase
+        .from('profiles')
+        .select('email, is_blocked')
+        .eq('phone', formData.phone.trim())
+        .maybeSingle();
+
+      if (profileError) throw profileError;
+      
+      if (!localProfile) {
+        throw new Error('رقم الهاتف هذا غير مسجل في المنصة');
+      }
+
+      if (localProfile.is_blocked) {
+        throw new Error('هذا الحساب محظور. يرجى مراجعة الدعم الفني.');
+      }
+
+      // 2. تسجيل الدخول ببيانات الـ Auth الرسمية
+      const { error: loginError } = await supabase.auth.signInWithPassword({
+        email: localProfile.email,
+        password: formData.password
+      });
+
+      if (loginError) throw loginError;
+
+      // ملاحظة: لا نضع navigate هنا، الـ useEffect العلوي سيتولى الأمر فور تحديث الـ Context تلقائياً.
+
+    } catch (err: any) {
+      setError(err.message || 'خطأ في تسجيل الدخول. يرجى التأكد من البيانات.');
+      setLoading(false); // نلغي اللودينج فقط لو حدث خطأ لتعديل البيانات
+    }
+  };
 
   if (authLoading) {
     return (
@@ -45,57 +84,13 @@ export default function Login() {
     );
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
-
-    try {
-      // 1. البحث عن حساب الطالب برقم الهاتف لجلب البريد الإلكتروني
-      const { data: localProfile, error: profileError } = await supabase
-        .from('profiles')
-        .select('email, is_blocked')
-        .eq('phone', formData.phone.trim())
-        .maybeSingle();
-
-      if (profileError) throw profileError;
-      
-      if (!localProfile) {
-        throw new Error('رقم الهاتف غير مسجل لدينا');
-      }
-
-      if (localProfile.is_blocked) {
-        throw new Error('هذا الحساب محظور حالياً. يرجى مراجعة الدعم الفني للمنصة.');
-      }
-
-      // 2. تسجيل الدخول الرسمي عبر سوبابيز
-      const { error: loginError } = await supabase.auth.signInWithPassword({
-        email: localProfile.email,
-        password: formData.password
-      });
-
-      if (loginError) throw loginError;
-
-      // تم حذف الـ navigate اليدوي العشوائي من هنا تماماً!
-      // الـ useEffect في الأعلى سينتظر تحميل البروفايل وتحديث الـ Context ثم يوجهه بأمان وبدون Loops.
-
-    } catch (err: any) {
-      setError(err.message || 'خطأ في تسجيل الدخول. يرجى التأكد من البيانات.');
-      setLoading(false); // نغلق اللودينج فقط في حالة حدوث خطأ
-    }
-  };
-
   return (
     <div className="min-h-screen bg-slate-50 flex" dir="rtl">
-      {/* Login Sidebar */}
+      {/* Side Banner */}
       <div className="hidden lg:flex flex-1 bg-blue-900 items-center justify-center p-12 text-white relative overflow-hidden">
         <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]" />
         <div className="relative z-10 text-center max-w-md">
-          <motion.div
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className="mb-12"
-          >
+          <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="mb-12">
             <img src="/logo.png" alt="Logo" className="w-40 h-40 mx-auto rounded-full border-8 border-white/10 shadow-2xl" />
           </motion.div>
           <h1 className="text-5xl font-black mb-6 tracking-tighter italic">أهلاً بك مرة تانية في منصتك</h1>
@@ -103,24 +98,19 @@ export default function Login() {
         </div>
       </div>
 
-      {/* Login Form Container */}
+      {/* Form Container */}
       <div className="flex-1 flex items-center justify-center p-4">
         <div className="max-w-md w-full">
           <div className="mb-12 text-center md:text-right">
              <Link to="/" className="text-blue-600 font-bold flex items-center gap-2 mb-4 hover:underline">
-              <ChevronRight size={20} />
-              العودة للرئيسية
+              <ChevronRight size={20} /> العودة للرئيسية
             </Link>
             <h2 className="text-4xl font-black text-slate-900 tracking-tight">تسجيل الدخول</h2>
             <p className="text-slate-500 font-bold mt-2 italic">استكمل رحلة نجاحك في اللغة العربية</p>
           </div>
 
           {error && (
-            <motion.div 
-              initial={{ x: 20, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              className="bg-red-50 border-r-4 border-red-500 p-4 mb-8 flex items-center gap-3 text-red-700 font-bold"
-            >
+            <motion.div initial={{ x: 20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} className="bg-red-50 border-r-4 border-red-500 p-4 mb-8 flex items-center gap-3 text-red-700 font-bold">
               <AlertCircle size={20} />
               {error}
             </motion.div>
@@ -181,19 +171,11 @@ export default function Login() {
           </form>
 
           <div className="mt-12 space-y-4">
-             <Link 
-              to="/register" 
-              className="w-full border-2 border-slate-200 text-slate-700 py-4 rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-slate-50 transition-colors"
-            >
-              ليس لديك حساب؟
-              <span className="text-blue-600 underline">قم بإنشاء حساب </span>
+             <Link to="/register" className="w-full border-2 border-slate-200 text-slate-700 py-4 rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-slate-50 transition-colors">
+              ليس لديك حساب؟ <span className="text-blue-600 underline">قم بإنشاء حساب </span>
             </Link>
-            <Link 
-              to="/support"
-              className="w-full border-2 border-slate-200 text-slate-700 py-4 rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-slate-50 transition-colors"
-            >
-              <HelpCircle size={20} className="text-slate-400" />
-              هل تواجه مشكلة؟ تواصل مع الدعم
+            <Link to="/support" className="w-full border-2 border-slate-200 text-slate-700 py-4 rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-slate-50 transition-colors">
+              <HelpCircle size={20} className="text-slate-400" /> هل تواجه مشكلة؟ تواصل مع الدعم
             </Link>
           </div>
         </div>
