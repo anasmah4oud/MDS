@@ -47,18 +47,17 @@ export default function Register() {
     photoUrl: ''
   });
 
-  // Redirect if already logged in
+  // Safe redirect tracking to prevent 429 loops
   useEffect(() => {
-    if (!authLoading && user && profile) {
+    if (!authLoading && user && profile && !success) {
       if (profile.role === 'admin') {
         navigate('/anas/md/200/9', { replace: true });
       } else {
         navigate('/dashboard', { replace: true });
       }
     }
-  }, [user, profile, authLoading, navigate]);
+  }, [user, profile, authLoading, navigate, success]);
 
-  // Show loading while checking auth
   if (authLoading) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
@@ -84,30 +83,31 @@ export default function Register() {
     setError(null);
 
     try {
-      // 1. Check phone uniqueness (in profiles table)
-      const { data: existingPhone, error: phoneError } = await supabase
+      // 1. Direct Safe Check for Phone to avoid token refreshing triggers
+      const { data: existingProfiles, error: fetchError } = await supabase
         .from('profiles')
         .select('phone')
-        .eq('phone', formData.phone)
-        .maybeSingle();
-      
-      if (existingPhone) {
-        throw new Error('رقم الهاتف مسجل مسبقاً');
+        .eq('phone', formData.phone.trim());
+
+      if (fetchError) throw fetchError;
+
+      if (existingProfiles && existingProfiles.length > 0) {
+        throw new Error('رقم الهاتف مسجل مسبقاً لمستخدم آخر');
       }
 
-      // 2. Create Auth User & Send Meta Data mapped perfectly to the DB Trigger
+      // 2. Create Auth User with guaranteed mapping for Database Trigger
       const { data: authData, error: signUpError } = await supabase.auth.signUp({
-        email: formData.email,
+        email: formData.email.trim(),
         password: formData.password,
         options: {
           data: {
             student_code: String(Math.floor(5000 + Math.random() * 95000)),
-            first_name: formData.firstName,
-            last_name: formData.lastName,
-            phone: formData.phone,
-            parent_phone: formData.parentPhone,
+            first_name: formData.firstName.trim(),
+            last_name: formData.lastName.trim(),
+            phone: formData.phone.trim(), // تم تأمين إرسال الحقل هنا بقوة لضمان عدم نزوله Empty
+            parent_phone: formData.parentPhone.trim(),
             governorate: formData.governorate,
-            city: formData.city,
+            city: formData.city.trim(),
             grade: String(formData.grade), 
             track: formData.track,
             birth_date: formData.birthDate,
@@ -118,16 +118,19 @@ export default function Register() {
       });
 
       if (signUpError) throw signUpError;
-      if (!authData.user) throw new Error('فشل إنشاء المستخدم');
-      
-      // ✅ هنا تم قطع ومنع أي عمليات إدخال يدوي لجدول الـ profiles
-      // الـ Trigger في الخلفية سيتكفل بكل شيء بمجرد نجاح الـ signUp أعلاه
+      if (!authData.user) throw new Error('فشل إنشاء الحساب، يرجى المحاولة لاحقاً');
       
       setSuccess(true);
-      setTimeout(() => navigate('/login'), 5000);
+      
+      // Force Sign Out immediately after registration to clear the loop/session causing 429
+      await supabase.auth.signOut();
+
+      setTimeout(() => {
+        navigate('/login', { replace: true });
+      }, 4000);
 
     } catch (err: any) {
-      setError(err.message || 'حدث خطأ أثناء التسجيل');
+      setError(err.message || 'حدث خطأ غير متوقع أثناء التسجيل');
     } finally {
       setLoading(false);
     }
@@ -145,12 +148,12 @@ export default function Register() {
             <CheckCircle2 size={60} className="text-green-500" />
           </div>
           <h2 className="text-3xl font-black text-slate-900 mb-4 tracking-tight">أهلاً بك يا عزيزي الطالب!</h2>
-          <p className="text-xl text-slate-600 font-bold mb-8">تم إنشاء حسابك بنجاح. جاري توجيهك لصفحة الدخول خلال 5 ثواني...</p>
+          <p className="text-xl text-slate-600 font-bold mb-8">تم إنشاء حسابك بنجاح وبأمان. جاري توجيهك لصفحة الدخول...</p>
           <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
             <motion.div 
               initial={{ width: 0 }}
               animate={{ width: '100%' }}
-              transition={{ duration: 5, ease: 'linear' }}
+              transition={{ duration: 4, ease: 'linear' }}
               className="h-full bg-green-500"
             />
           </div>
