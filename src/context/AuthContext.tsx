@@ -1,9 +1,10 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+} from 'react';
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
 import { UserProfile } from '../types';
@@ -24,80 +25,121 @@ const AuthContext = createContext<AuthContextType>({
   logout: async () => {},
 });
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [loading, setLoading] = useState(true);
+export const AuthProvider = ({
+  children,
+}: {
+  children: React.ReactNode;
+}) => {
+  const [user, setUser] =
+    useState<User | null>(null);
 
-  // دالة جلب البروفايل منفصلة ومحمية
-  const fetchProfileData = async (userId: string) => {
+  const [profile, setProfile] =
+    useState<UserProfile | null>(null);
+
+  const [loading, setLoading] =
+    useState(true);
+
+  const fetchProfile = async (
+    userId: string
+  ) => {
     try {
-const { data, error } = await supabase
- .from('profiles')
- .select('*')
- .eq('id', userId)
- .single();
+      const { data, error } =
+        await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', userId)
+          .single();
 
- if (error) {
-  console.error(error);
-  setProfile(null);
-  setLoading(false);
-  return;
-}
+      if (error) {
+        console.error(error);
 
-      if (!error && data) {
-        setProfile(data as UserProfile);
-      } else {
         setProfile(null);
+
+        return;
       }
+
+      setProfile(data as UserProfile);
     } catch (err) {
-      console.error('Unexpected error fetching profile:', err);
+      console.error(err);
+
       setProfile(null);
-    } finally {
-      setLoading(false);
     }
   };
 
   useEffect(() => {
-    let isMounted = true;
+    let mounted = true;
 
-    // 1. الفحص المبدئي للجلسة عند فتح الموقع لأول مرة
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!isMounted) return;
-      if (session?.user) {
+    const initialize = async () => {
+      try {
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+
+        if (!mounted) return;
+
+        if (!session?.user) {
+          setLoading(false);
+          return;
+        }
+
         setUser(session.user);
-        fetchProfileData(session.user.id);
-      } else {
-        setLoading(false);
-      }
-    });
 
-    // 2. مراقبة التغيرات (تسجيل دخول أو خروج) بدون أي Loops
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (!isMounted) return;
-
-      if (session?.user) {
-        setUser(session.user);
-        fetchProfileData(session.user.id);
-      } else {
-        setUser(null);
-        setProfile(null);
-        setLoading(false);
+        await fetchProfile(
+          session.user.id
+        );
+      } catch (err) {
+        console.error(err);
+      } finally {
+        if (mounted) {
+          setLoading(false);
+        }
       }
-    });
+    };
+
+    initialize();
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (!mounted) return;
+
+        if (
+          event === 'SIGNED_OUT'
+        ) {
+          setUser(null);
+          setProfile(null);
+          return;
+        }
+
+        if (
+          event === 'SIGNED_IN' &&
+          session?.user
+        ) {
+          setUser(session.user);
+
+          await fetchProfile(
+            session.user.id
+          );
+        }
+      }
+    );
 
     return () => {
-      isMounted = false;
+      mounted = false;
       subscription.unsubscribe();
     };
-  }, []); // 👈 مصفوفة فارغة تماماً لمنع اللوب النهائي
+  }, []);
 
   const logout = async () => {
-    setLoading(true);
-    await supabase.auth.signOut();
+    try {
+      await supabase.auth.signOut();
+    } catch (err) {
+      console.error(err);
+    }
+
     setUser(null);
     setProfile(null);
-    setLoading(false);
   };
 
   const value = {
@@ -105,15 +147,21 @@ const { data, error } = await supabase
     profile,
     loading,
     logout,
+
     isAdmin:
- profile?.role?.toLowerCase() === 'admin'
- ||
- user?.email === 'anasmd2026@gmail.com'
- ||
- user?.email === 'anasmah4oud@gmail.com'
+      profile?.role === 'admin' ||
+      user?.email ===
+        'anasmd2026@gmail.com' ||
+      user?.email ===
+        'anasmah4oud@gmail.com',
   };
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+    </AuthContext.Provider>
+  );
 };
 
-export const useAuth = () => useContext(AuthContext);
+export const useAuth = () =>
+  useContext(AuthContext);
