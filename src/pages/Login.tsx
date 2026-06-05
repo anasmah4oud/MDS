@@ -23,7 +23,7 @@ export default function Login() {
     password: ''
   });
 
-  // Redirect if already logged in
+  // التوجيه المركزي والآمن: يتم فقط وفقط عندما يستقر الـ Context ويجلب البروفايل الفعلي بنجاح
   useEffect(() => {
     if (!authLoading && user && profile) {
       if (profile.role === 'admin') {
@@ -34,7 +34,6 @@ export default function Login() {
     }
   }, [user, profile, authLoading, navigate]);
 
-  // Show loading while checking auth
   if (authLoading) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
@@ -52,44 +51,37 @@ export default function Login() {
     setError(null);
 
     try {
-      // 1. Find user by phone to get their email (from profiles table)
-      const { data: profile, error: profileError } = await supabase
+      // 1. البحث عن حساب الطالب برقم الهاتف لجلب البريد الإلكتروني
+      const { data: localProfile, error: profileError } = await supabase
         .from('profiles')
-        .select('email, role, is_blocked')
-        .eq('phone', formData.phone)
+        .select('email, is_blocked')
+        .eq('phone', formData.phone.trim())
         .maybeSingle();
 
       if (profileError) throw profileError;
       
-      if (!profile) {
-        throw new Error('رقم الهاتف غير مسجل');
+      if (!localProfile) {
+        throw new Error('رقم الهاتف غير مسجل لدينا');
       }
 
-      if (profile.is_blocked) {
-        throw new Error('هذا الحساب محظور. يرجى التواصل مع الدعم.');
+      if (localProfile.is_blocked) {
+        throw new Error('هذا الحساب محظور حالياً. يرجى مراجعة الدعم الفني للمنصة.');
       }
 
-      // 2. Sign in with email and password
+      // 2. تسجيل الدخول الرسمي عبر سوبابيز
       const { error: loginError } = await supabase.auth.signInWithPassword({
-        email: profile.email,
+        email: localProfile.email,
         password: formData.password
       });
 
-      if (loginError) {
-        throw loginError;
-      }
+      if (loginError) throw loginError;
 
-      // 3. Redirect based on role
-      if (profile.role === 'admin') {
-        navigate('/anas/md/200/9');
-      } else {
-        navigate('/dashboard');
-      }
+      // تم حذف الـ navigate اليدوي العشوائي من هنا تماماً!
+      // الـ useEffect في الأعلى سينتظر تحميل البروفايل وتحديث الـ Context ثم يوجهه بأمان وبدون Loops.
 
     } catch (err: any) {
       setError(err.message || 'خطأ في تسجيل الدخول. يرجى التأكد من البيانات.');
-    } finally {
-      setLoading(false);
+      setLoading(false); // نغلق اللودينج فقط في حالة حدوث خطأ
     }
   };
 
