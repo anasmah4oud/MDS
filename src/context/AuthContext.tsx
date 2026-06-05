@@ -26,36 +26,38 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
-  
-  // لتعقب آخر مستخدم جلبنا بياناته ومنع التكرار اللانهائي
+
+  // لمنع التكرار نهائياً: نتذكر آخر ID تم إرساله لطلب البروفايل، ونتذكر إذا كان الطلب قيد التنفيذ حالياً
   const lastFetchedUserId = useRef<string | null>(null);
+  const isFetching = useRef<boolean>(false);
 
   const fetchProfile = async (userId: string) => {
-    // إذا كنا جلبنا هذا البروفايل بالفعل في نفس الجلسة، لا داعي لتكرار الطلب
-    if (lastFetchedUserId.current === userId && profile) {
-      setLoading(false);
+    // 🛑 حظر مطلق: إذا كان الطلب يجري الآن، أو كنا قد حاولنا جلب هذا الـ ID مسبقاً، اخرج فوراً لمنع الـ Loop
+    if (isFetching.current || lastFetchedUserId.current === userId) {
       return;
     }
 
     try {
+      isFetching.current = true;
       lastFetchedUserId.current = userId;
-      
+
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', userId)
-        .maybeSingle(); // 🟢 استخدام maybeSingle بدلاً من single يمنع كسر الكود والـ 406
+        .maybeSingle(); // 🟢 maybeSingle تمنع كسر الكود عند وجود 0 صفوف
 
       if (error) {
-        console.error('Error fetching profile:', error);
+        console.error('Error fetching profile from DB:', error);
         setProfile(null);
       } else {
         setProfile(data as UserProfile);
       }
     } catch (err) {
-      console.error('Unexpected error fetching profile:', err);
+      console.error('Unexpected error in fetchProfile:', err);
       setProfile(null);
     } finally {
+      isFetching.current = false;
       setLoading(false);
     }
   };
@@ -63,12 +65,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     let isMounted = true;
 
-    // 1. الفحص الأولي للجلسة الحالية عند فتح الموقع
+    // 1. فحص الجلسة لمرة واحدة عند تحميل الصفحة أول مرة
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!isMounted) return;
-      
+
       const currentUser = session?.user ?? null;
       setUser(currentUser);
+
       if (currentUser) {
         fetchProfile(currentUser.id);
       } else {
@@ -76,13 +79,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     });
 
-    // 2. الاستماع لأي تغيرات في حالة الحساب (تسجيل دخول، خروج، تجديد الـ Token)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    // 2. الاستماع للأحداث الحقيقية فقط (تسجيل الدخول الفعلي أو الخروج)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (!isMounted) return;
-      
+
       const currentUser = session?.user ?? null;
-      
-      // منع التكرار إذا كان المستمع يطلق أحداثاً متتالية لنفس المستخدم
+
+      // إذا خرج المستخدم أو انتهت الجلسة تماماً
       if (event === 'SIGNED_OUT' || !currentUser) {
         lastFetchedUserId.current = null;
         setUser(null);
@@ -91,8 +94,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return;
       }
 
-      setUser(currentUser);
-      fetchProfile(currentUser.id);
+      // إذا حدث دخول جديد أو تغير المستخدم الفعلي المسجل
+      if (event === 'SIGNED_IN' || event === 'USER_UPDATED' || lastFetchedUserId.current !== currentUser.id) {
+        setUser(currentUser);
+        fetchProfile(currentUser.id);
+      }
     });
 
     return () => {
