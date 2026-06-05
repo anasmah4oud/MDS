@@ -108,7 +108,7 @@ export default function Register() {
             parent_phone: formData.parentPhone,
             governorate: formData.governorate,
             city: formData.city,
-            grade: String(formData.grade), // Sent as string to safely handle DB transformation
+            grade: String(formData.grade), 
             track: formData.track,
             birth_date: formData.birthDate,
             gender: formData.gender,
@@ -119,6 +119,9 @@ export default function Register() {
 
       if (signUpError) throw signUpError;
       if (!authData.user) throw new Error('فشل إنشاء المستخدم');
+      
+      // ✅ هنا تم قطع ومنع أي عمليات إدخال يدوي لجدول الـ profiles
+      // الـ Trigger في الخلفية سيتكفل بكل شيء بمجرد نجاح الـ signUp أعلاه
       
       setSuccess(true);
       setTimeout(() => navigate('/login'), 5000);
