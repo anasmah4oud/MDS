@@ -137,7 +137,12 @@ export default function AdminBlocked() {
                   className="bg-white p-6 rounded-[32px] border border-slate-100 shadow-sm flex items-center justify-between group"
                 >
                    <div className="flex items-center gap-4">
-                      <img src={user.photoUrl} className="w-16 h-16 rounded-full border-4 border-red-50 shadow-sm" alt="User" />
+                      <img
+ src={
+   user.photo_url ||
+   'https://e7.pngegg.com/pngimages/813/118/png-clipart-silhouette-icon-blank-person-template-share-icon-black-and-white.png'
+ }
+ className="w-16 h-16 rounded-full border-4 border-red-50 shadow-sm" alt="User" />
                       <div>
                         <h4 className="font-black text-slate-900">{user.firstName} {user.lastName}</h4>
                         <p className="text-xs font-bold text-slate-400">{user.phone}</p>

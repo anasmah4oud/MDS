@@ -120,14 +120,11 @@ export default function Register() {
       if (signUpError) throw signUpError;
       if (!authData.user) throw new Error('فشل إنشاء الحساب، يرجى المحاولة لاحقاً');
       
-      setSuccess(true);
-      
-      // Force Sign Out immediately after registration to clear the loop/session causing 429
-      await supabase.auth.signOut();
+setSuccess(true);
 
-      setTimeout(() => {
-        navigate('/login', { replace: true });
-      }, 4000);
+setTimeout(() => {
+ navigate('/login', { replace: true });
+}, 3000);
 
     } catch (err: any) {
       setError(err.message || 'حدث خطأ غير متوقع أثناء التسجيل');

@@ -32,11 +32,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // دالة جلب البروفايل منفصلة ومحمية
   const fetchProfileData = async (userId: string) => {
     try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .maybeSingle();
+const { data, error } = await supabase
+ .from('profiles')
+ .select('*')
+ .eq('id', userId)
+ .single();
+
+ if (error) {
+  console.error(error);
+  setProfile(null);
+  setLoading(false);
+  return;
+}
 
       if (!error && data) {
         setProfile(data as UserProfile);
@@ -98,9 +105,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     profile,
     loading,
     logout,
-    isAdmin: profile?.role === 'admin' || 
-             user?.email === 'anasmd2026@gmail.com' || 
-             user?.email === 'anasmah4oud@gmail.com',
+    isAdmin:
+ profile?.role?.toLowerCase() === 'admin'
+ ||
+ user?.email === 'anasmd2026@gmail.com'
+ ||
+ user?.email === 'anasmah4oud@gmail.com'
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
