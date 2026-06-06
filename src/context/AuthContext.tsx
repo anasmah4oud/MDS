@@ -3,6 +3,7 @@ import React, {
   useContext,
   useEffect,
   useState,
+  useRef,
 } from 'react';
 
 import { User } from '@supabase/supabase-js';
@@ -34,6 +35,14 @@ export const AuthProvider = ({
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [authInitialized, setAuthInitialized] = useState(false);
+
+  // Use a ref to track the current user ID and avoid stale closure issues in the event listener
+  const currentUserRef = useRef<User | null>(null);
+
+  const updateCurrentUser = (newUser: User | null) => {
+    currentUserRef.current = newUser;
+    setUser(newUser);
+  };
 
   const fetchProfile = async (userId: string) => {
     try {
@@ -89,8 +98,12 @@ export const AuthProvider = ({
 
         if (!mounted) return;
 
-        if (session?.user) {
-          setUser(session.user);
+        const currentUserId = currentUserRef.current?.id || null;
+        const newUserId = session?.user?.id || null;
+
+        // Only update if the user identity actually changed
+        if (newUserId !== currentUserId && session?.user) {
+          updateCurrentUser(session.user);
         }
       } catch (err) {
         console.error('Error in initialize auth:', err);
@@ -111,11 +124,18 @@ export const AuthProvider = ({
 
         console.log('Auth state changed event:', event);
 
-        if (session?.user) {
-          setUser(session.user);
-        } else {
-          setUser(null);
-          setProfile(null);
+        const currentUserId = currentUserRef.current?.id || null;
+        const newUserId = session?.user?.id || null;
+
+        // Only update state if the logged-in user identity actually changed.
+        // This avoids infinite loops triggered by auxiliary events like TOKEN_REFRESHED.
+        if (newUserId !== currentUserId) {
+          if (session?.user) {
+            updateCurrentUser(session.user);
+          } else {
+            updateCurrentUser(null);
+            setProfile(null);
+          }
         }
 
         setAuthInitialized(true);
@@ -161,7 +181,7 @@ export const AuthProvider = ({
     } catch (err) {
       console.error(err);
     }
-    setUser(null);
+    updateCurrentUser(null);
     setProfile(null);
   };
 
