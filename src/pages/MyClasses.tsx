@@ -181,7 +181,7 @@ export default function MyClasses() {
                           {p.name}
                         </h4>
                         
-                        <p className="text-slate-500 text-sm line-clamp-2 mb-6 flex-grow leading-relaxed">
+                        <p className="text-slate-700 text-base font-bold line-clamp-3 mb-6 flex-grow leading-relaxed">
                           {p.description}
                         </p>
                         

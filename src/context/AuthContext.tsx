@@ -30,68 +30,73 @@ export const AuthProvider = ({
 }: {
   children: React.ReactNode;
 }) => {
-  const [user, setUser] =
-    useState<User | null>(null);
+  const [user, setUser] = useState<User | null>(null);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [authInitialized, setAuthInitialized] = useState(false);
 
-  const [profile, setProfile] =
-    useState<UserProfile | null>(null);
-
-  const [loading, setLoading] =
-    useState(true);
-
-  const fetchProfile = async (
-    userId: string
-  ) => {
+  const fetchProfile = async (userId: string) => {
     try {
-      const { data, error } =
-        await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', userId)
-          .single();
+      // Fetch with a timeout to prevent hanging forever on slow networks
+      const fetchPromise = supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+      const timeoutPromise = new Promise<any>((_, reject) =>
+        setTimeout(() => reject(new Error('Profile fetch timeout')), 6000)
+      );
+
+      const { data, error } = await Promise.race([fetchPromise, timeoutPromise]);
 
       if (error) {
-        console.error(error);
-
+        console.error('Error fetching profile:', error);
         setProfile(null);
-
         return;
       }
 
       setProfile(data as UserProfile);
     } catch (err) {
-      console.error(err);
-
+      console.error('Exception in fetchProfile:', err);
       setProfile(null);
     }
   };
 
+  // 1. Initial session check & event subscription
   useEffect(() => {
     let mounted = true;
 
+    // Safety timeout: force auth initialization to finish after 8 seconds
+    const safetyTimeout = setTimeout(() => {
+      if (mounted && !authInitialized) {
+        console.warn('Auth initialization safety timeout triggered.');
+        setAuthInitialized(true);
+        setLoading(false);
+      }
+    }, 8000);
+
     const initialize = async () => {
       try {
+        const sessionPromise = supabase.auth.getSession();
+        const timeoutPromise = new Promise<{ data: { session: null } }>((resolve) =>
+          setTimeout(() => resolve({ data: { session: null } }), 4000)
+        );
+
         const {
           data: { session },
-        } = await supabase.auth.getSession();
+        } = await Promise.race([sessionPromise, timeoutPromise]);
 
         if (!mounted) return;
 
-        if (!session?.user) {
-          setLoading(false);
-          return;
+        if (session?.user) {
+          setUser(session.user);
         }
-
-        setUser(session.user);
-
-        await fetchProfile(
-          session.user.id
-        );
       } catch (err) {
-        console.error(err);
+        console.error('Error in initialize auth:', err);
       } finally {
         if (mounted) {
-          setLoading(false);
+          setAuthInitialized(true);
         }
       }
     };
@@ -101,35 +106,54 @@ export const AuthProvider = ({
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      (event, session) => {
         if (!mounted) return;
 
-        if (
-          event === 'SIGNED_OUT'
-        ) {
+        console.log('Auth state changed event:', event);
+
+        if (session?.user) {
+          setUser(session.user);
+        } else {
           setUser(null);
           setProfile(null);
-          return;
         }
 
-        if (
-          event === 'SIGNED_IN' &&
-          session?.user
-        ) {
-          setUser(session.user);
-
-          await fetchProfile(
-            session.user.id
-          );
-        }
+        setAuthInitialized(true);
       }
     );
 
     return () => {
       mounted = false;
+      clearTimeout(safetyTimeout);
       subscription.unsubscribe();
     };
   }, []);
+
+  // 2. Fetch profile when user or authInitialized changes
+  useEffect(() => {
+    if (!authInitialized) return;
+
+    if (!user) {
+      setLoading(false);
+      return;
+    }
+
+    let active = true;
+    setLoading(true);
+
+    const load = async () => {
+      await fetchProfile(user.id);
+      if (active) {
+        setLoading(false);
+      }
+    };
+
+    load();
+
+    return () => {
+      active = false;
+    };
+  }, [user, authInitialized]);
 
   const logout = async () => {
     try {
@@ -137,7 +161,6 @@ export const AuthProvider = ({
     } catch (err) {
       console.error(err);
     }
-
     setUser(null);
     setProfile(null);
   };
@@ -147,13 +170,10 @@ export const AuthProvider = ({
     profile,
     loading,
     logout,
-
     isAdmin:
       profile?.role === 'admin' ||
-      user?.email ===
-        'anasmd2026@gmail.com' ||
-      user?.email ===
-        'anasmah4oud@gmail.com',
+      user?.email === 'anasmd2026@gmail.com' ||
+      user?.email === 'anasmah4oud@gmail.com',
   };
 
   return (
@@ -163,5 +183,4 @@ export const AuthProvider = ({
   );
 };
 
-export const useAuth = () =>
-  useContext(AuthContext);
+export const useAuth = () => useContext(AuthContext);

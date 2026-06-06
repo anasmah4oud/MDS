@@ -187,7 +187,7 @@ export default function FreeClasses() {
                         </span>
                       </div>
                       
-                      <p className="text-slate-500 font-medium text-sm leading-relaxed line-clamp-2">
+                      <p className="text-slate-700 font-bold text-base leading-relaxed line-clamp-3">
                         {p.description}
                       </p>
                     </div>

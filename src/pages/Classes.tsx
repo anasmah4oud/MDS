@@ -433,7 +433,7 @@ function PackageCard({ pkg, isSubscribed, onBuy }: { pkg: PackageType; isSubscri
         </div>
       </div>
       <div className="p-8 flex-1 flex flex-col justify-between space-y-6 text-right">
-        <p className="text-slate-500 font-medium text-sm leading-relaxed line-clamp-2">{pkg.description}</p>
+        <p className="text-slate-700 font-bold text-base leading-relaxed line-clamp-3">{pkg.description}</p>
         <div className="pt-6 border-t border-slate-100 flex items-center justify-between gap-4">
           <div className="flex flex-col items-end">
             {pkg.old_price && (
