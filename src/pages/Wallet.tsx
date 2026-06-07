@@ -24,7 +24,7 @@ export default function Wallet() {
   const [chargeAmount, setChargeAmount] = useState<number>(0);
   const [copiedPhone, setCopiedPhone] = useState<string | null>(null);
 
-  const adminPhones = ['01100196131', '01023958772'];
+  const adminPhones = '201023958772';
   const adminWhatsApp = '201023958772';
 
   const calculateTotal = (amount: number) => {
