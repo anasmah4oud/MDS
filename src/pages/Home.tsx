@@ -314,7 +314,7 @@ export default function Home() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <GradeCard grade={1} title="الصف الأول الثانوي" img="/grade1.png" />
-            <GradeCard grade={2} title="الصف الثاني الثانوي" img="/grade2.png" />
+            <GradeCard grade={2} title="الصف الثاني بكالوريا" img="/grade2.png" />
             <GradeCard grade={3} title="الصف الثالث الثانوي" img="/grade3.png" />
           </div>
         </div>
