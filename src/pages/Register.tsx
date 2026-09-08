@@ -381,8 +381,8 @@ setTimeout(() => {
                           value={formData.grade}
                           onChange={(e) => setFormData({...formData, grade: Number(e.target.value)})}
                         >
-                          <option value="1">الصف الأول بكالوريا</option>
-                          <option value="2">الصف الثاني بكالوريا</option>
+                          <option value="1">الصف الأول الثانوي</option>
+                          <option value="2">الصف الثاني الثانوي</option>
                           <option value="3">الصف الثالث الثانوي</option>
                         </select>
                       </div>
@@ -397,10 +397,8 @@ setTimeout(() => {
                           value={formData.track}
                           onChange={(e) => setFormData({...formData, track: e.target.value})}
                         >
-                          <option value="scientific">مسار الطب و علوم الحياة</option>
-                          <option value="scientific">مسار الهندسة و علوم الحاسب</option>                      
-                          <option value="literary">مسار الأعمال</option>
-                          <option value="literary">مسار الفنون</option>
+                          <option value="scientific">علمي</option>
+                          <option value="literary">أدبي</option>
                         </select>
                       </div>
                     </div>
