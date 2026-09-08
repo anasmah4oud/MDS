@@ -370,7 +370,7 @@ setTimeout(() => {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
+<div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <label className="text-sm font-bold text-slate-700">الصف الدراسي</label>
                       <div className="relative">
@@ -379,16 +379,23 @@ setTimeout(() => {
                           required
                           className="w-full bg-white border border-slate-200 rounded-2xl py-4 pr-12 pl-4 focus:ring-4 focus:ring-blue-100 outline-none transition-all font-bold appearance-none"
                           value={formData.grade}
-                          onChange={(e) => setFormData({...formData, grade: Number(e.target.value)})}
+                          onChange={(e) => {
+                            const newGrade = Number(e.target.value);
+                            setFormData({
+                              ...formData, 
+                              grade: newGrade,
+                              track: 'scientific' // Reset track to standard scientific on grade change
+                            });
+                          }}
                         >
-                          <option value="1">الصف الأول الثانوي</option>
-                          <option value="2">الصف الثاني الثانوي</option>
+                          <option value="1">الصف الأول بكالوريا</option>
+                          <option value="2">الصف الثاني بكالوريا</option>
                           <option value="3">الصف الثالث الثانوي</option>
                         </select>
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <label className="text-sm font-bold text-slate-700">الشعبة</label>
+                      <label className="text-sm font-bold text-slate-700">الشعبة / المسار</label>
                       <div className="relative">
                         <UserCircle className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
                         <select 
@@ -397,8 +404,26 @@ setTimeout(() => {
                           value={formData.track}
                           onChange={(e) => setFormData({...formData, track: e.target.value})}
                         >
-                          <option value="scientific">علمي</option>
-                          <option value="literary">أدبي</option>
+                          {formData.grade === 1 && (
+                            <option value="scientific">عام</option>
+                          )}
+
+                          {formData.grade === 2 && (
+                            <>
+                              <option value="scientific">مسار الطب وعلوم الحياة</option>
+                              <option value="scientific">مسار الهندسة وعلوم الحاسب</option>
+                              <option value="literary">مسار الأعمال والعلوم الاجتماعية</option>
+                              <option value="literary">مسار الآداب والعلوم الإنسانية</option>
+                            </>
+                          )}
+
+                          {formData.grade === 3 && (
+                            <>
+                              <option value="scientific">علمي علوم</option>
+                              <option value="scientific">علمي رياضة</option>
+                              <option value="literary">أدبي</option>
+                            </>
+                          )}
                         </select>
                       </div>
                     </div>
