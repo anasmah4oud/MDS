@@ -407,28 +407,25 @@ setTimeout(() => {
                           {formData.grade === 1 && (
                             <option value="scientific">عام</option>
                           )}
-
                           {formData.grade === 2 && (
                             <>
-                              <option value="scientific">مسار الطب وعلوم الحياة</option>
-                              <option value="scientific">مسار الهندسة وعلوم الحاسب</option>
-                              <option value="literary">مسار الأعمال والعلوم الاجتماعية</option>
-                              <option value="literary">مسار الآداب والعلوم الإنسانية</option>
+                              <option value="scientific_medicine">مسار الطب وعلوم الحياة</option>
+                              <option value="scientific_engineering">مسار الهندسة وعلوم الحاسب</option>
+                              <option value="literary_business">مسار الأعمال والعلوم الاجتماعية</option>
+                              <option value="literary_arts">مسار الآداب والعلوم الإنسانية</option>
                             </>
                           )}
 
                           {formData.grade === 3 && (
                             <>
-                              <option value="scientific">علمي علوم</option>
-                              <option value="scientific">علمي رياضة</option>
+                              <option value="scientific_science">علمي علوم</option>
+                              <option value="scientific_math">علمي رياضة</option>
                               <option value="literary">أدبي</option>
                             </>
                           )}
-                        </select>
-                      </div>
-                    </div>
-                  </div>
-
+             </div>
+             </div>           
+  </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <label className="text-sm font-bold text-slate-700">تاريخ الميلاد</label>
