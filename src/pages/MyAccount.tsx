@@ -174,8 +174,8 @@ export default function MyAccount() {
     const gradeLabel = useMemo(() => {
         if (!profile?.grade) return '';
         const labels: Record<number, string> = {
-            1: 'الأول الثانوى',
-            2: 'الثاني الثانوى',
+            1: 'الأول بكالوريا',
+            2: 'الثاني بكالوريا',
             3: 'الثالث الثانوى',
         };
         return labels[profile.grade] || '';
