@@ -379,14 +379,18 @@ setTimeout(() => {
                           required
                           className="w-full bg-white border border-slate-200 rounded-2xl py-4 pr-12 pl-4 focus:ring-4 focus:ring-blue-100 outline-none transition-all font-bold appearance-none"
                           value={formData.grade}
-                          onChange={(e) => {
-                            const newGrade = Number(e.target.value);
-                            setFormData({
-                              ...formData, 
-                              grade: newGrade,
-                              track: 'scientific' // Reset track to standard scientific on grade change
-                            });
-                          }}
+onChange={(e) => {
+  const newGrade = Number(e.target.value);
+  setFormData({
+    ...formData, 
+    grade: newGrade,
+    track: newGrade === 1
+      ? 'scientific'
+      : newGrade === 2
+        ? 'scientific_medicine'
+        : 'scientific_science'
+  });
+}}
                         >
                           <option value="1">الصف الأول بكالوريا</option>
                           <option value="2">الصف الثاني بكالوريا</option>
@@ -423,9 +427,10 @@ setTimeout(() => {
                               <option value="literary">أدبي</option>
                             </>
                           )}
-             </div>
-             </div>           
-  </div>
+</select>
+</div>
+</div>
+</div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <label className="text-sm font-bold text-slate-700">تاريخ الميلاد</label>
