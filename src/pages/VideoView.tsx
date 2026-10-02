@@ -424,7 +424,7 @@ export default function VideoView() {
 
           <div className="pt-1 text-center flex items-center justify-center gap-1 text-[9px] font-black text-slate-400 uppercase tracking-wider select-none mt-auto">
             <Copyright size={10} />
-            <span>جميع الحقوق محفوظة لمنصة البارع التعليمية 2026</span>
+            <span>جميع الحقوق محفوظة لمنصة البارع التعليمية 2028</span>
           </div>
         </div>
       </main>
