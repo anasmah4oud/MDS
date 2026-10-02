@@ -1,15 +1,31 @@
 <!doctype html>
-<html lang="ar" dir="rtl">
+<html lang="ar" dir="rtl" style="color-scheme: light only !important;">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light only">
+    <meta name="supported-color-schemes" content="light">
     <base href="/" />
     <title>البارع محمود الديب</title>
-<script src="/no-dark.js"></script>
+    
+    <!-- الأكواد الإضافية لمنع عفرتة الوضع الداكن للمتصفح -->
+    <style>
+      :root {
+        color-scheme: light only !important;
+      }
+      html, body {
+        background-color: #ffffff !important;
+        color: #111111 !important;
+      }
+      * {
+        forced-color-adjust: none !important;
+      }
+    </style>
+    
+    <script src="/no-dark.js"></script>
   </head>
-  <body>
+  <body style="background-color: #ffffff !important;">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
-
