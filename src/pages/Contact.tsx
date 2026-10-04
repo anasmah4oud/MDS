@@ -45,7 +45,7 @@ export default function Contact() {
           <ContactCard 
             icon={<Facebook size={36} className="text-white" />} 
             title="صفحة الفيسبوك" 
-            href="#" 
+            href="https://www.facebook.com/%D8%A7%D9%84%D8%A8%D8%A7%D8%B1%D8%B9-%D9%85%D8%AD%D9%85%D9%88%D8%AF-%D8%A7%D9%84%D8%AF%D9%8A%D8%A8-61578607520148/" 
             gradient="from-blue-500 to-blue-700"
             shadowColor="shadow-blue-500/30"
           />
