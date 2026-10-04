@@ -983,31 +983,7 @@ export default function VideoView() {
                     )}
                   </AnimatePresence>
 
-                  {/* زر الجودة */}
-                  <button
-                    onClick={() => {
-                      setShowQualityMenu(
-                        !showQualityMenu
-                      );
-
-                      setShowRatesMenu(false);
-
-                      resetControlsTimeout();
-                    }}
-                    className="flex items-center gap-1.5 px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-bold transition-all"
-                    title="جودة الفيديو"
-                  >
-                    <span className="font-black">
-                      HD
-                    </span>
-
-                    <span>
-                      {getQualityLabel(
-                        videoQuality
-                      )}
-                    </span>
-                  </button>
-
+                  
                   {/* قائمة الجودة */}
                   <AnimatePresence>
                     {showQualityMenu && (
