@@ -149,8 +149,7 @@ export default function AdminDashboard() {
         {/* Quick Stats Grid */}
         <div className="mt-12 md:mt-20 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
            <StatCard label="إجمالي الطلاب" value={stats.totalStudents.toLocaleString()} icon={<Users className="text-blue-500" />} />
-           <StatCard label="إجمالي الإيرادات" value={`${stats.totalSales.toLocaleString()} ج.م`} icon={<Wallet className="text-green-500" />} />
-           <StatCard label="التفاعل المتوقع" value={stats.activeToday.toString()} icon={<UserCheck className="text-purple-500" />} />
+
            <StatCard label="إجمالي الاشتراكات" value={stats.newSubs.toString()} icon={<FileText className="text-orange-500" />} />
         </div>
       </main>
