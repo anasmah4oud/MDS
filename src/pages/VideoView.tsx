@@ -7,7 +7,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  ChevronRight, Shield, AlertCircle, Sparkles, ShieldAlert, 
+  ChevronRight, Shield, Sparkles, ShieldAlert, 
   Copyright, Play, Pause, GraduationCap, Award,
   RotateCw, RotateCcw, Maximize, Minimize, Sliders
 } from 'lucide-react';
@@ -35,7 +35,7 @@ export default function VideoView() {
   const [isVideoStarted, setIsVideoStarted] = useState(false);
   const [youtubeId, setYoutubeId] = useState<string>('');
   
-  // حالات التحكم المتزامنة
+  // حالات التحكم
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [playbackRate, setPlaybackRate] = useState(1);
@@ -43,11 +43,12 @@ export default function VideoView() {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showControls, setShowControls] = useState(true);
 
-  // حالة جودة الفيديو
-  const [videoQuality, setVideoQuality] = useState('auto');
+  // حالات جودة الفيديو
+  const [videoQuality, setVideoQuality] = useState('default');
   const [showQualityMenu, setShowQualityMenu] = useState(false);
+  const [availableQualities, setAvailableQualities] = useState<string[]>([]);
 
-  // حالة مكان العلامة المائية
+  // مكان العلامة المائية
   const [watermarkPosition, setWatermarkPosition] = useState({
     x: 20,
     y: 20
@@ -58,44 +59,117 @@ export default function VideoView() {
   const timeIntervalRef = useRef<any>(null);
   const controlsTimeoutRef = useRef<any>(null);
   const watermarkIntervalRef = useRef<any>(null);
+  const qualityIntervalRef = useRef<any>(null);
+
   const iframeId = "barie-secure-player";
+
+  /*
+   * أسماء الجودات التي يدعمها YouTube IFrame API
+   */
+  const qualityOptions = [
+    {
+      value: 'hd2160',
+      label: '2160p'
+    },
+    {
+      value: 'hd1440',
+      label: '1440p'
+    },
+    {
+      value: 'hd1080',
+      label: '1080p'
+    },
+    {
+      value: 'hd720',
+      label: '720p'
+    },
+    {
+      value: 'large',
+      label: '480p'
+    },
+    {
+      value: 'medium',
+      label: '360p'
+    },
+    {
+      value: 'small',
+      label: '240p'
+    },
+    {
+      value: 'tiny',
+      label: '144p'
+    }
+  ];
 
   useEffect(() => {
     fetchLesson();
+
     const protectionCleanup = initializeContentProtection();
-    const handleContextMenu = (e: MouseEvent) => e.preventDefault();
+
+    const handleContextMenu = (e: MouseEvent) => {
+      e.preventDefault();
+    };
+
     document.addEventListener('contextmenu', handleContextMenu);
 
     const handleFullscreenChange = () => {
       const isCurrentlyFull = !!document.fullscreenElement;
+
       setIsFullscreen(isCurrentlyFull);
-      
-      // التشغيل الأفقي التلقائي في الموبايل باستخدام Screen Orientation API الحديثة
-      if (isCurrentlyFull && window.screen && window.screen.orientation) {
-        window.screen.orientation.lock('landscape').catch(() => {});
-      } else if (!isCurrentlyFull && window.screen && window.screen.orientation) {
+
+      // التشغيل الأفقي التلقائي في الموبايل
+      if (
+        isCurrentlyFull &&
+        window.screen &&
+        window.screen.orientation
+      ) {
+        window.screen.orientation
+          .lock('landscape')
+          .catch(() => {});
+      } else if (
+        !isCurrentlyFull &&
+        window.screen &&
+        window.screen.orientation
+      ) {
         window.screen.orientation.unlock();
       }
     };
 
-    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    document.addEventListener(
+      'fullscreenchange',
+      handleFullscreenChange
+    );
 
     return () => {
-      document.removeEventListener('contextmenu', handleContextMenu);
-      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      document.removeEventListener(
+        'contextmenu',
+        handleContextMenu
+      );
+
+      document.removeEventListener(
+        'fullscreenchange',
+        handleFullscreenChange
+      );
+
       clearInterval(timeIntervalRef.current);
       clearTimeout(controlsTimeoutRef.current);
       clearInterval(watermarkIntervalRef.current);
+      clearInterval(qualityIntervalRef.current);
 
-      if (protectionCleanup && typeof protectionCleanup === 'function') {
+      if (
+        protectionCleanup &&
+        typeof protectionCleanup === 'function'
+      ) {
         protectionCleanup();
       }
     };
   }, [lessonId]);
 
   /*
-   * تحريك العلامة المائية بشكل عشوائي داخل الفيديو
-   * يتم بالكامل داخل متصفح الطالب ولا يوجد أي اتصال بـ Supabase
+   * تحريك العلامة المائية عشوائيًا داخل مساحة الفيديو
+   *
+   * لا يوجد أي اتصال بـ Supabase هنا.
+   * الحركة بالكامل داخل متصفح الطالب.
    */
   useEffect(() => {
     if (!isVideoStarted) {
@@ -113,28 +187,38 @@ export default function VideoView() {
       });
     };
 
-    // وضع أولي
     moveWatermark();
 
-    // تغيير المكان كل 5 ثوانٍ
-    watermarkIntervalRef.current = setInterval(moveWatermark, 5000);
+    watermarkIntervalRef.current = setInterval(
+      moveWatermark,
+      5000
+    );
 
     return () => {
       clearInterval(watermarkIntervalRef.current);
     };
   }, [isVideoStarted]);
 
+  /*
+   * تهيئة YouTube Player
+   */
   useEffect(() => {
     if (!youtubeId || !isVideoStarted) return;
 
     const loadAPI = () => {
       if (!window.YT) {
         const tag = document.createElement('script');
-        tag.src = "https://www.youtube.com/iframe_api";
 
-        const firstScriptTag = document.getElementsByTagName('script')[0];
+        tag.src =
+          "https://www.youtube.com/iframe_api";
 
-        firstScriptTag.parentNode?.insertBefore(tag, firstScriptTag);
+        const firstScriptTag =
+          document.getElementsByTagName('script')[0];
+
+        firstScriptTag.parentNode?.insertBefore(
+          tag,
+          firstScriptTag
+        );
 
         window.onYouTubeIframeAPIReady = initPlayer;
       } else {
@@ -144,158 +228,165 @@ export default function VideoView() {
 
     const initPlayer = () => {
       setTimeout(() => {
-        if (!document.getElementById(iframeId)) return;
+        const iframe =
+          document.getElementById(iframeId);
 
-        playerRef.current = new window.YT.Player(iframeId, {
-          events: {
-            'onReady': (event: any) => {
-              event.target.playVideo();
+        if (!iframe) return;
 
-              setIsPlaying(true);
+        playerRef.current =
+          new window.YT.Player(
+            iframeId,
+            {
+              events: {
 
-              setDuration(event.target.getDuration());
+                /*
+                 * عند جاهزية المشغل
+                 */
+                'onReady': (event: any) => {
+                  const player =
+                    event.target;
 
-              startTrackingTime();
+                  setDuration(
+                    player.getDuration()
+                  );
 
-              resetControlsTimeout();
-            },
+                  /*
+                   * الحصول على الجودات المتاحة فعليًا
+                   * للفيديو من YouTube
+                   */
+                  try {
+                    const qualities =
+                      player.getAvailableQualityLevels();
 
-            'onStateChange': (event: any) => {
-              if (event.data === window.YT.PlayerState.PLAYING) {
-                setIsPlaying(true);
+                    if (
+                      Array.isArray(qualities) &&
+                      qualities.length > 0
+                    ) {
+                      setAvailableQualities(
+                        qualities.filter(
+                          (quality: string) =>
+                            quality !== 'default'
+                        )
+                      );
+                    }
+                  } catch {
+                    // تجاهل الخطأ بدون التأثير على الفيديو
+                  }
 
-                startTrackingTime();
+                  /*
+                   * تشغيل الفيديو
+                   */
+                  player.playVideo();
 
-                resetControlsTimeout();
-              } else {
-                setIsPlaying(false);
+                  setIsPlaying(true);
 
-                clearInterval(timeIntervalRef.current);
+                  startTrackingTime();
 
-                setShowControls(true);
+                  resetControlsTimeout();
+
+                  /*
+                   * تطبيق الجودة الحالية
+                   */
+                  setTimeout(() => {
+                    applyVideoQuality();
+                  }, 500);
+                },
+
+                /*
+                 * تغيير حالة الفيديو
+                 */
+                'onStateChange': (event: any) => {
+
+                  if (
+                    event.data ===
+                    window.YT.PlayerState.PLAYING
+                  ) {
+                    setIsPlaying(true);
+
+                    startTrackingTime();
+
+                    resetControlsTimeout();
+
+                    /*
+                     * إعادة تطبيق الجودة عند التشغيل
+                     */
+                    setTimeout(() => {
+                      applyVideoQuality();
+                    }, 300);
+                  } else {
+                    setIsPlaying(false);
+
+                    clearInterval(
+                      timeIntervalRef.current
+                    );
+
+                    clearInterval(
+                      qualityIntervalRef.current
+                    );
+
+                    setShowControls(true);
+                  }
+                },
+
+                /*
+                 * YouTube أخبرنا أن الجودة تغيرت.
+                 * إذا كان المستخدم اختار جودة محددة،
+                 * نعيد تطبيقها.
+                 */
+                'onPlaybackQualityChange': () => {
+                  if (
+                    videoQuality !== 'default'
+                  ) {
+                    setTimeout(() => {
+                      applyVideoQuality();
+                    }, 300);
+                  }
+                }
               }
             }
-          }
-        });
+          );
       }, 100);
     };
 
     loadAPI();
 
     return () => {
-      clearInterval(timeIntervalRef.current);
+      clearInterval(
+        timeIntervalRef.current
+      );
+
+      clearInterval(
+        qualityIntervalRef.current
+      );
     };
   }, [youtubeId, isVideoStarted]);
 
-  const fetchLesson = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('lessons')
-        .select('*')
-        .eq('id', lessonId)
-        .single();
-      
-      if (error) throw error;
-
-      setLesson(data as Lesson);
-
-      setYoutubeId(getYouTubeId(data.url));
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const getYouTubeId = (url: string) => {
-    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
-
-    const match = url.match(regExp);
-
-    return (match && match[2].length === 11) ? match[2] : url;
-  };
-
-  const startTrackingTime = () => {
-    clearInterval(timeIntervalRef.current);
-
-    timeIntervalRef.current = setInterval(() => {
-      if (playerRef.current && playerRef.current.getCurrentTime) {
-        setCurrentTime(playerRef.current.getCurrentTime());
-
-        if (duration === 0) {
-          setDuration(playerRef.current.getDuration());
-        }
-      }
-    }, 200);
-  };
-
-  const formatTime = (timeInSeconds: number) => {
-    const mins = Math.floor(timeInSeconds / 60);
-
-    const secs = Math.floor(timeInSeconds % 60);
-
-    return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
-  };
-
-  const handleTimelineChange = (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const newTime = parseFloat(e.target.value);
-
-    setCurrentTime(newTime);
-
-    if (playerRef.current && playerRef.current.seekTo) {
-      playerRef.current.seekTo(newTime, true);
-    }
-
-    resetControlsTimeout();
-  };
-
-  const handleSeek = (amount: number) => {
+  /*
+   * إعادة تطبيق الجودة المختارة
+   */
+  const applyVideoQuality = () => {
     if (
       !playerRef.current ||
-      !playerRef.current.getCurrentTime
+      !playerRef.current.setPlaybackQuality
     ) {
       return;
     }
 
-    const newTime = Math.max(
-      0,
-      Math.min(
-        duration,
-        playerRef.current.getCurrentTime() + amount
-      )
-    );
-
-    setCurrentTime(newTime);
-
-    playerRef.current.seekTo(newTime, true);
-
-    resetControlsTimeout();
-  };
-
-  const handleRateChange = (rate: number) => {
-    setPlaybackRate(rate);
-
-    setShowRatesMenu(false);
-
-    if (
-      playerRef.current &&
-      playerRef.current.setPlaybackRate
-    ) {
-      playerRef.current.setPlaybackRate(rate);
+    try {
+      playerRef.current.setPlaybackQuality(
+        videoQuality
+      );
+    } catch {
+      // تجاهل أي خطأ من YouTube API
     }
-
-    resetControlsTimeout();
   };
 
   /*
-   * تغيير جودة الفيديو
-   *
-   * setPlaybackQuality يتم تنفيذه من خلال YouTube IFrame API
-   * ولا يحتاج إلى أي طلب إضافي إلى Supabase أو Vercel.
+   * تطبيق الجودة التي اختارها الطالب
    */
-  const handleQualityChange = (quality: string) => {
+  const handleQualityChange = (
+    quality: string
+  ) => {
     setVideoQuality(quality);
 
     setShowQualityMenu(false);
@@ -304,23 +395,232 @@ export default function VideoView() {
       playerRef.current &&
       playerRef.current.setPlaybackQuality
     ) {
-      playerRef.current.setPlaybackQuality(quality);
+      try {
+        playerRef.current.setPlaybackQuality(
+          quality
+        );
+      } catch {
+        // لا شيء
+      }
+    }
+
+    /*
+     * في حالة الجودة المحددة:
+     * نعيد تطبيقها كل فترة أثناء التشغيل.
+     *
+     * هذا لا يرسل أي طلب إلى Supabase
+     * ولا يستخدم Vercel.
+     */
+    clearInterval(
+      qualityIntervalRef.current
+    );
+
+    if (
+      quality !== 'default' &&
+      playerRef.current
+    ) {
+      qualityIntervalRef.current =
+        setInterval(() => {
+          if (
+            playerRef.current &&
+            isPlaying &&
+            playerRef.current
+              .setPlaybackQuality
+          ) {
+            try {
+              playerRef.current
+                .setPlaybackQuality(
+                  quality
+                );
+            } catch {
+              // لا شيء
+            }
+          }
+        }, 2000);
     }
 
     resetControlsTimeout();
   };
 
-  const getQualityLabel = (quality: string) => {
-    const labels: Record<string, string> = {
-      auto: 'تلقائي',
-      hd1080: '1080p',
-      hd720: '720p',
-      large: '480p',
-      medium: '360p',
-      small: '240p'
-    };
+  /*
+   * الحصول على اسم الجودة للزر
+   */
+  const getQualityLabel = (
+    quality: string
+  ) => {
+    if (quality === 'default') {
+      return 'تلقائي';
+    }
 
-    return labels[quality] || quality;
+    const option =
+      qualityOptions.find(
+        item => item.value === quality
+      );
+
+    return option?.label || 'تلقائي';
+  };
+
+  /*
+   * جلب بيانات المحاضرة
+   *
+   * هذا هو الاستعلام الموجود أصلًا في الملف.
+   * لا يوجد استعلام إضافي للكود.
+   */
+  const fetchLesson = async () => {
+    try {
+      const { data, error } =
+        await supabase
+          .from('lessons')
+          .select('*')
+          .eq('id', lessonId)
+          .single();
+      
+      if (error) throw error;
+
+      setLesson(data as Lesson);
+
+      setYoutubeId(
+        getYouTubeId(data.url)
+      );
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getYouTubeId = (
+    url: string
+  ) => {
+    const regExp =
+      /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+
+    const match =
+      url.match(regExp);
+
+    return (
+      match &&
+      match[2].length === 11
+    )
+      ? match[2]
+      : url;
+  };
+
+  const startTrackingTime = () => {
+    clearInterval(
+      timeIntervalRef.current
+    );
+
+    timeIntervalRef.current =
+      setInterval(() => {
+        if (
+          playerRef.current &&
+          playerRef.current
+            .getCurrentTime
+        ) {
+          setCurrentTime(
+            playerRef.current
+              .getCurrentTime()
+          );
+
+          if (duration === 0) {
+            setDuration(
+              playerRef.current
+                .getDuration()
+            );
+          }
+        }
+      }, 200);
+  };
+
+  const formatTime = (
+    timeInSeconds: number
+  ) => {
+    const mins =
+      Math.floor(
+        timeInSeconds / 60
+      );
+
+    const secs =
+      Math.floor(
+        timeInSeconds % 60
+      );
+
+    return `${mins}:${
+      secs < 10 ? '0' : ''
+    }${secs}`;
+  };
+
+  const handleTimelineChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const newTime =
+      parseFloat(e.target.value);
+
+    setCurrentTime(newTime);
+
+    if (
+      playerRef.current &&
+      playerRef.current.seekTo
+    ) {
+      playerRef.current.seekTo(
+        newTime,
+        true
+      );
+    }
+
+    resetControlsTimeout();
+  };
+
+  const handleSeek = (
+    amount: number
+  ) => {
+    if (
+      !playerRef.current ||
+      !playerRef.current
+        .getCurrentTime
+    ) {
+      return;
+    }
+
+    const newTime =
+      Math.max(
+        0,
+        Math.min(
+          duration,
+          playerRef.current
+            .getCurrentTime() +
+            amount
+        )
+      );
+
+    setCurrentTime(newTime);
+
+    playerRef.current.seekTo(
+      newTime,
+      true
+    );
+
+    resetControlsTimeout();
+  };
+
+  const handleRateChange = (
+    rate: number
+  ) => {
+    setPlaybackRate(rate);
+
+    setShowRatesMenu(false);
+
+    if (
+      playerRef.current &&
+      playerRef.current
+        .setPlaybackRate
+    ) {
+      playerRef.current
+        .setPlaybackRate(rate);
+    }
+
+    resetControlsTimeout();
   };
 
   const togglePlayPause = () => {
@@ -336,14 +636,22 @@ export default function VideoView() {
   };
 
   const toggleFullscreen = () => {
-    if (!videoBoxRef.current) return;
+    if (!videoBoxRef.current) {
+      return;
+    }
 
     if (!isFullscreen) {
-      if (videoBoxRef.current.requestFullscreen) {
-        videoBoxRef.current.requestFullscreen();
+      if (
+        videoBoxRef.current
+          .requestFullscreen
+      ) {
+        videoBoxRef.current
+          .requestFullscreen();
       }
     } else {
-      if (document.exitFullscreen) {
+      if (
+        document.exitFullscreen
+      ) {
         document.exitFullscreen();
       }
     }
@@ -354,16 +662,19 @@ export default function VideoView() {
   const resetControlsTimeout = () => {
     setShowControls(true);
 
-    clearTimeout(controlsTimeoutRef.current);
+    clearTimeout(
+      controlsTimeoutRef.current
+    );
 
     if (isPlaying) {
-      controlsTimeoutRef.current = setTimeout(() => {
-        setShowControls(false);
+      controlsTimeoutRef.current =
+        setTimeout(() => {
+          setShowControls(false);
 
-        setShowRatesMenu(false);
+          setShowRatesMenu(false);
 
-        setShowQualityMenu(false);
-      }, 2000);
+          setShowQualityMenu(false);
+        }, 2000);
     }
   };
 
@@ -473,7 +784,7 @@ export default function VideoView() {
           className="flex-[2] bg-black rounded-2xl md:rounded-3xl border border-slate-800/80 shadow-2xl relative overflow-hidden flex items-center justify-center w-full aspect-video lg:h-full lg:w-auto group select-none"
         >
           
-          {/* واجهة البدء وفك التشفير */}
+          {/* واجهة البدء */}
           <AnimatePresence>
             {!isVideoStarted && (
               <motion.div
@@ -485,7 +796,9 @@ export default function VideoView() {
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  onClick={() => setIsVideoStarted(true)}
+                  onClick={() =>
+                    setIsVideoStarted(true)
+                  }
                   className="w-16 h-16 md:w-20 md:h-20 bg-indigo-600 text-white rounded-full flex items-center justify-center border-4 border-white/10 hover:bg-indigo-500 shadow-xl cursor-pointer relative"
                 >
                   <Play
@@ -495,7 +808,9 @@ export default function VideoView() {
 
                   <span
                     className="absolute inset-0 rounded-full bg-indigo-600/30 animate-ping"
-                    style={{ animationDuration: '3s' }}
+                    style={{
+                      animationDuration: '3s'
+                    }}
                   />
                 </motion.button>
 
@@ -506,12 +821,12 @@ export default function VideoView() {
             )}
           </AnimatePresence>
 
-          {/* جدار الحماية الشفاف لمنع نقرات واجهة يوتيوب الأصلية */}
+          {/* جدار الحماية */}
           {isVideoStarted && (
             <div className="absolute inset-0 z-30 bg-transparent cursor-default" />
           )}
 
-          {/* إطار الفيديو */}
+          {/* الفيديو */}
           {isVideoStarted && (
             <div className="barie-video-wrapper w-full h-full">
               <iframe
@@ -524,7 +839,7 @@ export default function VideoView() {
             </div>
           )}
           
-          {/* لوحة التحكم العائمة والذكية المخفية تلقائياً */}
+          {/* لوحة التحكم */}
           {isVideoStarted && (
             <div
               className={`barie-floating-controls-panel ${
@@ -534,7 +849,7 @@ export default function VideoView() {
               }`}
             >
               
-              {/* شريط الـ Time Line */}
+              {/* الخط الزمني */}
               <div className="flex items-center gap-3 w-full">
                 <span className="text-[11px] font-mono font-bold text-white select-none min-w-[35px] text-left">
                   {formatTime(currentTime)}
@@ -549,7 +864,8 @@ export default function VideoView() {
                     onChange={handleTimelineChange}
                     className="barie-timeline-slider flex-1 h-1.5 rounded-lg appearance-none cursor-pointer relative z-10"
                     style={{
-                      ['--barie-progress' as any]: `${progressPercent}%`
+                      ['--barie-progress' as any]:
+                        `${progressPercent}%`
                     }}
                   />
                 </div>
@@ -559,11 +875,12 @@ export default function VideoView() {
                 </span>
               </div>
 
-              {/* أزرار التشغيل والتحكم */}
+              {/* أزرار التحكم */}
               <div className="flex items-center justify-between w-full mt-1">
-                
-                {/* أزرار التشغيل */}
+
+                {/* التشغيل والتقديم */}
                 <div className="flex items-center gap-3">
+
                   <button
                     onClick={togglePlayPause}
                     className="p-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl transition-all shadow-md active:scale-95"
@@ -582,7 +899,9 @@ export default function VideoView() {
                   </button>
 
                   <button
-                    onClick={() => handleSeek(-10)}
+                    onClick={() =>
+                      handleSeek(-10)
+                    }
                     className="p-2 bg-white/10 hover:bg-white/20 text-white rounded-xl transition-all active:scale-95"
                     title="تأخير 10 ثواني"
                   >
@@ -590,7 +909,9 @@ export default function VideoView() {
                   </button>
 
                   <button
-                    onClick={() => handleSeek(10)}
+                    onClick={() =>
+                      handleSeek(10)
+                    }
                     className="p-2 bg-white/10 hover:bg-white/20 text-white rounded-xl transition-all active:scale-95"
                     title="تقديم 10 ثواني"
                   >
@@ -601,11 +922,15 @@ export default function VideoView() {
                 {/* إعدادات الفيديو */}
                 <div className="flex items-center gap-3 relative">
 
-                  {/* زر السرعة */}
+                  {/* السرعة */}
                   <button
                     onClick={() => {
-                      setShowRatesMenu(!showRatesMenu);
+                      setShowRatesMenu(
+                        !showRatesMenu
+                      );
+
                       setShowQualityMenu(false);
+
                       resetControlsTimeout();
                     }}
                     className="flex items-center gap-1.5 px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-bold transition-all"
@@ -634,19 +959,26 @@ export default function VideoView() {
                         }}
                         className="absolute bottom-12 left-0 bg-slate-900/95 backdrop-blur-md border border-slate-700/50 rounded-xl p-1 flex flex-col gap-0.5 min-w-[80px] shadow-2xl z-50"
                       >
-                        {[1, 1.25, 1.5, 1.75, 2].map((rate) => (
-                          <button
-                            key={rate}
-                            onClick={() => handleRateChange(rate)}
-                            className={`px-2 py-1 text-[11px] font-mono font-bold rounded-lg text-center transition-colors ${
-                              playbackRate === rate
-                                ? 'bg-blue-600 text-white'
-                                : 'text-slate-300 hover:bg-white/10 hover:text-white'
-                            }`}
-                          >
-                            {rate}x
-                          </button>
-                        ))}
+                        {[1, 1.25, 1.5, 1.75, 2].map(
+                          (rate) => (
+                            <button
+                              key={rate}
+                              onClick={() =>
+                                handleRateChange(
+                                  rate
+                                )
+                              }
+                              className={`px-2 py-1 text-[11px] font-mono font-bold rounded-lg text-center transition-colors ${
+                                playbackRate ===
+                                rate
+                                  ? 'bg-blue-600 text-white'
+                                  : 'text-slate-300 hover:bg-white/10 hover:text-white'
+                              }`}
+                            >
+                              {rate}x
+                            </button>
+                          )
+                        )}
                       </motion.div>
                     )}
                   </AnimatePresence>
@@ -654,8 +986,12 @@ export default function VideoView() {
                   {/* زر الجودة */}
                   <button
                     onClick={() => {
-                      setShowQualityMenu(!showQualityMenu);
+                      setShowQualityMenu(
+                        !showQualityMenu
+                      );
+
                       setShowRatesMenu(false);
+
                       resetControlsTimeout();
                     }}
                     className="flex items-center gap-1.5 px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-bold transition-all"
@@ -666,7 +1002,9 @@ export default function VideoView() {
                     </span>
 
                     <span>
-                      {getQualityLabel(videoQuality)}
+                      {getQualityLabel(
+                        videoQuality
+                      )}
                     </span>
                   </button>
 
@@ -686,55 +1024,75 @@ export default function VideoView() {
                           opacity: 0,
                           y: 10
                         }}
-                        className="absolute bottom-12 right-0 bg-slate-900/95 backdrop-blur-md border border-slate-700/50 rounded-xl p-1 flex flex-col gap-0.5 min-w-[105px] shadow-2xl z-50"
+                        className="absolute bottom-12 right-0 bg-slate-900/95 backdrop-blur-md border border-slate-700/50 rounded-xl p-1 flex flex-col gap-0.5 min-w-[105px] max-h-[260px] overflow-y-auto shadow-2xl z-50"
                       >
-                        {[
-                          {
-                            value: 'auto',
-                            label: 'تلقائي'
-                          },
-                          {
-                            value: 'hd1080',
-                            label: '1080p'
-                          },
-                          {
-                            value: 'hd720',
-                            label: '720p'
-                          },
-                          {
-                            value: 'large',
-                            label: '480p'
-                          },
-                          {
-                            value: 'medium',
-                            label: '360p'
-                          },
-                          {
-                            value: 'small',
-                            label: '240p'
+
+                        {/* تلقائي */}
+                        <button
+                          onClick={() =>
+                            handleQualityChange(
+                              'default'
+                            )
                           }
-                        ].map((quality) => (
-                          <button
-                            key={quality.value}
-                            onClick={() =>
-                              handleQualityChange(quality.value)
-                            }
-                            className={`px-3 py-1.5 text-[11px] font-bold rounded-lg text-center transition-colors ${
-                              videoQuality === quality.value
-                                ? 'bg-blue-600 text-white'
-                                : 'text-slate-300 hover:bg-white/10 hover:text-white'
-                            }`}
-                          >
-                            {quality.label}
-                          </button>
-                        ))}
+                          className={`px-3 py-1.5 text-[11px] font-bold rounded-lg text-center transition-colors ${
+                            videoQuality ===
+                            'default'
+                              ? 'bg-blue-600 text-white'
+                              : 'text-slate-300 hover:bg-white/10 hover:text-white'
+                          }`}
+                        >
+                          تلقائي
+                        </button>
+
+                        {/* الجودات المتاحة */}
+                        {qualityOptions
+                          .filter(
+                            (option) =>
+                              availableQualities.includes(
+                                option.value
+                              )
+                          )
+                          .map(
+                            (quality) => (
+                              <button
+                                key={
+                                  quality.value
+                                }
+                                onClick={() =>
+                                  handleQualityChange(
+                                    quality.value
+                                  )
+                                }
+                                className={`px-3 py-1.5 text-[11px] font-bold rounded-lg text-center transition-colors ${
+                                  videoQuality ===
+                                  quality.value
+                                    ? 'bg-blue-600 text-white'
+                                    : 'text-slate-300 hover:bg-white/10 hover:text-white'
+                                }`}
+                              >
+                                {
+                                  quality.label
+                                }
+                              </button>
+                            )
+                          )}
+
+                        {/* في حالة عدم وصول قائمة الجودات */}
+                        {availableQualities.length ===
+                          0 && (
+                          <div className="px-3 py-2 text-[10px] text-slate-400 text-center">
+                            جاري تحميل الجودات...
+                          </div>
+                        )}
                       </motion.div>
                     )}
                   </AnimatePresence>
 
                   {/* ملء الشاشة */}
                   <button
-                    onClick={toggleFullscreen}
+                    onClick={
+                      toggleFullscreen
+                    }
                     className="p-2 bg-white/10 hover:bg-white/20 text-white rounded-xl transition-all active:scale-95"
                     title={
                       isFullscreen
@@ -756,21 +1114,22 @@ export default function VideoView() {
           {/* العلامة المائية المتحركة */}
           <div className="absolute inset-0 pointer-events-none select-none overflow-hidden z-20">
             <div
-              className="absolute text-[11px] md:text-sm font-black text-white/20 bg-white/[0.04] border border-white/[0.08] px-4 py-2 rounded-xl backdrop-blur-[1px] whitespace-nowrap transition-all duration-[1800ms] ease-in-out"
+              className="absolute inline-flex items-center justify-center whitespace-nowrap bg-red-600/65 border border-red-400/30 text-white text-[10px] md:text-xs font-bold px-2.5 py-1 rounded-md shadow-md transition-all duration-[1800ms] ease-in-out"
               style={{
                 left: `${watermarkPosition.x}%`,
                 top: `${watermarkPosition.y}%`,
-                transform: 'translate(-50%, -50%)'
+                transform:
+                  'translate(-50%, -50%)'
               }}
             >
-              كود الطالب: #{profile?.student_code || '---'}
+              #{profile?.student_code || '---'}
             </div>
           </div>
         </div>
 
-        {/* الشريط الجانبي لمعلومات المحاضرة */}
+        {/* الشريط الجانبي */}
         <div className="w-full lg:w-[350px] flex flex-col gap-4 shrink-0 lg:h-full overflow-y-auto pb-4 lg:pb-0">
-          
+
           <div className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-sm relative overflow-hidden group">
             <div className="absolute -left-6 -bottom-6 w-20 h-20 bg-indigo-50/50 rounded-full blur-xl group-hover:scale-125 transition-transform duration-500" />
 
